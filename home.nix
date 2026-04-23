@@ -1,24 +1,32 @@
-{ config, pkgs, lib, ... }: {
-  home.username = "ghost";
-  home.homeDirectory = "/home/ghost";
+{ config, pkgs, lib, ... }:
+
+let
+  aionui = pkgs.callPackage ./packages/aionui.nix {};
+in
+{
+  home.username = "nondeus";
+  home.homeDirectory = "/home/nondeus";
 
   # Wrapper Strategy: Preserving Pythonic QML Bridges and other configs.
   # All UI-related configs are symlinked from /persist, which should be a
   # clone of your CachyNixOS or .nix-config repository.
   xdg.configFile = {
-    "quickshell".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/ghost/.nix-config/quickshell";
-    "hypr".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/ghost/.nix-config/hypr";
-    "illogical-impulse".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/ghost/.nix-config/illogical-impulse";
-    "kitty".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/ghost/.nix-config/kitty";
-    "fastfetch".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/ghost/.nix-config/fastfetch";
-    "cava".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/ghost/.nix-config/cava";
-    "fuzzel".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/ghost/.nix-config/fuzzel";
-    "wlogout".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/ghost/.nix-config/wlogout";
-    "starship".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/ghost/.nix-config/starship";
+    "quickshell".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/quickshell";
+    "hypr".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/hypr";
+    "illogical-impulse".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/illogical-impulse";
+    "kitty".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/kitty";
+    "fastfetch".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/fastfetch";
+    "cava".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/cava";
+    "fuzzel".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/fuzzel";
+    "wlogout".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/wlogout";
+    "starship".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/starship";
   };
 
   # Applications & Workflows
   home.packages = with pkgs; [
+    # Custom packaged applications
+    aionui
+
     # From original pure config
     kitty
     brave
@@ -36,13 +44,17 @@
   ];
 
   # Persistence Audit [cite: 90, 131, 229]
-  home.persistence."/persist/home/ghost" = {
+  home.persistence."/persist/home/nondeus" = {
     directories = [
+      ".gemini"
       ".local/share/fish"
       ".local/share/direnv"
+      ".local/share/krita" # Persist Krita settings & brushes
       ".ssh"
       "Documents"
       "Downloads"
+      "Pictures"
+      "Projects"
       ".config/BraveSoftware"
       ".ZAP" # Persistence for ZAP Config/CA [cite: 91]
       "ZAP-Sessions" # Persistence for ZAP Data [cite: 91]
@@ -296,7 +308,7 @@
     Unit.Description = "Declarative Matugen Color Engine";
     Service = {
       # NOTE: Path updated. Ensure a wallpaper exists at this location in /persist.
-      ExecStart = "${pkgs.matugen}/bin/matugen apply -i /persist/home/ghost/Pictures/wallpaper.png";
+      ExecStart = "${pkgs.matugen}/bin/matugen apply -i /persist/home/nondeus/Pictures/wallpaper.png";
       Type = "oneshot";
     };
   }; [cite: 94, 120]

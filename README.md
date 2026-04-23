@@ -21,7 +21,7 @@ The repository is organized to maintain strict version control and ease of disse
     * Mount `/persist` to the `PERSIST` partition.
 
 ### II. Repository Synchronization
-1.  **Placement**: Clone both the `CachyNixOS` repository and this migration repository into `/persist/home/ghost/.nix-config/`.
+1.  **Placement**: Clone both the `CachyNixOS` repository and this migration repository into `/persist/home/nondeus/.nix-config/`.
 2.  **Validation**: Before rebooting, verify that `quickshell/modules/advanced settings` and appearance scripts are present in that directory to ensure the Pythonic bridge remains active.
 
 ### III. Post-Install Security Handshake
@@ -44,7 +44,7 @@ The migration utilizes a three-tier storage strategy to isolate the system state
 To prevent `nixos-rebuild` failures, verify these local states:
 
 1. **Wrapper Targets**: Ensure your UI configurations are moved from the old system to:
-   `/persist/home/ghost/.nix-config/`
+   `/persist/home/nondeus/.nix-config/`
    The `home.nix` file creates out-of-store symlinks to these exact paths.
 
 2. **Secure Boot (Lanzaboote)**: 
@@ -53,7 +53,7 @@ To prevent `nixos-rebuild` failures, verify these local states:
 
 3. **User Groups**: 
    * Membership for `adbusers` is handled declaratively for Galaxy S26 Ultra connectivity. 
-   * Ensure the `ghost` user is manually added to the `wheel` group if performing the initial install via a live USB.
+   * Ensure the `nondeus` user is manually added to the `wheel` group if performing the initial install via a live USB.
 
 ## VII. Troubleshooting (Offline/No-Tool Environment)
 If the build fails or the UI does not initialize:
