@@ -10,6 +10,7 @@
   services.power-profiles-daemon.enable = true; [cite: 104]
 
   # Security & Anonymity
+  networking.networkmanager.enable = true;
   boot.lanzaboote = {
     enable = true;
     pkiBundle = "/etc/secureboot";
@@ -18,7 +19,7 @@
   
   # Android & Connectivity
   programs.adb.enable = true;
-  users.users.ghost.extraGroups = [ "adbusers" "networkmanager" "wheel" "video" ]; [cite: 249]
+  users.users.nondeus.extraGroups = [ "adbusers" "networkmanager" "wheel" "video" ]; [cite: 249]
   programs.kdeconnect.enable = true; [cite: 232, 250]
   
   # Application Support

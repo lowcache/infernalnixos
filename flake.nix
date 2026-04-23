@@ -18,7 +18,7 @@
   };
 
   outputs = { self, nixpkgs, home-manager, ... }@inputs: {
-    nixosConfigurations.ghost = nixpkgs.lib.nixosSystem {
+    nixosConfigurations.nondeus = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       specialArgs = { inherit inputs; };
       modules = [
@@ -32,7 +32,7 @@
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           home-manager.extraSpecialArgs = { inherit inputs; };
-          home-manager.users.ghost = import ./home.nix;
+          home-manager.users.nondeus = import ./home.nix;
         }
       ];
     };
