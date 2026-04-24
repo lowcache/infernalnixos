@@ -1,5 +1,5 @@
-{ lib, stdenv, fetchurl, undeb, makeWrapper
-, gtk3, nss, libcups, alsa-lib, mesa
+{ lib, stdenv, fetchurl, dpkg, makeWrapper
+, gtk3, nss, cups, alsa-lib, mesa
 }:
 
 stdenv.mkDerivation rec {
@@ -11,36 +11,39 @@ stdenv.mkDerivation rec {
     sha256 = "939f48133b3c436425b8f08be403a7a911e7b2030baf5e7b3735e754fd0af6e7";
   };
 
-  nativeBuildInputs = [ undeb makeWrapper ];
+  nativeBuildInputs = [ dpkg makeWrapper ];
 
   # Runtime dependencies from the PKGBUILD
-  buildInputs = [ gtk3 nss libcups alsa-lib mesa ];
+  buildInputs = [ gtk3 nss cups alsa-lib mesa ];
 
   dontUnpack = true;
 
   installPhase = ''
     # Extract the .deb archive
-    undeb ${src}
+    dpkg -x $src .
 
-    # Copy the extracted contents to the Nix store output path
-    cp -r usr $out/
+    # Copy the extracted contents to the Nix store output path and make it executable
+	mkdir -p $out
+    cp -r opt usr $out/ 2>/dev/null || cp -r "*" $out/
+    BINARY_PATH=$(find $out/opt -type f -iname "aionui" | head -n 1) 
+    chmod +x "$BINARY_PATH"
+    # Wrap binary
+  	wrapProgram "$BINARY_PATH" \
+  	 --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath buildInputs}"
 
-    # The binary needs to find its shared library dependencies.
-    # We create a wrapper script that sets the LD_LIBRARY_PATH.
-    # The actual binary is at $out/opt/aionui/aionui based on typical .deb structure for electron apps.
-    wrapProgram $out/opt/aionui/aionui 
-      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath buildInputs}"
-
-    # Fix the absolute icon path in the .desktop file for the applications menu
-    substituteInPlace $out/share/applications/AionUi.desktop 
-      --replace "Icon=aionui" "Icon=$out/share/icons/hicolor/1024x1024/apps/AionUi.png"
+  	# Locate and patch desktop file
+  	DESKTOP_FILE=$(find $out -type f -iname "*.desktop" | head -n 1)
+  	if [ -n "$DESKTOP_FILE" ]; then
+  		substituteInPlace "$DESKTOP_FILE" \
+  		 --replace "icon=aionui" "icon=$out/share/icons/hicolor/1024x1024/apps/AionUi.png" || true
+  	fi 
   '';
 
   meta = with lib; {
-    description = "AionUi for agent - Packaged for NixOS";
+    description = "AionUi - Packaged for NixOS";
     homepage = "https://github.com/iOfficeAI/AionUi";
-    license = licenses.unknown; # The license is marked 'unknown' in the PKGBUILD
+    license = licenses.unfree; # The license is marked 'unknown' in the PKGBUILD
     platforms = platforms.linux;
-    maintainers = [ ]; # You are the maintainer now
+    maintainers = [ maintainers.nondeus ]; # You are the maintainer now
   };
 }

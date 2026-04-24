@@ -4,6 +4,8 @@ let
   aionui = pkgs.callPackage ./packages/aionui.nix {};
 in
 {
+  nixpkgs.config.allowUnfree = true;
+ 
   home.username = "nondeus";
   home.homeDirectory = "/home/nondeus";
 
@@ -44,13 +46,14 @@ in
   ];
 
   # Persistence Audit [cite: 90, 131, 229]
-  home.persistence."/persist/home/nondeus" = {
+  home.persistence."/persist" = {
     directories = [
       ".gemini"
       ".local/share/fish"
       ".local/share/direnv"
       ".local/share/krita" # Persist Krita settings & brushes
       ".ssh"
+      ".nix-config"
       "Documents"
       "Downloads"
       "Pictures"
@@ -59,7 +62,6 @@ in
       ".ZAP" # Persistence for ZAP Config/CA [cite: 91]
       "ZAP-Sessions" # Persistence for ZAP Data [cite: 91]
     ];
-    allowOther = true;
   };
 
   # ZAP Forensic Scrubbing: ~/.ZAP/logs is implicitly wiped from tmpfs [cite: 93, 115, 230]
@@ -311,7 +313,7 @@ in
       ExecStart = "${pkgs.matugen}/bin/matugen apply -i /persist/home/nondeus/Pictures/wallpaper.png";
       Type = "oneshot";
     };
-  }; [cite: 94, 120]
+  };
 
   home.stateVersion = "24.11";
 }

@@ -8,7 +8,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
-    nix-cachyos-kernel.url = "github:googleson78/nix-cachyos-kernel";
+    nix-cachyos-kernel.url = "github:xddxdd/nix-cachyos-kernel";
     impermanence.url = "github:nix-community/impermanence";
     lanzaboote = {
       url = "github:nix-community/lanzaboote/v0.4.1";
@@ -22,11 +22,11 @@
       system = "x86_64-linux";
       specialArgs = { inherit inputs; };
       modules = [
+      	{ nixpkgs.overlays = [ inputs.nix-cachyos-kernel.overlays.pinned ]; }
         ./nixos/configuration.nix
         ./nixos/hardware-configuration.nix
         inputs.lanzaboote.nixosModules.lanzaboote
         inputs.impermanence.nixosModules.impermanence
-        inputs.nix-cachyos-kernel.nixosModules.default
         home-manager.nixosModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
