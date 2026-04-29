@@ -52,6 +52,13 @@
       DefaultRestartSec = "1s";
     };
     user.extraConfig = "DefaultTimeoutStopSec=5s";
+    mounts = [
+      {
+      	what = "/dev/disk/by-local/nixos";
+      	where = "/nix";
+      	options = "x-systemd.mount-timeout=1s";
+      }
+    ];
   };
   # Android & Connectivity
   users.users.nondeus = {
