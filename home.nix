@@ -194,6 +194,16 @@ in
       ".local/share/fish"
       ".local/share/direnv"
       ".local/share/krita" # Persist Krita settings & brushes
+      ".local/state/quickshell"
+      ".local/share/quickshell"
+      ".local/share/illogical-impulse"
+      ".local/state/illogical-impulse"
+      ".cache/quickshell"
+      ".cache/illogical-impulse"
+      ".local/share/keyrings"
+      ".local/state/wireplumber"
+      ".config/dconf"
+      ".local/share/keyrings"
       ".ssh"
       ".nix-config"
       "Documents"
@@ -206,17 +216,22 @@ in
     ];
   };
 
-  # ZAP Forensic Scrubbing: ~/.ZAP/logs is implicitly wiped from tmpfs [cite: 93, 115, 230]
-
+  # Git 
+  programs.git = {
+  	enable = true;
+  	userName = "lowcache";
+  	userEmail = "drawpdeadredd@gmail.com";
+  	extraConfig = {
+  	  init.defaultBranch = "main";
+  	};
+  };
   # Fish shell configuration migrated from hybrid setup
   programs.fish = {
     enable = true;
-
     shellInit = ''
       set -gx EDITOR micro
       set -gx BROWSER brave
     '';
-
     interactiveShellInit = ''
       if status is-interactive
           if test -f ~/.local/state/quickshell/user/generated/terminal/sequences.txt
@@ -280,7 +295,6 @@ in
 
       direnv hook fish | source
     '';
-
     shellAliases = {
       clear = "printf '\\033[2J\\033[3J\\033[1;1H'";
       celar = "clear";
@@ -289,7 +303,6 @@ in
       q = "qs -c ii";
       edit = "$EDITOR";
     };
-
     functions = {
       better_cd = ''
         function better_cd
