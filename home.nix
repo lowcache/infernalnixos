@@ -186,11 +186,10 @@ in
    	nerd-fonts.zed-mono
    	nerd-fonts.atkynson-mono
   ];
-
   # https://github.com/lowcache/priv.bkup
-  home.file."~/".source = pkgs.fetchgit {
-  	url = "https://github.com/lowcache/priv.bkup.git";
-  };
+  #home.file."Files".source = pkgs.fetchgit {
+  #	url = "https://github.com/lowcache/priv.bkup.git";
+  #};
   home.persistence."/persist" = {
     directories = [
       ".gemini"
