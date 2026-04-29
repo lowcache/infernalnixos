@@ -14,15 +14,15 @@ in
   # All UI-related configs are symlinked from /persist, which should be a
   # clone of your CachyNixOS or .nix-config repository.
   xdg.configFile = {
-    "quickshell/ii".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/quickshell/ii";
-    "hypr".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/hypr";
-    "illogical-impulse".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/illogical-impulse";
-    "kitty".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/kitty";
-    "fastfetch".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/fastfetch";
-    "cava".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/cava";
-    "fuzzel".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/fuzzel";
-    "wlogout".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/wlogout";
-    "starship.toml".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/starship/starship.toml";
+    "quickshell".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/dots/quickshell/";
+    "hypr".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/dots/hypr";
+    "illogical-impulse".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/dots/illogical-impulse";
+    "kitty".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/dots/kitty";
+    "fastfetch".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/dots/fastfetch";
+    "cava".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/dots/cava";
+    "fuzzel".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/dots/fuzzel";
+    "wlogout".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/dots/wlogout";
+    "starship.toml".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/dots/starship/starship.toml";
   };
   home.sessionVariables = let 
   	  qtDependencies = with pkgs; [
@@ -136,6 +136,7 @@ in
     fish
     git
     fzf
+    eva
     tgpt
     hdrop
     bat
@@ -203,6 +204,7 @@ in
       ".local/share/keyrings"
       ".local/state/wireplumber"
       ".config/dconf"
+      
       ".ssh"
       ".nix-config"
       "Documents"
@@ -242,9 +244,8 @@ in
           alias clear "printf '\033[2J\033[3J\033[1;1H'"
           alias celar "clear"
           alias claer "clear"
-          alias pamcan "pacman"
           alias q "qs -c ii"
-
+			
           alias c='clear'
           alias nf='fastfetch'
           alias pf='fastfetch'
@@ -252,10 +253,9 @@ in
           alias shutdown='systemctl poweroff'
           alias ts='snapshot.sh'
           alias wifi='nmtui'
-          alias cleanup='arch-cleanup.sh'
           alias ascii='figlet.sh'
-          alias update-grub='sudo grub-mkconfig -o /boot/grub/grub.cfg'
-
+          
+		  # Navigation 	
           alias ..='cd ..'
           alias ...='cd ../..'
           alias ....='cd ../../..'
@@ -299,8 +299,14 @@ in
       celar = "clear";
       claer = "clear";
       pamcan = "pacman";
-      q = "qs -c ii";
+      qii = "qs -c ii";
       edit = "$EDITOR";
+      nx = "nix";
+      nxs = "nix-shell";
+      nxr = "nix-rebuild";
+      nxrb = "sudo nix-rebuild switch --flake /persist/home/nondeus/.nix-config/#nondeus ";
+      nxfd = "nix --extra-experimental-features 'nix-command flakes' search nixpkgs";
+      nxrn = "nix-shell --extra-experimental-features 'nix-command flakes' -p ";	
     };
     functions = {
       better_cd = ''
