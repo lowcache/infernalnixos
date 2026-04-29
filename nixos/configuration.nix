@@ -62,7 +62,11 @@
     asusd.enable = true;
     supergfxd.enable = true;
     power-profiles-daemon.enable = true;
-    logind.extraConfig = "KillUserProcesses=yes";
+    logind.settings = {
+      Login = {
+        KillUserProcesses="yes";
+      };
+    }; 
     greetd = {
       enable = true;
       settings = {
