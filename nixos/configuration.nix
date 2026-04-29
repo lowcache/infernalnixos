@@ -35,6 +35,17 @@
         TTYDeallocate = true;
       };
       nix-daemon.serviceConfig.KillMode = "process";
+      decapitate-fuse-mounts = {
+        description = "Force lazy unmount of xdg-document-portal FUSE to release /nix";
+        before = [ "local-fs.target" ];
+        wantedBy = [ "shutdown.target" "reboot.target" "halt.target" ];
+        serviceConfig = {
+          Type = "oneshot";
+          DefaultDependencies = false;
+          ExecStart = "${pkgs.coreutils}/bin/umount -f -l /run/user/1000/doc";
+          ExecStopPost = "${pkgs.psmisc}/bin/killall -9 xdg-document-portal fusermount3";
+        };
+      };
     };
     settings.Manager = {
       DefaultTimeoutStopSec = "10s";

@@ -224,6 +224,11 @@ in
   	extraConfig = {
   	  init.defaultBranch = "main";
   	};
+  	signing = {
+  	  signByDefault = true;
+  	  format = "ssh";
+  	  key = "~/.ssh/id_ed25519.pub";
+  	};
   };
   # Fish shell configuration migrated from hybrid setup
   programs.fish = {
