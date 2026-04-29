@@ -197,6 +197,7 @@ in
       ".local/share/fish"
       ".local/share/direnv"
       ".local/share/krita" # Persist Krita settings & brushes
+      ".local/share/fonts"
       ".local/state/quickshell"
       ".local/share/quickshell"
       ".local/share/illogical-impulse"
@@ -209,7 +210,9 @@ in
       ".ssh"
       ".nix-config"
       "Files"
+      "CodeRep"
       "Documents"
+      "unDevel"
       "Downloads"
       "Pictures"
       "Projects"
