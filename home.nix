@@ -14,7 +14,7 @@ in
   # All UI-related configs are symlinked from /persist, which should be a
   # clone of your CachyNixOS or .nix-config repository.
   xdg.configFile = {
-    "quickshell/ii".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/quickshell";
+    "quickshell/ii".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/quickshell/ii";
     "hypr".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/hypr";
     "illogical-impulse".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/illogical-impulse";
     "kitty".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/kitty";
@@ -149,6 +149,7 @@ in
     micro
     fastfetch
     htop
+    psmisc
     direnv
    	playerctl
    	brightnessctl
