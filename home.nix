@@ -14,7 +14,7 @@ in
   # All UI-related configs are symlinked from /persist, which should be a
   # clone of your CachyNixOS or .nix-config repository.
   xdg.configFile = {
-    "quickshell".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/quickshell";
+    "quickshell/ii".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/quickshell";
     "hypr".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/hypr";
     "illogical-impulse".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/illogical-impulse";
     "kitty".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/kitty";
@@ -22,7 +22,7 @@ in
     "cava".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/cava";
     "fuzzel".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/fuzzel";
     "wlogout".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/wlogout";
-    "starship".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/starship";
+    "starship.toml".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/starship/starship.toml";
   };
   home.sessionVariables = let 
   	  qtDependencies = with pkgs; [
