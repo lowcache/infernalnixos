@@ -1,0 +1,38 @@
+{
+    "dark": {
+        "term0": "#141516",
+        "term1": "#8B3E2F",
+        "term2": "#9CA84E",
+        "term3": "#D9AB77",
+        "term4": "#4E7DA8",
+        "term5": "#8B4EA8",
+        "term6": "#4EA8A8",
+        "term7": "#798581",
+        "term8": "#44484A",
+        "term9": "#FC826A",
+        "term10": "#798581",
+        "term11": "#D9AB77",
+        "term12": "#4E7DA8",
+        "term13": "#8B4EA8",
+        "term14": "#4EA8A8",
+        "term15": "#EBD39D"
+    },
+    "light": {
+        "term0": "#141516",
+        "term1": "#8B3E2F",
+        "term2": "#9CA84E",
+        "term3": "#D9AB77",
+        "term4": "#4E7DA8",
+        "term5": "#8B4EA8",
+        "term6": "#4EA8A8",
+        "term7": "#798581",
+        "term8": "#44484A",
+        "term9": "#FC826A",
+        "term10": "#798581",
+        "term11": "#D9AB77",
+        "term12": "#4E7DA8",
+        "term13": "#8B4EA8",
+        "term14": "#4EA8A8",
+        "term15": "#EBD39D"
+    }
+}

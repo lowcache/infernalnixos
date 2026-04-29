@@ -1,0 +1,53 @@
+{
+  "name": "Blackmeddle",
+  "palette": {
+    "bg": "#000000",
+    "fg": "#c1c1c1",
+    "black": "#000000",
+    "teal": "#5f8787",
+    "bone": "#f8f7f2",
+    "deep_red": "#79241f",
+    "dark_gray": "#404040",
+    "gray": "#888888",
+    "silver": "#aaaaaa",
+    "white": "#c1c1c1",
+    "pure_white": "#ffffff"
+  },
+  "mappings": {
+    "surfaces": {
+      "main_bg": "dark_gray",
+      "sidebar_bg": "dark_gray",
+      "popup_bg": "black",
+      "cards_bg": "dark_gray"
+    },
+    "accents": {
+      "primary_active": "teal",
+      "secondary_active": "deep_red",
+      "borders": "teal",
+      "links": "bone"
+    },
+    "text": {
+      "normal": "fg",
+      "subtle": "gray",
+      "on_accent": "dark_gray"
+    },
+    "terminal": {
+      "black": "black",
+      "red": "deep_red",
+      "green": "teal",
+      "yellow": "bone",
+      "blue": "teal",
+      "magenta": "deep_red",
+      "cyan": "teal",
+      "white": "white",
+      "bright_black": "dark_gray",
+      "bright_red": "deep_red",
+      "bright_green": "bone",
+      "bright_yellow": "white",
+      "bright_blue": "teal",
+      "bright_magenta": "deep_red",
+      "bright_cyan": "silver",
+      "bright_white": "pure_white"
+    }
+  }
+}

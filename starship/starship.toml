@@ -1,0 +1,55 @@
+palette = "current"
+add_newline = false
+format = """
+$cmd_duration $memory_usage 󰜥 $directory $git_branch
+$character"""
+
+[character]
+success_symbol = "[   ](bold fg:red)"
+error_symbol = "[   ](bold fg:red)"
+
+[package]
+disabled = true
+
+[git_branch]
+style = "bg:yellow"
+symbol = "󰘬"
+truncation_length = 12
+format = "󰜥 [](bold fg:yellow)[$symbol $branch](fg:black bg:yellow)[ ](bold fg:yellow)"
+
+[hostname]
+ssh_only = false
+format =  "[•$hostname](bg:green bold fg:black)[](bold fg:green)"
+disabled = false
+
+[username]
+style_user = "bold bg:green fg:black"
+format = "[](bold fg:green)[$user]($style)"
+disabled = false
+show_always = true
+
+[memory_usage]
+symbol = "󰘚"
+threshold = -1
+style = "bg:yellow fg:black"
+format = "[](bold fg:yellow)[ ($symbol:$ram_pct) ]($style)[](bold fg:yellow)"
+disabled = false
+
+[directory]
+home_symbol = "  "
+style = "bg:red fg:black"
+format = "[](bold fg:red)[󰉋 $path]($style)[](bold fg:red)"
+
+[cmd_duration]
+min_time = 500
+format = "[](bold fg:blue)[󰪢 $duration](bold bg:blue fg:black)[](bold fg:blue)"
+
+[palettes.current]
+black = "#111314"
+red = "#8B3E2F"
+green = "#9CA84E"
+yellow = "#FC826A"
+blue = "#D9AB77"
+magenta = "#8B4EA8"
+cyan = "#4EA8A8"
+white = "#798581"
