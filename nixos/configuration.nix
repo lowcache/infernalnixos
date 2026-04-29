@@ -24,17 +24,21 @@
   
   systemd = {
     tmpfiles.rules = [ "d /home/nondeus 0700 nondeus users-" ];
-    services.greetd.serviceConfig = {
-      type = "idle";
-      StandardInput = "tty";
-      StandardOutput = "tty";
-      StandardError = "journal";
-      TTYReset = true;
-      TTYHangup = true;
-      TTYDeallocate = true;
+    services = { 
+      greetd.serviceConfig = {
+        type = "idle";
+        StandardInput = "tty";
+        StandardOutput = "tty";
+        StandardError = "journal";
+        TTYReset = true;
+        TTYHangup = true;
+        TTYDeallocate = true;
+      };
+      nix-daemon.serviceConfig.KillMode = "process";
     };
     settings.Manager = {
       DefaultTimeoutStopSec = "10s";
+      DefaultRestartSec = "1s";
     };
   };
   # Android & Connectivity
@@ -58,6 +62,7 @@
     asusd.enable = true;
     supergfxd.enable = true;
     power-profiles-daemon.enable = true;
+    logind.extraConfig = "KillUserProcesses=yes";
     greetd = {
       enable = true;
       settings = {
@@ -81,6 +86,7 @@
     git
     android-studio
     android-tools
+    psmisc
   ];
   nixpkgs.config.allowUnfree = true;
   system.stateVersion = "24.11";
