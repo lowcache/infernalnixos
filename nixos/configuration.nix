@@ -64,7 +64,7 @@
     power-profiles-daemon.enable = true;
     logind.settings = {
       Login = {
-        KillUserProcesses="yes";
+        KillUserProcesses = true;
       };
     }; 
     greetd = {
