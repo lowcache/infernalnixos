@@ -161,7 +161,6 @@ in
    	acpi
    	upower
    	ddcutil
-   	
    	networkmanagerapplet
    	# Typography
    	material-symbols
@@ -188,7 +187,10 @@ in
    	nerd-fonts.atkynson-mono
   ];
 
-  # Persistence Audit [cite: 90, 131, 229]
+  # https://github.com/lowcache/priv.bkup
+  home.file."~/".source = pkgs.fetchGit {
+  	url = "https://github.com/lowcache/priv.bkup.git";
+  };
   home.persistence."/persist" = {
     directories = [
       ".gemini"
