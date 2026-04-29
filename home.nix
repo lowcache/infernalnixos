@@ -188,7 +188,7 @@ in
   ];
 
   # https://github.com/lowcache/priv.bkup
-  home.file."~/".source = pkgs.fetchGit {
+  home.file."~/".source = pkgs.fetchgit {
   	url = "https://github.com/lowcache/priv.bkup.git";
   };
   home.persistence."/persist" = {
@@ -208,6 +208,7 @@ in
       ".config/dconf"
       ".ssh"
       ".nix-config"
+      "Files"
       "Documents"
       "Downloads"
       "Pictures"
