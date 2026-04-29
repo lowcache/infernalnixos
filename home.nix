@@ -203,7 +203,6 @@ in
       ".local/share/keyrings"
       ".local/state/wireplumber"
       ".config/dconf"
-      ".local/share/keyrings"
       ".ssh"
       ".nix-config"
       "Documents"
