@@ -51,7 +51,7 @@
   programs.kdeconnect.enable = true;
   programs.fish.enable = true;
   virtualisation.docker = {
-    enable = true;
+    enable = false;
     autoPrune.enable = true;
     liveRestore = false;
   };

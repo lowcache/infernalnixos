@@ -204,7 +204,6 @@ in
       ".local/share/keyrings"
       ".local/state/wireplumber"
       ".config/dconf"
-      
       ".ssh"
       ".nix-config"
       "Documents"
