@@ -303,7 +303,7 @@ in
       nx = "nix";
       nxs = "nix-shell";
       nxr = "nix-rebuild";
-      nxrb = "sudo nix-rebuild switch --flake /persist/home/nondeus/.nix-config/#nondeus ";
+      nxrb = "sudo nixos-rebuild switch --flake /persist/home/nondeus/.nix-config/#nondeus ";
       nxfd = "nix --extra-experimental-features 'nix-command flakes' search nixpkgs";
       nxrn = "nix-shell --extra-experimental-features 'nix-command flakes' -p ";	
     };

@@ -40,6 +40,9 @@
       DefaultTimeoutStopSec = "10s";
       DefaultRestartSec = "1s";
     };
+    user.settings.Manager = {
+      DefaultTimeoutStopSec = "5s";
+    };
   };
   # Android & Connectivity
   users.users.nondeus = {
