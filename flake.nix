@@ -1,5 +1,5 @@
 {
-  description = "Pure NixOS Migration for Asus Notebook - CachyNixOS UI Foundation";
+  description = "NixOS Infernal Impermanence";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -15,6 +15,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     microvm.url = "github:astro/microvm.nix";
+    quickshell = {
+      url ="git+https://git.outfoxxed.me/outfoxxed/quickshell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, home-manager, ... }@inputs: {

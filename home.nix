@@ -1,4 +1,5 @@
-{ config, pkgs, lib, ... }:
+
+{ config, pkgs, lib, inputs, ... }:
 
 let
   aionui = pkgs.callPackage ./packages/aionui.nix {};
@@ -23,26 +24,166 @@ in
     "wlogout".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/wlogout";
     "starship".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/starship";
   };
-
+  home.sessionVariables = let 
+  	  qtDependencies = with pkgs; [
+  	  	qt6.qtwayland
+  	  	qt6.qtsvg
+  	  	qt6.qt5compat
+  	  	qt6.qtdeclarative
+  	  	qt6.qtpositioning
+  	  	qt6.qtmultimedia
+  	  	qt6.qtquicktimeline
+  	  	qt6.qtimageformats
+  	  	qt6.qtvirtualkeyboard
+  	  	qt6.qtsensors
+  	  	qt6.qttools
+  	  	qt6.qttranslations
+  	  	qt6.qtwebsockets
+  	  	qt6.qtshadertools
+  	  	qt6.qtscxml
+  	  	kdePackages.kirigami.unwrapped
+  	  	kdePackages.kirigami-addons
+  	  	kdePackages.breeze-icons
+  	  	kdePackages.qqc2-desktop-style
+  	  	kdePackages.syntax-highlighting
+  	  ]; 
+  	in {
+  	 QML2_IMPORT_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/qml:${pkg}/lib/qml") qtDependencies;
+  	 QML_IMPORT_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/qml:${pkg}/lib/qml") qtDependencies;
+  	 QT_PLUGIN_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/plugins:${pkg}/lib/plugins") qtDependencies;
+   # ENV VARS 
+    XDG_CURRENT_DESKTOP = "Hyprland";
+    XDG_SESSION_TYPE = "wayland";
+    XDG_SESSION_DESKTOP = "Hyprland";
+    QT_QPA_PLATFORM = "wayland";
+    QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
+    QT_AUTO_SCREEN_SCALE_FACTOR = "1";
+    GDK_BACKEND = "wayland,x11";
+    SDL_VIDEODRIVER = "wayland";
+    CLUTTER_BACKEND = "wayland";
+    NIXOS_OZONE_NL = "1";
+    LIBVA_DRIVER_NAME = "nvidia";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+  };
   # Applications & Workflows
   home.packages = with pkgs; [
-    # Custom packaged applications
+    # Personal & Custom applications (non-)
     aionui
-
-    # From original pure config
+    krita
+    imagemagick
+    krita-plugin-gmic
+	chromium
+	librewolf
+	gemini-cli
+	ollama-cuda
+	kdePackages.dolphin
+	spacedrive
+    # Core Appplicationbs
     kitty
     brave
     vscodium
+    fuzzel
     gedit
-    krita
+	cava
+	starship
+	swappy
+	cliphist
+	tesseract
+	grim
+	slurp
+    # Color
     matugen
-
+    hyprpicker
+    dart-sass
+    python3
+    python311Packages.material-color-utilities
+	# Hyprland
+	hypridle
+	hyprlock
+	hyprcursor
+	hyprland-qt-support
+	pamixer
+	pavucontrol
+	xwayland
+	awww
+	swww
+	waypaper
+	hyprpaper
+	# Quicktime/Quickshell 
+	inputs.quickshell.packages."x86_64-linux".default
+	qt5.qtwayland
+	qt6.qtwayland
+	qt6.qtsvg
+	qt6.qt5compat
+	qt6.qtdeclarative
+	qt6.qtpositioning
+	qt6.qtmultimedia
+	qt6.qtquicktimeline
+	qt6.qtimageformats
+	qt6.qtvirtualkeyboard
+	qt6.qtsensors
+	qt6.qttools
+	qt6.qttranslations
+	qt6.qtwebsockets
+	qt6.qtshadertools
+	qt6.qtscxml
+	kdePackages.kirigami.unwrapped
+	kdePackages.kirigami-addons
+	kdePackages.breeze-icons
+	kdePackages.qqc2-desktop-style
+	kdePackages.syntax-highlighting
     # Migrated from hybrid config
-    fish git fzf starship eza bat ripgrep
-    python3 flatpak feh waypaper
-    hypridle hyprlock fd tor
-    micro fuzzel wlogout
-    fastfetch htop
+    fish
+    git
+    fzf
+    tgpt
+    hdrop
+    bat
+    ripgrep
+    flatpak
+    feh
+    fd
+    jq
+    bc
+    tor
+    micro
+    fastfetch
+    htop
+    direnv
+   	playerctl
+   	brightnessctl
+   	socat
+   	gawk
+   	coreutils
+   	gojq
+   	acpi
+   	upower
+   	ddcutil
+   	
+   	networkmanagerapplet
+   	# Typography
+   	material-symbols
+   	nerd-fonts.symbols-only
+   	nerd-fonts.jetbrains-mono
+   	nerd-fonts.ubuntu-sans
+   	nerd-fonts.sauce-code-pro
+   	nerd-fonts.intone-mono
+   	nerd-fonts.martian-mono
+   	nerd-fonts.roboto-mono
+   	nerd-fonts.anonymice
+   	nerd-fonts.hack
+   	nerd-fonts.hurmit
+   	nerd-fonts.hasklug
+   	nerd-fonts.geist-mono
+   	nerd-fonts.commit-mono
+   	nerd-fonts.code-new-roman
+   	nerd-fonts.blex-mono
+   	nerd-fonts.envy-code-r
+   	nerd-fonts.victor-mono
+   	nerd-fonts.recursive-mono
+   	nerd-fonts.departure-mono
+   	nerd-fonts.zed-mono
+   	nerd-fonts.atkynson-mono
   ];
 
   # Persistence Audit [cite: 90, 131, 229]
@@ -73,7 +214,6 @@ in
     shellInit = ''
       set -gx EDITOR micro
       set -gx BROWSER brave
-      set -gx PATH $PATH $HOME/.local/bin $HOME/.cargo/bin $HOME/go/bin $HOME/.bin /usr/local/bin /var/lib/flatpak/exports/bin
     '';
 
     interactiveShellInit = ''
@@ -105,9 +245,9 @@ in
           alias ...='cd ../..'
           alias ....='cd ../../..'
 
-          if command -v eza > /dev/null
+          if command -v exa > /dev/null
               set -g lo -axG@ --icons --group-directories-first --color=always --octal-permissions
-              alias ls="eza $lo"
+              alias ls="exa $lo"
               alias ll='ls -1l'
               alias lr='ls -R'
               alias lt='ls -T'
@@ -287,7 +427,10 @@ in
 
   # Starship prompt. The config is now managed via the Wrapper Strategy.
   programs.starship.enable = true;
-
+  programs.direnv = {
+  	enable = true;
+  	nix-direnv.enable = true;
+  };
   # Micro editor settings migrated from hybrid config.
   programs.micro = {
     enable = true;

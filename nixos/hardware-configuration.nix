@@ -14,10 +14,14 @@
   };
 
   environment.persistence."/persist" = {
+    hideMounts = true;
     directories = [
+      "/var/lib/nixos"
       "/var/lib/bluetooth"
       "/var/lib/networkmanager"
       "/etc/secureboot"
+      "/etc/asusd"
+      "/etc/NetworkManager/system-connections"
     ];
     files = [ 
       "/etc/machine-id"

@@ -1,0 +1,10 @@
+exec = [workspace special:hdrop silent] hdrop -b -c quake kitty
+
+bind = $mainMod, RETURN, exec, hdrop kitty --class quake
+
+windowrulev2 = float, class:^(quake)$
+windowrulev2 = opacity 1 override 0.5 override, class:^(quake)$
+windowrulev2 = animation slidevert, class:^(quake)$
+windowrulev2 = move 150 37, class:^(quake)$
+windowrulev2 = size 1600 600, class:^(quake)$
+windowrulev2 = noborder, class:^(quake)$

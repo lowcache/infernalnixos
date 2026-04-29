@@ -1,0 +1,61 @@
+{
+  "name": "Soft Pastel",
+  "palette": {
+    "bg": "#1a1a1a",
+    "fg": "#d0d6f0",
+    "black": "#1a1a1a",
+    "red": "#f08898",
+    "green": "#a4e09c",
+    "yellow": "#f5dea4",
+    "blue": "#84b4f8",
+    "magenta": "#c8a2f4",
+    "cyan": "#90dcd0",
+    "white": "#d0d6f0",
+    "br_black": "#444444",
+    "br_red": "#f08898",
+    "br_green": "#a4e09c",
+    "br_yellow": "#f5dea4",
+    "br_blue": "#84b4f8",
+    "br_magenta": "#c8a2f4",
+    "br_cyan": "#90dcd0",
+    "br_white": "#ffffff",
+    "cursor": "#f8b080"
+  },
+  "mappings": {
+    "surfaces": {
+      "main_bg": "bg",
+      "sidebar_bg": "black",
+      "popup_bg": "bg",
+      "cards_bg": "bg"
+    },
+    "accents": {
+      "primary_active": "blue",
+      "secondary_active": "magenta",
+      "borders": "br_black",
+      "links": "cyan"
+    },
+    "text": {
+      "normal": "fg",
+      "subtle": "white",
+      "on_accent": "black"
+    },
+    "terminal": {
+      "black": "black",
+      "red": "red",
+      "green": "green",
+      "yellow": "yellow",
+      "blue": "blue",
+      "magenta": "magenta",
+      "cyan": "cyan",
+      "white": "white",
+      "bright_black": "br_black",
+      "bright_red": "br_red",
+      "bright_green": "br_green",
+      "bright_yellow": "br_yellow",
+      "bright_blue": "br_blue",
+      "bright_magenta": "br_magenta",
+      "bright_cyan": "br_cyan",
+      "bright_white": "br_white"
+    }
+  }
+}
