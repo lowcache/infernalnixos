@@ -55,6 +55,12 @@ in
     XDG_CURRENT_DESKTOP = "Hyprland";
     XDG_SESSION_TYPE = "wayland";
     XDG_SESSION_DESKTOP = "Hyprland";
+    #XDG_CONFIG_HOME
+    #XDG_PICTURES_HOME
+    #XDG_CACHE_DIR
+    #XDG_DOCUMENTS_DIR
+    #XDG_DOWNLOADS_DIR
+    
     QT_QPA_PLATFORM = "wayland";
     QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
     QT_AUTO_SCREEN_SCALE_FACTOR = "1";
@@ -78,6 +84,10 @@ in
 	ollama-cuda
 	kdePackages.dolphin
 	spacedrive
+	bibata-cursors
+	bibata-cursors-translucent
+	papirus-icon-theme
+	
     # Core Appplicationbs
     kitty
     brave
