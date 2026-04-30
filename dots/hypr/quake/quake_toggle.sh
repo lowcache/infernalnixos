@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Target Monitor Name
-TARGET_MON="eDP-2"
+TARGET_MON="eDP-1"
 MON_INFO=$(hyprctl monitors -j)
 TARGET_DATA=$(echo "$MON_INFO" | jq -r --arg name "$TARGET_MON" ".[] | select(.name == \$name)")
 
@@ -54,7 +54,7 @@ WINDOW=$(hyprctl clients -j | jq -r ".[] | select(.class == \"quake\")")
 
 if [ -z "$WINDOW" ]; then
     # Not running, launch it
-    hyprctl dispatch exec "[workspace special:quake] /usr/bin/kitty --class quake"
+    hyprctl dispatch exec "[workspace special:quake] kitty --class quake"
     exit 0
 fi
 
