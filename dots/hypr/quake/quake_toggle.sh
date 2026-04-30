@@ -1,11 +1,10 @@
 #!/bin/bash
 
-# Target Monitor Name
-TARGET_MON="eDP-1"
+# Target Monitor Name (Focused)
 MON_INFO=$(hyprctl monitors -j)
-TARGET_DATA=$(echo "$MON_INFO" | jq -r --arg name "$TARGET_MON" ".[] | select(.name == \$name)")
+TARGET_DATA=$(echo "$MON_INFO" | jq -r ".[] | select(.focused == true)")
 
-# Fallback to ID 0 if name fails
+# Fallback to ID 0 if focus fails
 [ -z "$TARGET_DATA" ] && TARGET_DATA=$(echo "$MON_INFO" | jq -r ".[] | select(.id == 0)")
 
 if [ -z "$TARGET_DATA" ]; then
@@ -54,7 +53,7 @@ WINDOW=$(hyprctl clients -j | jq -r ".[] | select(.class == \"quake\")")
 
 if [ -z "$WINDOW" ]; then
     # Not running, launch it
-    hyprctl dispatch exec "[workspace special:quake] kitty --class quake"
+    hyprctl dispatch exec "[workspace special:quake] kitty --single-instance --class quake"
     exit 0
 fi
 

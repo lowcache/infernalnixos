@@ -79,6 +79,7 @@
   };
   # Application Support
   services = {
+    geoclue2.enable = true;
     scx.enable = true;
     flatpak.enable = true;
     asusd.enable = true;

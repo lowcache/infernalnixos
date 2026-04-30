@@ -48,8 +48,8 @@ in
   	  	kdePackages.syntax-highlighting
   	  ]; 
   	in {
-  	 QML2_IMPORT_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/qml:${pkg}/lib/qml") qtDependencies;
-  	 QML_IMPORT_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/qml:${pkg}/lib/qml") qtDependencies;
+  	 QML2_IMPORT_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/qml:${pkg}/lib/qml") qtDependencies + ":/home/nondeus/.config/quickshell/ii";
+  	 QML_IMPORT_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/qml:${pkg}/lib/qml") qtDependencies + ":/home/nondeus/.config/quickshell/ii";
   	 QT_PLUGIN_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/plugins:${pkg}/lib/plugins") qtDependencies;
    # ENV VARS 
     XDG_CURRENT_DESKTOP = "Hyprland";
@@ -90,6 +90,7 @@ in
 	
     # Core Appplicationbs
     kitty
+    adw-gtk3
     brave
     vscodium
     fuzzel
@@ -98,6 +99,7 @@ in
 	starship
 	swappy
 	cliphist
+	wl-clipboard
 	tesseract
 	grim
 	slurp
@@ -497,4 +499,25 @@ in
   };
 
   home.stateVersion = "24.11";
+
+  home.pointerCursor = {
+    package = pkgs.bibata-cursors;
+    name = "Bibata-Modern-Classic";
+    size = 24;
+    gtk.enable = true;
+    x11.enable = true;
+  };
+
+  gtk = {
+    enable = true;
+    theme = {
+      name = "adw-gtk3-dark";
+      package = pkgs.adw-gtk3;
+    };
+    cursorTheme = {
+      name = "Bibata-Modern-Classic";
+      package = pkgs.bibata-cursors;
+      size = 24;
+    };
+  };
 }
