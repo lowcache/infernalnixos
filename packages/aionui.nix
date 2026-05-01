@@ -1,4 +1,4 @@
-{ lib, appimageTools, fetchurl, p7zip }:
+{ lib, appimageTools, fetchurl }:
 
 let
   pname = "aionui";
@@ -6,7 +6,7 @@ let
   
   src = fetchurl {
     url = "https://github.com/iOfficeAI/AionUi/releases/download/v${version}/AionUi-${version}-linux-x86_64.AppImage";
-    hash = "sha256-ce+d/YmLh5WBxn3FgcfxzEcnwFiWktw5UHhB/WHqR8k=";
+    hash = "sha256-ce+d/YmLh5WBxn3Fo/3RzEcnwFiWktw5UHhB/WHqR8k=";
   };
 
   appimageContents = appimageTools.extract { inherit pname version src; };
