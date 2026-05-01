@@ -221,9 +221,11 @@
 
     git = {
       enable = true;
-      userName = "lowcache";
-      userEmail = "drawpdeadredd@gmail.com";
-      extraConfig = {
+      serttings = {
+        user = {
+          name = "lowcache";
+          email = "drawpdeadredd@gmail.com";
+        };
         init.defaultBranch = "main";
       };
       signing = {
@@ -232,14 +234,11 @@
         key = "~/.ssh/id_ed25519.pub";
       };
     };
-
     starship.enable = true;
-
     direnv = {
       enable = true;
       nix-direnv.enable = true;
     };
-
     micro = {
       enable = true;
       settings = {
