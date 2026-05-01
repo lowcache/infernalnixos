@@ -65,12 +65,10 @@
         pf = "fastfetch";
         ff = "fastfetch";
         shutdown = "systemctl poweroff";
-        bootbios = "systemctl reboot --firmware"
+        bootbios = "systemctl reboot --firmware";
         wifi = "nmtui";
         mkbann = "figlet.sh";
-        wifilistalias nf='fastfetch'
-        alias pf='fastfetch'
-        alias ff='fastfetch' = "nmcli device wifi list"
+        wifilist = "nmcli device wifi list";
         nx = "nix";
         nxs = "nix-shell";
         nxr = "nix-rebuild";
