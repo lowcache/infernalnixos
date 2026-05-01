@@ -5,7 +5,6 @@
 	./pkgs.nix
 	./session.nix
 	./persist.nix
-	./services.nix
   ];
 	
 
