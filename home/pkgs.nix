@@ -1,7 +1,7 @@
 { config, pkgs, lib, inputs, ... }:
 
 let 
-  aionui = pkgs.callPackage ./packages/aionui.nix {};
+  aionui = pkgs.callPackage ../packages/aionui.nix {};
 in
 {
   home = {
@@ -68,4 +68,4 @@ in
     in
 	  aionui-build ++ terminal ++ typography ++ hyprland ++ quickshell ++ basedevel;
   };
-};
+}
