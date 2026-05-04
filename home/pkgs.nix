@@ -1,25 +1,12 @@
 { config, pkgs, lib, inputs, ... }:
 
-let 
-  aionui = pkgs.callPackage ../packages/aionui.nix {};
-in
 {
   home = {
     packages = let 
-      aionui-build = with pkgs; [
-      	aionui
-      ];
       basedevel = with pkgs; [
 	      gcc automake autoconf pkg-config binutils glibc 
 	      gdb cmake strace ltrace gperf patch diffutils findutils 
 	      gawk gnugrep gnutar gzip coreutils go dart-sass python3
-	      python3Packages.pillow
-	      python3Packages.click
-	      python3Packages.loguru
-	      python3Packages.tqdm
-	      python3Packages.pygobject3
-	      python3Packages.requests
-	      python3Packages.material-color-utilities
         glib nodejs
 	  ];
 	  quickshell = with pkgs; [
@@ -70,9 +57,9 @@ in
 	    fish git fzf eza tgpt hdrop bat ripgrep flatpak
 	    feh fd jq bc tor micro fastfetch cryptsetup htop
 		psmisc direnv playerctl brightnessctl socat gawk
-		acpi upower ddcutil gemini-cli (ollama.override { acceleration = "cuda"; })
+		acpi upower ddcutil gemini-cli jan (ollama.override { acceleration = "cuda"; })
       ];	
     in
-	  aionui-build ++ terminal ++ typography ++ hyprland ++ quickshell ++ basedevel;
+	  terminal ++ typography ++ hyprland ++ quickshell ++ basedevel;
   };
 }

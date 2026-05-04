@@ -36,7 +36,10 @@
     };
   };
   systemd = {
-    tmpfiles.rules = [ "d /home/nondeus 0700 nondeus users" ];
+    tmpfiles.rules = [ 
+      "d /home/nondeus 0700 nondeus users"
+      "d /home/nondeus/AppImage 0755 nondeus users"
+    ];
     services = { 
       greetd.serviceConfig = {
         type = "idle";
@@ -82,6 +85,10 @@
   programs.hyprland = {
     enable = true;
     withUWSM = true;
+  };
+  programs.appimage = {
+    enable = true;
+    binfmt = true;
   };
   programs.kdeconnect.enable = true;
   programs.fish.enable = true;
@@ -151,6 +158,7 @@
     android-studio
     android-tools
     psmisc
+    appimage-run
   ];
   nixpkgs.config = {
     allowUnfree = true;

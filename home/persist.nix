@@ -53,7 +53,9 @@
       "Downloads"
       "Pictures"
       "Projects"
+      "AppImage"
       ".config/BraveSoftware"
+      ".config/Jan"
       ".ZAP" # Persistence for ZAP Config/CA [cite: 91]
       "ZAP-Sessions" # Persistence for ZAP Data [cite: 91]
     ];
