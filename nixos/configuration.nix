@@ -76,6 +76,16 @@
       }
     ];
   };
+  nix.settings = {
+    experimental-features = [ "nix-command" "flakes" ];
+    max-jobs = 4;
+  };
+
+  swapDevices = [ {
+    device = "/persist/swapfile";
+    size = 16 * 1024; # 16GB
+  } ];
+
   # Android & Connectivity
   users.users.nondeus = {
   	isNormalUser = true;

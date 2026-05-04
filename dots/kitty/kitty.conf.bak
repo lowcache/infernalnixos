@@ -34,10 +34,12 @@ map ctrl+underscore change_font_size all -1
 map kitty_mod+f launch --location=hsplit --allow-remote-control kitty +kitten search.py @active-kitty-window-id
 map page_down scroll_page_down
 map page_up scroll_page_up
-# font_family      family="TG Frekuent Mono Variable"
-# bold_font        auto
-# italic_font      auto
-# bold_italic_font auto
+
+
+font_family      family="TG Frekuent Mono Variable"
+bold_font        auto
+italic_font      auto
+bold_italic_font auto
 font_size 11.0
 
 symbol_map U+E000-U+F8FF,U+F0000-U+FFFFD,U+100000-U+10FFFD Symbols Nerd Font
@@ -50,11 +52,3 @@ inactive_tab_background #0f111a
 tab_bar_background      #0f111a
 include colorschemes/Modus Vivendi Tinted.conf
 include colorschemes/Custom.conf
-
-
-# BEGIN_KITTY_FONTS
-font_family      family="RecMonoDuotone Nerd Font"
-bold_font        auto
-italic_font      auto
-bold_italic_font auto
-# END_KITTY_FONTS
