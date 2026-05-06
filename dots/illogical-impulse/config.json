@@ -84,9 +84,12 @@
       "widgetsFactor": 1.2,
       "workspaceZoom": 1
     },
-    "perMonitorWallpaper": {},
+    "perMonitorWallpaper": {
+      "Pictures/Wallpapers/nkgmsingle.png": "edp-1",
+      "edp-1": "/persist/home/nondeus/Pictures/Wallpapers/nkgmsingle.png"
+    },
     "thumbnailPath": "",
-    "wallpaperPath": "/home/nondeus/Pictures/Wallpapers/nkgmsingle.png",
+    "wallpaperPath": "/persist/home/nondeus/Pictures/Wallpapers/nkgmsingle.png",
     "widgets": {
       "clock": {
         "cookie": {
