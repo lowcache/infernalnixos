@@ -15,8 +15,13 @@
       # "Pictures" (Handled by repo symlink).source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/priv.bkup/Pictures";
       # "Documents" (Handled by repo symlink).source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/priv.bkup/Documents";
       "fonts".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/priv.bkup/fonts";
-
+      "kritarc".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/krita-master/kritarc";
+      "kritadisplayrc".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/krita-master/kritadisplayrc";
     };
+  };
+
+  home.file = {
+    ".local/share/krita".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/krita-master/krita";
   };
 
   home.persistence."/persist" = {
@@ -54,7 +59,6 @@
         ".local/share/gem"
         ".local/share/fish"
         ".local/share/direnv"
-        ".local/share/krita"
         ".local/share/fonts"
         ".local/share/quickshell"
         ".local/share/keyrings"
@@ -73,13 +77,16 @@
       home-dirs = [
         "Files"
         "CodeRep"
-        # "Documents" (Handled by repo symlink)
+        "Documents"
         "unDevel"
         "Downloads"
-        # "Pictures" (Handled by repo symlink)
+        "Pictures"
         "Projects"
         "AppImage"
         "ZAP-Sessions"
+        ".bin"
+        "crypto-bot"
+        "krita-master"
       ];
     in
       dotfiles ++ config ++ cache ++ local ++ flatpak-var ++ home-dirs;
