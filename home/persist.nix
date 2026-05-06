@@ -12,6 +12,10 @@
       "fuzzel".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/dots/fuzzel";
       "wlogout".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/dots/wlogout";
       "starship.toml".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/dots/starship/starship.toml";
+      # "Pictures" (Handled by repo symlink).source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/priv.bkup/Pictures";
+      # "Documents" (Handled by repo symlink).source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/priv.bkup/Documents";
+      "fonts".source = config.lib.file.mkOutOfStoreSymlink "/persist/home/nondeus/.nix-config/priv.bkup/fonts";
+
     };
   };
 
@@ -69,10 +73,10 @@
       home-dirs = [
         "Files"
         "CodeRep"
-        "Documents"
+        # "Documents" (Handled by repo symlink)
         "unDevel"
         "Downloads"
-        "Pictures"
+        # "Pictures" (Handled by repo symlink)
         "Projects"
         "AppImage"
         "ZAP-Sessions"
