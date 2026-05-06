@@ -1,0 +1,3 @@
+[submodule "priv.bkup"]
+	path = priv.bkup
+	url = git@github.com:lowcache/priv.bkup.git

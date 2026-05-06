@@ -61,6 +61,10 @@
     fsType = "ext4";
     neededForBoot = true;
   };
+  fileSystems."/home/nondeus/Storage" = {
+    device = "/dev/disk/by-uuid/71548923-2081-44c1-b4f1-6826cb7a6ac8";
+    fsType = "ext4";
+  };
   # Persistence
   environment.persistence."/persist" = {
     hideMounts = true;

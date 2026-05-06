@@ -86,7 +86,7 @@
 
   users.users.nondeus = {
     isNormalUser = true;
-    hashedPasswordFile = "/home/nondeus/.nix-config/password";
+    hashedPasswordFile = "/persist/home/nondeus/.nix-config/password";
     extraGroups = [ "adbusers" "networkmanager" "wheel" "video" "docker" ];
   };
 
