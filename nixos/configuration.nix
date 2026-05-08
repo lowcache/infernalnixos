@@ -33,7 +33,7 @@
     loader = {
       systemd-boot = {
         enable = lib.mkForce false;
-        configurationLimit = 3;
+        configurationLimit = 10;
       };
       efi.canTouchEfiVariables = true;
     };
@@ -99,7 +99,7 @@
   sops = {
     defaultSopsFile = ./secrets.yaml;
     defaultSopsFormat = "yaml";
-    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+    age.sshKeyPaths = [ "/persist/etc/ssh/ssh_host_ed25519_key" ];
     secrets = {
       user_password = {
         neededForUsers = true;
@@ -107,7 +107,6 @@
       root_password = {
         neededForUsers = true;
       };
-      test_secret = {};
     };
   };
 
