@@ -147,14 +147,14 @@
           path_loras = "/content/data/models/loras/";
           path_outputs = "/content/data/outputs/";
         };
-        extraOptions = [ "--gpus" "device=0" ];
+        extraOptions = [ "--device" "nvidia.com/gpu=0" ];
       };
       "forge" = {
         image = "ghcr.io/jim60105/stable-diffusion-webui:forge";
         autoStart = false;
         ports = [ "7866:7860" ];
         volumes = [ "/home/nondeus/Storage/ai-generation/forge:/data" ];
-        extraOptions = [ "--gpus" "device=0" ];
+        extraOptions = [ "--device" "nvidia.com/gpu=0" ];
       };
     };
   };
