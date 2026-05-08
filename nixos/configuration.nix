@@ -86,10 +86,29 @@
     user.extraConfig = "DefaultTimeoutStopSec=5s";
   };
 
+  users.users.root = {
+    hashedPasswordFile = config.sops.secrets.root_password.path;
+  };
+
   users.users.nondeus = {
     isNormalUser = true;
-    hashedPasswordFile = "/persist/home/nondeus/.nix-config/password";
+    hashedPasswordFile = config.sops.secrets.user_password.path;
     extraGroups = [ "adbusers" "networkmanager" "wheel" "video" "docker" ];
+  };
+
+  sops = {
+    defaultSopsFile = ./secrets.yaml;
+    defaultSopsFormat = "yaml";
+    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+    secrets = {
+      user_password = {
+        neededForUsers = true;
+      };
+      root_password = {
+        neededForUsers = true;
+      };
+      test_secret = {};
+    };
   };
 
   programs = {
