@@ -62,7 +62,7 @@
         end
       '';
       shellAliases = {
-        clear = "printf '\033[2J\033[3J\033[1;1H'";
+        clear = "printf '033[2J033[3J033[1;1H'";
         celar = "clear";
         claer = "clear";
         c = "clear";
