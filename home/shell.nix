@@ -79,10 +79,15 @@
         nx = "nix";
         nxs = "nix-shell";
         nxr = "nix-rebuild";
-        nxrb = "sudo nixos-rebuild switch --flake /persist/home/nondeus/.nix-config/#nondeus";
-        nxfd = "nix --extra-experimental-features 'nix-command flakes' search nixpkgs ";
-        nxrn = "nix-shell --extra-experimental-features 'nix-command flakes' -p ";	
+        nxrbs = "sudo nixos-rebuild switch --flake /persist/home/nondeus/.nix-config/#nondeus";
+        nxrbb = "sudo nixos-rebuild build --flake /persist/home/nondeus/.nix-config/#nondeus";
+        nxfd = "nix search nixpkgs#";
+        nxrn = "nix-shell -p ";	
         nvrun = "__NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia ";
+        fooogo = "sudo systemctl start docker-fooocus";
+        fooostp = "sudo systemctl stop docker-fooocus";
+        forggo = "sudo systemctl start docker-forge";
+        forgstp = "sudo systemctl stop docker-forge";
       };
       functions = {
         extract = ''
@@ -254,11 +259,14 @@
         key = "~/.ssh/id_ed25519.pub";
       };
     };
+
     starship.enable = true;
+
     direnv = {
       enable = true;
       nix-direnv.enable = true;
     };
+
     micro = {
       enable = true;
       settings = {
@@ -277,5 +285,6 @@
       };
     };
   };
+  services.ssh-agent.enable = true;
 }
 

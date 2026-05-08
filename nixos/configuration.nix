@@ -55,6 +55,9 @@
     tmpfiles.rules = [
       "d /home/nondeus 0700 nondeus users"
       "d /home/nondeus/AppImage 0755 nondeus users"
+      "d /home/nondeus/Storage/ai-generation 0755 nondeus users"
+      "d /home/nondeus/Storage/ai-generation/fooocus 0755 nondeus users"
+      "d /home/nondeus/Storage/ai-generation/forge 0755 nondeus users"
     ];
     services = {
       greetd.serviceConfig = {
@@ -126,6 +129,34 @@
     enable = true;
     autoPrune.enable = true;
     liveRestore = false;
+  };
+
+  virtualisation.oci-containers = {
+    backend = "docker";
+    containers = {
+      "fooocus" = {
+        image = "ghcr.io/lllyasviel/fooocus:latest";
+        autoStart = false;
+        ports = [ "7865:7865" ];
+        volumes = [ "/home/nondeus/Storage/ai-generation/fooocus:/content/data" ];
+        environment = {
+          CMDARGS = "--listen";
+          DATADIR = "/content/data";
+          config_path = "/content/data/config.txt";
+          path_checkpoints = "/content/data/models/checkpoints/";
+          path_loras = "/content/data/models/loras/";
+          path_outputs = "/content/data/outputs/";
+        };
+        extraOptions = [ "--gpus=all" ];
+      };
+      "forge" = {
+        image = "syubuyari/sd-webui-forge:latest";
+        autoStart = false;
+        ports = [ "7866:7860" ];
+        volumes = [ "/home/nondeus/Storage/ai-generation/forge:/app/stable-diffusion-webui" ];
+        extraOptions = [ "--gpus=all" ];
+      };
+    };
   };
 
   # Application Support
@@ -200,4 +231,6 @@
   };
 
   system.stateVersion = "24.11";
+
+  time.timeZone = "America/Chicago";
 }
