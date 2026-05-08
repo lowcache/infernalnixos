@@ -44,6 +44,7 @@
         ".config/Google"
         ".config/BraveSoftware"
         ".config/Jan"
+        ".config/micro"
       ];
       cache = [
         ".cache/pip"

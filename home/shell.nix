@@ -1,6 +1,51 @@
 { config, pkgs, lib, ... }:
 
 {
+  home.file.".config/micro/syntax/nix.yaml".text = ''
+filetype: nix
+
+detect:
+    filename: "\\.nix$"
+
+rules:
+    # Brackets and Operators
+    - special: "(\\{|\\}|\\(|\\)|\\;|\\(|\\]|\\[|`|\\\\|\\$|<|>|!|=|&|\\|)"
+    
+    # Reserved words / Keywords
+    - statement: "\\b(assert|else|if|in|inherit|let|rec|then|with|isNull)\\b"
+    
+    # Built-in functions/constants
+    - identifier: "\\b(true|false|null|import|abort|throw|baseNameOf|dirOf|fetchTarball|map|removeAttrs|scopedImport|toString|derivation)\\b"
+
+    # Comments
+    - comment:
+        start: "#"
+        end: "$"
+    - comment:
+        start: "/\\*"
+        end: "\\*/"
+
+    # Strings
+    - constant.string:
+        start: "\""
+        end: "\""
+        skip: "\\\\."
+        rules:
+            - constant.specialChar: "\\\\."
+            - constant.specialChar: "\\$\\{[^}]+\\}"
+
+    # Indented Strings (Double Single Quotes)
+    - constant.string:
+        start: "'''"
+        end: "'''"
+        rules:
+            - constant.specialChar: "\\$\\$\\{[^}]+\\}"
+            - constant.specialChar: "''''"
+
+    # Numbers
+    - constant.number: "\\b[0-9]+\\b"
+'';
+
   programs = {
     fish = {
       enable = true;
@@ -282,6 +327,14 @@
         saveundo = true;
         scrollbar = true;
         scrollbarchar = "[]";
+        formatonsave = true;
+        mkparents = true;
+        "nix.formatter" = "nixpkgs-fmt";
+        cursorline = true;
+        incsearch = true;
+        ignorecase = true;
+        smartcase = true;
+        "lsp.server" = "nix=nil";
       };
     };
   };
