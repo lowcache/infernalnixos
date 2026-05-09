@@ -29,7 +29,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }@inputs: {
+  outputs = { self, nixpkgs, home-manager, microvm, ... }@inputs: {
     nixosConfigurations.nondeus = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       specialArgs = { inherit inputs; };
@@ -50,5 +50,8 @@
         }
       ];
     };
+
+    # Add this to allow building/running the VM package
+    packages.x86_64-linux.net-gate = self.nixosConfigurations.nondeus.config.microvm.vms.net-gate.config.microvm.declaredRunner;
   };
 }
