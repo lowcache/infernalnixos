@@ -77,6 +77,7 @@
       "/var/log"
       "/var/lib/flatpak"
       "/var/lib/sbctl"
+      "/var/lib/microvm"
       "/etc/secureboot"
       "/etc/asusd"
       "/etc/ssh"

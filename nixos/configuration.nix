@@ -1,5 +1,9 @@
 { config, pkgs, inputs, lib, ... }: {
 
+  imports = [
+    ./vms.nix
+  ];
+
 
 
   # Kernel & Performance
