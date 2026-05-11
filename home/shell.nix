@@ -2,48 +2,48 @@
 
 {
   home.file.".config/micro/syntax/nix.yaml".text = ''
-filetype: nix
+    filetype: nix
 
-detect:
-    filename: "\\.nix$"
+    detect:
+        filename: "\\.nix$"
 
-rules:
-    # Brackets and Operators
-    - special: "(\\{|\\}|\\(|\\)|\\;|\\(|\\]|\\[|`|\\\\|\\$|<|>|!|=|&|\\|)"
+    rules:
+        # Brackets and Operators
+        - special: "(\\{|\\}|\\(|\\)|\\;|\\(|\\]|\\[|`|\\\\|\\$|<|>|!|=|&|\\|)"
     
-    # Reserved words / Keywords
-    - statement: "\\b(assert|else|if|in|inherit|let|rec|then|with|isNull)\\b"
+        # Reserved words / Keywords
+        - statement: "\\b(assert|else|if|in|inherit|let|rec|then|with|isNull)\\b"
     
-    # Built-in functions/constants
-    - identifier: "\\b(true|false|null|import|abort|throw|baseNameOf|dirOf|fetchTarball|map|removeAttrs|scopedImport|toString|derivation)\\b"
+        # Built-in functions/constants
+        - identifier: "\\b(true|false|null|import|abort|throw|baseNameOf|dirOf|fetchTarball|map|removeAttrs|scopedImport|toString|derivation)\\b"
 
-    # Comments
-    - comment:
-        start: "#"
+        # Comments
+        - comment:
+            start: "#"
         end: "$"
-    - comment:
-        start: "/\\*"
-        end: "\\*/"
+        - comment:
+            start: "/\\*"
+            end: "\\*/"
 
-    # Strings
-    - constant.string:
-        start: "\""
-        end: "\""
-        skip: "\\\\."
-        rules:
-            - constant.specialChar: "\\\\."
-            - constant.specialChar: "\\$\\{[^}]+\\}"
+        # Strings
+        - constant.string:
+            start: "\""
+            end: "\""
+            skip: "\\\\."
+            rules:
+                - constant.specialChar: "\\\\."
+                - constant.specialChar: "\\$\\{[^}]+\\}"
 
-    # Indented Strings (Double Single Quotes)
-    - constant.string:
-        start: "'''"
-        end: "'''"
-        rules:
-            - constant.specialChar: "\\$\\$\\{[^}]+\\}"
-            - constant.specialChar: "''''"
+        # Indented Strings (Double Single Quotes)7
+        - constant.string:
+            start: "'''"
+            end: "'''"
+            rules:
+                - constant.specialChar: "\\$\\$\\{[^}]+\\}"
+                - constant.specialChar: "''''"
 
-    # Numbers
-    - constant.number: "\\b[0-9]+\\b"
+        # Numbers
+        - constant.number: "\\b[0-9]+\\b"
 '';
 
   programs = {
@@ -129,7 +129,8 @@ rules:
         nxr = "nix-rebuild";
         nxrbs = "sudo nixos-rebuild switch --flake /persist/home/nondeus/.nix-config/#nondeus";
         nxrbb = "sudo nixos-rebuild build --flake /persist/home/nondeus/.nix-config/#nondeus";
-        nxfd = "nix search nixpkgs#";
+        nxfu = "nix flake update";
+        nxfd = "nix search nixpkgs ";
         nxrn = "nix-shell -p ";	
         nvrun = "__NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia ";
         fooogo = "sudo systemctl start docker-fooocus";
@@ -259,7 +260,7 @@ rules:
         '';
         priv-sync = ''
           function priv-sync --description "Safely sync live persistent data to priv.bkup"
-            set -l REPO_DIR /persist/home/nondeus/.nix-config/priv.bkup
+            set -l REPO_DIR /home/nondeus/Storage/priv.bkup
             set -l LIVE_HOME /persist/home/nondeus
 
             echo "Starting Safe Sync to priv.bkup..."
