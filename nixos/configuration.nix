@@ -65,7 +65,6 @@
     ];
     services = {
       greetd.serviceConfig = {
-        type = "idle";
         StandardInput = "tty";
         StandardOutput = "tty";
         StandardError = "journal";
@@ -88,7 +87,7 @@
     };
     settings.Manager = {
       DefaultTimeoutStopSec = "10s";
-      DefaultRestartSec = "1s";
+      DefaultRestartSec = "1s";   
     };
     user.extraConfig = "DefaultTimeoutStopSec=5s";
   };

@@ -11,7 +11,7 @@
       ];
       quickshell = with pkgs; [
         inputs.quickshell.packages."x86_64-linux".default
-        qt5.qtwayland qt6.qtwayland qt6.qtsvg qt6.qt5compat
+        qt6.qtwayland qt6.qtsvg qt6.qt5compat
         qt6.qtdeclarative qt6.qtpositioning qt6.qtmultimedia
         qt6.qtquicktimeline qt6.qtimageformats qt6.qtvirtualkeyboard
         qt6.qtsensors qt6.qttools qt6.qttranslations qt6.qtwebsockets
@@ -28,6 +28,7 @@
         imagemagick chromium spacedrive papirus-icon-theme
         gsettings-desktop-schemas brave vscodium gedit cava swappy
         wl-clipboard grim slurp matugen networkmanagerapplet
+        spotify
       ];
       typography = with pkgs; [
         material-symbols nerd-fonts.symbols-only nerd-fonts.jetbrains-mono
@@ -41,11 +42,11 @@
       ];
       terminal = with pkgs; [
         fish git fzf eza tgpt hdrop bat ripgrep flatpak
-        feh fd jq bc tor micro fastfetch cryptsetup htop
+        feh fd jq bc tor micro cryptsetup htop
         psmisc direnv playerctl brightnessctl socat gawk
         acpi upower ddcutil gemini-cli jan clinfo libva-utils
         vulkan-tools (ollama.override { acceleration = "cuda"; })
-        mcp-nixos git-lfs nil nixpkgs-fmt
+        mcp-nixos git-lfs nil nixpkgs-fmt spotatui
         inputs.infernal-init.packages.${pkgs.system}.default
       ];
     in

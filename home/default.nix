@@ -2,9 +2,9 @@
 
   imports = [
     ./shell.nix
-	./pkgs.nix
-	./session.nix
-	./persist.nix
+	  ./pkgs.nix
+	  ./session.nix
+	  ./persist.nix
   ];
 	
   home = { 
