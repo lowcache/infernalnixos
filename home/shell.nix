@@ -20,7 +20,7 @@
         # Comments
         - comment:
             start: "#"
-        end: "$"
+            end: "$"
         - comment:
             start: "/\\*"
             end: "\\*/"
