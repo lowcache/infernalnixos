@@ -77,7 +77,7 @@
       ];
       home-dirs = [
         "Files"
-        "CodeRep"
+        "CodeRepo"
         "Documents"
         "unDevel"
         "Downloads"
@@ -86,8 +86,6 @@
         "AppImage"
         "ZAP-Sessions"
         ".bin"
-        "crypto-bot"
-        "krita-master"
       ];
     in
       dotfiles ++ config ++ cache ++ local ++ flatpak-var ++ home-dirs;

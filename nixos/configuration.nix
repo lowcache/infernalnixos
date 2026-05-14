@@ -64,14 +64,14 @@
       "d /home/nondeus/Storage/ai-generation/forge 0755 nondeus users"
     ];
     services = {
-      greetd.serviceConfig = {
-        StandardInput = "tty";
-        StandardOutput = "tty";
-        StandardError = "journal";
-        TTYReset = true;
-        TTYHangup = true;
-        TTYDeallocate = true;
-      };
+      #greetd.serviceConfig = {
+        #StandardInput = "tty";
+        #StandardOutput = "tty";
+        #StandardError = "journal";
+        #TTYReset = true;
+        #TTYHangup = true;
+        #TTYDeallocate = true;
+      #};
       nix-daemon.serviceConfig.KillMode = "process";
       decapitate-fuse-mounts = {
         description = "Force lazy unmount of xdg-document-portal FUSE to release /nix";
