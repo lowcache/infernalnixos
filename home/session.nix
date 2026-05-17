@@ -46,7 +46,7 @@ let
       LIBVA_DRIVER_NAME = "nvidia";
       GBM_BACKEND = "nvidia-drm";
       __NV_PRIME_RENDER_OFFLOAD = "1";
-      __GLX_VENDER_LIBRARY_NAME = "nvidia";
+      __GLX_VENDOR_LIBRARY_NAME = "nvidia";
     };
 
 in

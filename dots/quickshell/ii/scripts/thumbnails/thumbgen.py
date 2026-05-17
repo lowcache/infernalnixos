@@ -95,7 +95,7 @@ def get_all_files(*, dir_path: Path, recursive: bool) -> List[Path]:
 
 @click.command()
 @click.option(
-    "-d", "--img_dirs", required=True, help='directories to generate thumbnails seperated by space, eg: "dir1/dir2 dir3"'
+    "-d", "--img_dirs", required=True, help='directories to generate thumbnails separated by space, eg: "dir1/dir2 dir3"'
 )
 @click.option(
     "-s", "--size", default="normal", type=click.Choice(["normal", "large", "x-large", "xx-large"]), help="Thumbnail size: normal, large, x-large, xx-large"
