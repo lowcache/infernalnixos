@@ -14,7 +14,7 @@
       enable = true;
       enable32Bit = true;
       extraPackages = with pkgs; [
-        nvidia-vaapi-driver
+        # nvidia-vaapoi-driver # using open kernel module
         libva-vdpau-driver
         libvdpau-va-gl
       ];
@@ -32,8 +32,10 @@
           enable = true;
           enableOffloadCmd = true;
         };
-        amdgpuBusId = "PCI:102:0:0"; # 66:00.0 in decimal (6*16+6=102)
-        nvidiaBusId = "PCI:1:0:0";   # 01:00.0
+        sync.enable = false;
+        reverseSync.enable = false;
+        amdgpuBusId = "PCI:102:0:0"; # 66:00.0 hex -> 102 decimal
+        nvidiaBusId = "PCI:1:0:0";   # 01:00.0 hex -> 1 decimal
       };
     };
   };

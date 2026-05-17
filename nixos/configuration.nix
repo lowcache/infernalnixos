@@ -9,11 +9,10 @@
   # Kernel & Performance
   boot = {
     initrd.systemd.enable = true;
-    kernelModules = [ "nvidia_uvm" "amdgpu" ];
+    kernelModules = [ "amdgpu" ];
     kernelParams = [
       "nvidia.NVreg_EnableGpuFirmware=1"
-      "nvidia_drm.modeset=1"
-      "nvidia_drm.fbdev=1"
+      "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
       "preempt=full"
       "threadirqs"
     ];
@@ -214,6 +213,9 @@
     appimage-run
     vulkan-tools
     libva-utils
+    nvd
+    nvtopPackages.nvidia
+    nvidia-vaapi-driver
   ];
 
   nix = {

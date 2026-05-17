@@ -41,8 +41,8 @@
         nerd-fonts.departure-mono nerd-fonts.zed-mono nerd-fonts.atkynson-mono
       ];
       terminal = with pkgs; [
-        fish git fzf eza tgpt hdrop bat ripgrep flatpak
-        feh fd jq bc tor micro cryptsetup htop
+        fish git fzf eza tgpt hdrop bat ripgrep-all flatpak
+        feh fd jq bc tor micro cryptsetup htop bat-extras.batgrep
         psmisc direnv playerctl brightnessctl socat gawk
         acpi upower ddcutil gemini-cli jan clinfo (ollama.override { acceleration = "cuda"; })
         mcp-nixos git-lfs nil nixpkgs-fmt spotatui

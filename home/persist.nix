@@ -10,7 +10,7 @@
       "fastfetch".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/fastfetch";
       "cava".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/cava";
       "fuzzel".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/fuzzel";
-      "wlogout".source = config.lib.file.mkOutOfStoreSymlink "/persst${config.home.homeDirectory}/.nix-config/dots/wlogout";
+      "wlogout".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/wlogout";
       "starship.toml".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/starship/starship.toml";
       # "Pictures" (Handled by repo symlink).source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.nix-config/priv.bkup/Pictures";
       # "Documents" (Handled by repo symlink).source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.nix-config/priv.bkup/Documents";
