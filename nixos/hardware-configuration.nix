@@ -36,7 +36,7 @@
         sync.enable = false;
         reverseSync.enable = false;
         amdgpuBusId = "PCI:102:0:0"; # 66:00.0 hex -> 102 decimal
-        nvidiaBusId = "PCI:1:0:0";   # 01:00.0 hex -> 1 decimal
+        nvidiaBusId = "PCI:1:0:0"; # 01:00.0 hex -> 1 decimal
       };
     };
   };

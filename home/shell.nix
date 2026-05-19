@@ -44,7 +44,7 @@
 
         # Numbers
         - constant.number: "\\b[0-9]+\\b"
-'';
+  '';
 
   programs = {
     fish = {

@@ -65,12 +65,12 @@
     ];
     services = {
       #greetd.serviceConfig = {
-        #StandardInput = "tty";
-        #StandardOutput = "tty";
-        #StandardError = "journal";
-        #TTYReset = true;
-        #TTYHangup = true;
-        #TTYDeallocate = true;
+      #StandardInput = "tty";
+      #StandardOutput = "tty";
+      #StandardError = "journal";
+      #TTYReset = true;
+      #TTYHangup = true;
+      #TTYDeallocate = true;
       #};
       nix-daemon.serviceConfig.KillMode = "process";
       decapitate-fuse-mounts = {

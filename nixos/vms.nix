@@ -33,17 +33,17 @@
         vcpu = 1;
         #cloud-hypervisor supports systemd-notify via vsock, but `microvm.vsock.cid` must be set to enable this.
         vsock.cid = 10;
-        interfaces = [ {
+        interfaces = [{
           type = "tap";
           id = "vm-netgate";
           mac = "02:00:00:00:00:01";
-        } ];
-        shares = [ {
+        }];
+        shares = [{
           source = "/persist/etc/ssh";
           mountPoint = "/etc/ssh";
           tag = "ssh-keys";
           proto = "virtiofs";
-        } ];
+        }];
       };
 
       # Tor Anonymity Layer - Transparent Proxy
@@ -51,8 +51,8 @@
         enable = true;
         client.enable = true;
         settings = {
-          TransPort = [ { addr = "0.0.0.0"; port = 9040; } ];
-          DNSPort = [ { addr = "0.0.0.0"; port = 5353; } ];
+          TransPort = [{ addr = "0.0.0.0"; port = 9040; }];
+          DNSPort = [{ addr = "0.0.0.0"; port = 5353; }];
           VirtualAddrNetworkIPv4 = "172.16.0.0/12";
           AutomapHostsOnResolve = true;
         };

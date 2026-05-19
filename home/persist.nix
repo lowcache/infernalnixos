@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }: {
 
   xdg = {
-	enable = true;
+    enable = true;
     configFile = {
       "quickshell".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/quickshell/";
       "hypr".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/hypr";
@@ -25,69 +25,70 @@
   };
 
   home.persistence."/persist" = {
-    directories = let
-      dotfiles = [
-        ".gemini"
-        ".npm"
-        ".cargo"
-        ".rustup"
-        ".ssh"
-        ".ollama"
-        ".gnupg"
-        ".nix-config"
-        ".vscode-oss"
-        ".ZAP"
-      ];
-      config = [
-        ".config/dconf"
-        ".config/VSCodium"
-        ".config/Google"
-        ".config/BraveSoftware"
-        ".config/Jan"
-        ".config/micro"
-      ];
-      cache = [
-        ".cache/pip"
-        ".cache/quickshell"
-        ".cache/illogical-impulse"
-        ".cache/nvidia"
-        ".cache/Jan"
-        ".cache/jan.ai.app"
-      ];
-      local = [
-        ".local/share/npm-global"
-        ".local/share/go"
-        ".local/share/gem"
-        ".local/share/fish"
-        ".local/share/direnv"
-        ".local/share/fonts"
-        ".local/share/quickshell"
-        ".local/share/keyrings"
-        ".local/share/illogical-impulse"
-        ".local/share/Google"
-        ".local/share/flatpak"
-        ".local/share/Jan"
-        ".local/share/jan.ai.app"
-        ".local/state/quickshell"
-        ".local/state/illogical-impulse"
-        ".local/state/wireplumber"
-      ];
-      flatpak-var = [
-        ".var/app"
-      ];
-      home-dirs = [
-        "Files"
-        "CodeRepo"
-        "Documents"
-        "unDevel"
-        "Downloads"
-        "Pictures"
-        "Projects"
-        "AppImage"
-        "ZAP-Sessions"
-        ".bin"
-      ];
-    in
+    directories =
+      let
+        dotfiles = [
+          ".gemini"
+          ".npm"
+          ".cargo"
+          ".rustup"
+          ".ssh"
+          ".ollama"
+          ".gnupg"
+          ".nix-config"
+          ".vscode-oss"
+          ".ZAP"
+        ];
+        config = [
+          ".config/dconf"
+          ".config/VSCodium"
+          ".config/Google"
+          ".config/BraveSoftware"
+          ".config/Jan"
+          ".config/micro"
+        ];
+        cache = [
+          ".cache/pip"
+          ".cache/quickshell"
+          ".cache/illogical-impulse"
+          ".cache/nvidia"
+          ".cache/Jan"
+          ".cache/jan.ai.app"
+        ];
+        local = [
+          ".local/share/npm-global"
+          ".local/share/go"
+          ".local/share/gem"
+          ".local/share/fish"
+          ".local/share/direnv"
+          ".local/share/fonts"
+          ".local/share/quickshell"
+          ".local/share/keyrings"
+          ".local/share/illogical-impulse"
+          ".local/share/Google"
+          ".local/share/flatpak"
+          ".local/share/Jan"
+          ".local/share/jan.ai.app"
+          ".local/state/quickshell"
+          ".local/state/illogical-impulse"
+          ".local/state/wireplumber"
+        ];
+        flatpak-var = [
+          ".var/app"
+        ];
+        home-dirs = [
+          "Files"
+          "CodeRepo"
+          "Documents"
+          "unDevel"
+          "Downloads"
+          "Pictures"
+          "Projects"
+          "AppImage"
+          "ZAP-Sessions"
+          ".bin"
+        ];
+      in
       dotfiles ++ config ++ cache ++ local ++ flatpak-var ++ home-dirs;
   };
 }
