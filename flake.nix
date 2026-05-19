@@ -18,7 +18,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     quickshell = {
-      url ="git+https://git.outfoxxed.me/outfoxxed/quickshell";
+      url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     lix-module = {
@@ -38,10 +38,10 @@
 
   outputs = { self, nixpkgs, home-manager, microvm, infernal-init, ... }@inputs: {
     nixosConfigurations.nondeus = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
       specialArgs = { inherit inputs; };
       modules = [
-      	{ nixpkgs.overlays = [ inputs.nix-cachyos-kernel.overlays.pinned ]; }
+        { nixpkgs.hostPlatform = "x86_64-linux"; }
+        { nixpkgs.overlays = [ inputs.nix-cachyos-kernel.overlays.pinned ]; }
         ./nixos/configuration.nix
         ./nixos/hardware-configuration.nix
         inputs.lanzaboote.nixosModules.lanzaboote
