@@ -185,15 +185,18 @@
               return 1
             end
 
-            set -l img $argv[1]
+            set -l img (realpath $argv[1])
             set -l mon $argv[2]
+
+            # Update the wallpaper.png symlink for matugen service
+            ln -sf "$img" ~/Pictures/wallpaper.png
 
             if test -n "$mon"
               echo "Setting wallpaper for $mon..."
-              $script --monitor $mon --image $img
+              $script --monitor $mon --image "$img"
             else
               echo "Setting wallpaper globally..."
-              $script --image $img
+              $script --image "$img"
             end
           end
         '';

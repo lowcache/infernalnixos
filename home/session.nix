@@ -68,14 +68,6 @@ in
   systemd = {
     user = {
       sessionVariables = sessionVariables;
-      services.matugen = {
-        Unit.Description = "Declarative Matugen Color Engine";
-        Service = {
-          # NOTE: Path updated. Ensure a wallpaper exists at this location in /persist.
-          ExecStart = "${pkgs.matugen}/bin/matugen apply -i /persist/home/nondeus/Pictures/wallpaper.png";
-          Type = "oneshot";
-        };
-      };
     };
   };
 }
