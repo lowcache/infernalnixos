@@ -119,7 +119,7 @@
     nix-ld = {
       enable = true;
       libraries = with pkgs; [
-        stdenv.cc.cc
+        stdenv.cc.cc.lib
         zlib
         fuse3
         icu
@@ -135,6 +135,8 @@
         egl-wayland
         wayland
         libxkbcommon
+        config.boot.kernelPackages.nvidiaPackages.stable
+        mesa
       ];
     };
     hyprland = {
