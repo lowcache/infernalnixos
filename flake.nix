@@ -59,6 +59,6 @@
     };
 
     # Add this to allow building/running the VM package
-    packages.x86_64-linux.net-gate = self.nixosConfigurations.nondeus.config.microvm.vms.net-gate.config.microvm.declaredRunner;
+    packages.x86_64-linux.net-gate = self.nixosConfigurations.nondeus.config.microvm.vms.net-gate.config.config.microvm.declaredRunner;
   };
 }
