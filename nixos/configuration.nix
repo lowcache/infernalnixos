@@ -84,6 +84,13 @@
           ExecStopPost = "${pkgs.psmisc}/bin/killall -9 xdg-document-portal fusermount3";
         };
       };
+      # Run Ollama as your user to avoid permission issues in ~/Storage
+      ollama.serviceConfig = {
+        User = "nondeus";
+        Group = "users";
+        ProtectHome = lib.mkForce false;
+        Environment = "OLLAMA_ORIGINS=*";
+      };
     };
     settings.Manager = {
       DefaultTimeoutStopSec = "10s";
@@ -200,6 +207,14 @@
 
   # Application Support
   services = {
+    # Ollama Service
+    ollama = {
+      enable = true;
+      package = pkgs.ollama-cuda;
+      home = "/home/nondeus";
+      models = "/home/nondeus/Storage/ollama/models";
+    };
+
     timesyncd.enable = true;
     xserver.videoDrivers = [ "nvidia" "amdgpu" ];
     geoclue2.enable = true;
@@ -252,8 +267,8 @@
     settings = {
       experimental-features = [ "nix-command" "flakes" ];
       auto-optimise-store = true;
-      substituters = [ 
-        "https://hyprland.cachix.org" 
+      substituters = [
+        "https://hyprland.cachix.org"
         "https://nix-community.cachix.org"
         "https://cache.lix.systems"
         "https://cuda-maintainers.cachix.org"
