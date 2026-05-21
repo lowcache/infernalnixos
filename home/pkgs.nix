@@ -146,7 +146,6 @@
           gemini-cli
           jan
           clinfo
-          (ollama.override { acceleration = "cuda"; })
           git-lfs
           nil
           nixpkgs-fmt
