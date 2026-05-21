@@ -134,6 +134,18 @@
         fuse3
         icu
         nss
+        nspr
+        atk
+        at-spi2-atk
+        at-spi2-core
+        libdrm
+        mesa
+        libgbm
+        glib
+        pango
+        cairo
+        alsa-lib
+        dbus
         curl
         expat
         # GPU / Graphics
@@ -224,7 +236,7 @@
     };
     flatpak.enable = true;
     asusd.enable = true;
-    supergfxd.enable = true;
+    supergfxd.enable = false;
     power-profiles-daemon.enable = false;
     logind.settings = {
       Login = {

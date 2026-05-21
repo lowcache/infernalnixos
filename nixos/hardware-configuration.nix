@@ -25,9 +25,9 @@
       modesetting.enable = true;
       powerManagement = {
         enable = true;
-        finegrained = false;
+        finegrained = true;
       };
-      open = true; # Use the open-source kernel module for 40-series cards
+      open = false; # Proprietary NVIDIA kernel modules are more stable with custom kernels (like cachyos) on hybrid laptops
       prime = {
         offload = {
           enable = true;

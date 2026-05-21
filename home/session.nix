@@ -43,12 +43,12 @@ let
       CLUTTER_BACKEND = "wayland";
       # Wayland support for Electron/Chromium
       NIXOS_OZONE_WL = "1";
-      # nvidia specific 
-      LIBVA_DRIVER_NAME = "nvidia";
-      GBM_BACKEND = "nvidia-drm";
-      __NV_PRIME_RENDER_OFFLOAD = "1";
-      __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-      __VK_LAYER_NV_optimus = "NVIDIA_only";
+      # nvidia specific (commented out to allow Hyprland session to render on integrated AMD GPU)
+      # LIBVA_DRIVER_NAME = "nvidia";
+      # GBM_BACKEND = "nvidia-drm";
+      # __NV_PRIME_RENDER_OFFLOAD = "1";
+      # __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+      # __VK_LAYER_NV_optimus = "NVIDIA_only";
     };
 
 in
