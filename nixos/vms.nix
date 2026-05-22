@@ -50,20 +50,12 @@
           id = "vm-netgate";
           mac = "02:00:00:00:00:01";
         }];
-        shares = [
-          {
-            source = "/persist/etc/ssh";
-            mountPoint = "/etc/ssh";
-            tag = "ssh-keys";
-            proto = "virtiofs";
-          }
-          {
-            source = "/persist/var/lib/tor";
-            mountPoint = "/var/lib/tor";
-            tag = "tor-data";
-            proto = "virtiofs";
-          }
-        ];
+        shares = [{
+          source = "/persist/etc/ssh";
+          mountPoint = "/etc/ssh";
+          tag = "ssh-keys";
+          proto = "virtiofs";
+        }];
       };
 
       # Fix Entropy and VSOCK early load
