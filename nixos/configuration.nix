@@ -13,15 +13,15 @@
     kernelParams = [
       "nvidia-drm.modeset=1"
       "nvidia.NVreg_EnableGpuFirmware=1"
-      "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
+      #"nvidia.NVreg_PreserveVideoMemoryAllocations=1"
       "preempt=full"
       "threadirqs"
       "sysrq_always_enabled=1"
       # Ryzen CPU & Hybrid GPU Stability Parameters
       "amdgpu.dcdebugmask=0x10"
       "amdgpu.gpu_recovery=1"
-      "processor.max_cstate=5"
-      "pcie_port_pm=off"
+      "processor.max_cstate=1"
+      #"pcie_port_pm=off"
     ];
     kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-latest;
     kernel.sysctl = {
@@ -33,7 +33,7 @@
       # Panic Recovery
       "kernel.panic" = 10;
       "kernel.panic_on_oops" = 1;
-      "kernel.sysrq" = lib.mkForce 502;
+      "kernel.sysrq" = 502;
       # Scheduling
       "kernel.sched_cfs_bandwidth_slice_us" = 3000;
       # Network
@@ -257,7 +257,7 @@
     xserver.videoDrivers = [ "nvidia" "amdgpu" ];
     geoclue2.enable = true;
     scx = {
-      enable = true;
+      enable = false;
       scheduler = "scx_bpfland";
     };
     flatpak.enable = true;
