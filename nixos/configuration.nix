@@ -17,6 +17,11 @@
       "preempt=full"
       "threadirqs"
       "sysrq_always_enabled=1"
+      # Ryzen CPU & Hybrid GPU Stability Parameters
+      "amdgpu.dcdebugmask=0x10"
+      "amdgpu.gpu_recovery=1"
+      "processor.max_cstate=5"
+      "pcie_port_pm=off"
     ];
     kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-latest;
     kernel.sysctl = {

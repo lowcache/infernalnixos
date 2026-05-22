@@ -5,7 +5,7 @@
     ./pkgs.nix
     ./session.nix
     ./persist.nix
-    ./brave.nix
+    ./browsers.nix
   ];
 
   home = {
