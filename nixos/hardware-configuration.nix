@@ -27,7 +27,7 @@
         enable = true;
         finegrained = true;
       };
-      open = false; # Proprietary NVIDIA kernel modules are more stable with custom kernels (like cachyos) on hybrid laptops
+      open = true;
       prime = {
         offload = {
           enable = true;
