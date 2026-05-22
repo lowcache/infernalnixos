@@ -75,7 +75,6 @@
           krita-plugin-gmic
           krita
           imagemagick
-          chromium
           spacedrive
           papirus-icon-theme
           gsettings-desktop-schemas
