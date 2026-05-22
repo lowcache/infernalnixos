@@ -82,7 +82,7 @@
       "/var/lib/flatpak"
       "/var/lib/sbctl"
       "/var/lib/microvm"
-      "/var/lib/open-webui"
+      "/var/lib/private/open-webui"
       "/etc/secureboot"
       "/etc/asusd"
       "/etc/ssh"
