@@ -12,82 +12,81 @@
       "fuzzel".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/fuzzel";
       "wlogout".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/wlogout";
       "starship.toml".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/starship/starship.toml";
-      # "Pictures" (Handled by repo symlink).source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.nix-config/priv.bkup/Pictures";
-      # "Documents" (Handled by repo symlink).source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.nix-config/priv.bkup/Documents";
       "fonts".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/priv.bkup/fonts";
       "kritarc".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/krita-master/kritarc";
       "kritadisplayrc".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/krita-master/kritadisplayrc";
     };
   };
 
-  home.file = {
-    ".local/share/krita".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/krita-master/krita";
-  };
-
-  home.persistence."/persist" = {
-    directories =
-      let
-        dotfiles = [
-          ".gemini"
-          ".npm"
-          ".cargo"
-          ".rustup"
-          ".ssh"
-          ".ollama"
-          ".gnupg"
-          ".nix-config"
-          ".vscode-oss"
-          ".ZAP"
-        ];
-        config = [
-          ".config/dconf"
-          ".config/VSCodium"
-          ".config/Google"
-          ".config/BraveSoftware"
-          ".config/micro"
-          ".config/mcp-gateway"
-          ".config/systemd/user"
-        ];
-        cache = [
-          ".cache/pip"
-          ".cache/quickshell"
-          ".cache/illogical-impulse"
-          ".cache/nvidia"
-        ];
-        local = [
-          ".local/share/npm-global"
-          ".local/share/go"
-          ".local/share/gem"
-          ".local/share/fish"
-          ".local/share/direnv"
-          ".local/share/fonts"
-          ".local/share/quickshell"
-          ".local/share/keyrings"
-          ".local/share/illogical-impulse"
-          ".local/share/Google"
-          ".local/share/flatpak"
-          ".local/share/applications"
-          ".local/bin"
-          ".local/state/quickshell"
-          ".local/state/illogical-impulse"
-          ".local/state/wireplumber"
-        ];
-        flatpak-var = [
-          ".var/app"
-        ];
-        home-dirs = [
-          "Files"
-          "CodeRepo"
-          "Documents"
-          "unDevel"
-          "Downloads"
-          "Pictures"
-          "Projects"
-          "AppImage"
-          "ZAP-Sessions"
-          ".bin"
-        ];
-      in
-      dotfiles ++ config ++ cache ++ local ++ flatpak-var ++ home-dirs;
+  home = {
+    file = {
+      ".local/share/krita".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/krita-master/krita";
+    };
+    persistence."/persist" = {
+      directories =
+        let
+          dotfiles = [
+            ".gemini"
+            ".npm"
+            ".cargo"
+            ".rustup"
+            ".ssh"
+            ".ollama"
+            ".gnupg"
+            ".nix-config"
+            ".vscode-oss"
+            ".ZAP"
+          ];
+          config = [
+            ".config/dconf"
+            ".config/VSCodium"
+            ".config/Google"
+            ".config/BraveSoftware"
+            ".config/micro"
+            ".config/mcp-gateway"
+            ".config/systemd/user"
+          ];
+          cache = [
+            ".cache/pip"
+            ".cache/quickshell"
+            ".cache/illogical-impulse"
+            ".cache/nvidia"
+          ];
+          local = [
+            ".local/share/npm-global"
+            ".local/share/go"
+            ".local/share/gem"
+            ".local/share/fish"
+            ".local/share/direnv"
+            ".local/share/fonts"
+            ".local/share/quickshell"
+            ".local/share/keyrings"
+            ".local/share/illogical-impulse"
+            ".local/share/Google"
+            ".local/share/flatpak"
+            ".local/share/applications"
+            ".local/bin"
+            ".local/state/quickshell"
+            ".local/state/illogical-impulse"
+            ".local/state/wireplumber"
+          ];
+          flatpak-var = [
+            ".var/app"
+          ];
+          home-dirs = [
+            "Files"
+            "CodeRepo"
+            "Documents"
+            "unDevel"
+            "Downloads"
+            "Pictures"
+            "Projects"
+            "AppImage"
+            "ZAP-Sessions"
+            ".bin"
+          ];
+        in
+        dotfiles ++ config ++ cache ++ local ++ flatpak-var ++ home-dirs;
+    };
   };
 }
