@@ -4,8 +4,6 @@
     ./vms.nix
   ];
 
-
-
   # Kernel & Performance
   boot = {
     initrd.systemd.enable = true;
@@ -116,14 +114,17 @@
     user.extraConfig = "DefaultTimeoutStopSec=5s";
   };
 
-  users.users.root = {
-    hashedPasswordFile = config.sops.secrets.root_password.path;
-  };
-
-  users.users.nondeus = {
-    isNormalUser = true;
-    hashedPasswordFile = config.sops.secrets.user_password.path;
-    extraGroups = [ "adbusers" "networkmanager" "wheel" "video" "docker" ];
+  users = {
+    users = {
+      root = {
+        hashedPasswordFile = config.sops.secrets.root_password.path;
+      };
+      nondeus = {
+        isNormalUser = true;
+        hashedPasswordFile = config.sops.secrets.user_password.path;
+        extraGroups = [ "adbusers" "networkmanager" "wheel" "video" "docker" ];
+      };
+    };
   };
 
   sops = {
@@ -193,43 +194,44 @@
     fish.enable = true;
   };
 
-  virtualisation.docker = {
-    enable = true;
-    autoPrune.enable = true;
-    liveRestore = false;
-  };
-
-  virtualisation.oci-containers = {
-    backend = "docker";
-    containers = {
-      "fooocus" = {
-        image = "ghcr.io/lllyasviel/fooocus:latest";
-        autoStart = false;
-        ports = [ "7865:7865" ];
-        volumes = [ "/home/nondeus/Storage/ai-generation/fooocus:/content/data" ];
-        environment = {
-          CMDARGS = "--listen";
-          DATADIR = "/content/data";
-          config_path = "/content/data/config.txt";
-          path_checkpoints = "/content/data/models/checkpoints/";
-          path_loras = "/content/data/models/loras/";
-          path_outputs = "/content/data/outputs/";
+  virtualisation = {
+    docker = {
+      enable = true;
+      autoPrune.enable = true;
+      liveRestore = false;
+    };
+    oci-containers = {
+      backend = "docker";
+      containers = {
+        "fooocus" = {
+          image = "ghcr.io/lllyasviel/fooocus:latest";
+          autoStart = false;
+          ports = [ "7865:7865" ];
+          volumes = [ "/home/nondeus/Storage/ai-generation/fooocus:/content/data" ];
+          environment = {
+            CMDARGS = "--listen";
+            DATADIR = "/content/data";
+            config_path = "/content/data/config.txt";
+            path_checkpoints = "/content/data/models/checkpoints/";
+            path_loras = "/content/data/models/loras/";
+            path_outputs = "/content/data/outputs/";
+          };
+          extraOptions = [ "--device" "nvidia.com/gpu=0" ];
         };
-        extraOptions = [ "--device" "nvidia.com/gpu=0" ];
-      };
-      "forge" = {
-        image = "ghcr.io/ai-dock/stable-diffusion-webui-forge:latest-cuda";
-        autoStart = false;
-        ports = [ "7866:17860" ];
-        volumes = [ "/home/nondeus/Storage/ai-generation/forge:/workspace" ];
-        environment = {
-          # AI-Dock Specific Vars
-          BASE_PORT = "17860";
-          WORKSPACE = "/workspace";
-          # WebUI Specific Vars
-          FORGE_ARGS = "--listen --port 17860";
+        "forge" = {
+          image = "ghcr.io/ai-dock/stable-diffusion-webui-forge:latest-cuda";
+          autoStart = false;
+          ports = [ "7866:17860" ];
+          volumes = [ "/home/nondeus/Storage/ai-generation/forge:/workspace" ];
+          environment = {
+            # AI-Dock Specific Vars
+            BASE_PORT = "17860";
+            WORKSPACE = "/workspace";
+            # WebUI Specific Vars
+            FORGE_ARGS = "--listen --port 17860";
+          };
+          extraOptions = [ "--device" "nvidia.com/gpu=0" ];
         };
-        extraOptions = [ "--device" "nvidia.com/gpu=0" ];
       };
     };
   };

@@ -1,5 +1,5 @@
 {
-  description = "Infernal NixOS - Imprecation & Impermanence. [github.com/lowcache/infernalnixos.git]";
+  description = "Infernal NixOS - Imprecation & Impermanence by LowCache [github.com/lowcache/infernalnixos.git]";
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     home-manager = {

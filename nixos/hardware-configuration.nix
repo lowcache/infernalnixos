@@ -23,6 +23,7 @@
     nvidia = {
       package = config.boot.kernelPackages.nvidiaPackages.stable;
       modesetting.enable = true;
+      #dynamicboost.enable = true;
       powerManagement = {
         enable = true;
         finegrained = true;
@@ -53,21 +54,29 @@
   };
 
   # Impermanence
-  fileSystems."/" = {
-    device = "none";
-    fsType = "tmpfs";
-    options = [ "defaults" "size=4G" "mode=755" ];
-  };
-  fileSystems."/boot" = { device = "/dev/disk/by-label/BOOT"; fsType = "vfat"; };
-  fileSystems."/nix" = { device = "/dev/disk/by-label/NIX"; fsType = "ext4"; };
-  fileSystems."/persist" = {
-    device = "/dev/disk/by-label/PERSIST";
-    fsType = "ext4";
-    neededForBoot = true;
-  };
-  fileSystems."/home/nondeus/Storage" = {
-    device = "/dev/disk/by-uuid/71548923-2081-44c1-b4f1-6826cb7a6ac8";
-    fsType = "ext4";
+  fileSystems = {
+    "/" = {
+      device = "none";
+      fsType = "tmpfs";
+      options = [ "defaults" "size=4G" "mode=755" ];
+    };
+    "/boot" = {
+      device = "/dev/disk/by-label/BOOT";
+      fsType = "vfat";
+    };
+    "/nix" = {
+      device = "/dev/disk/by-label/NIX";
+      fsType = "ext4";
+    };
+    "/persist" = {
+      device = "/dev/disk/by-label/PERSIST";
+      fsType = "ext4";
+      neededForBoot = true;
+    };
+    "/home/nondeus/Storage" = {
+      device = "/dev/disk/by-uuid/71548923-2081-44c1-b4f1-6826cb7a6ac8";
+      fsType = "ext4";
+    };
   };
   # Persistence
   environment.persistence."/persist" = {

@@ -5,10 +5,6 @@
     inputs.microvm.nixosModules.host
   ];
 
-  # Host-side overrides for fast shutdown
-  systemd.services."microvm@net-gate".serviceConfig.TimeoutStopSec = "10s";
-  systemd.services."microvm-virtiofsd@net-gate".serviceConfig.TimeoutStopSec = "5s";
-
   microvm.vms.net-gate = {
     autostart = true;
     config = {
@@ -31,11 +27,16 @@
         };
       };
 
-      systemd.network = {
-        enable = true;
-        networks."10-lan" = {
-          matchConfig.Name = "en* eth*";
-          networkConfig.DHCP = "ipv4";
+      systemd = {
+        network = {
+          enable = true;
+          networks."10-lan" = {
+            matchConfig.Name = "en* eth*";
+            networkConfig.DHCP = "ipv4";
+          };
+        };
+        services = {
+          tor.serviceConfig.TimeoutStopSec = "2s";
         };
       };
 
@@ -73,9 +74,6 @@
         };
       };
 
-      # Fast Tor Shutdown
-      systemd.services.tor.serviceConfig.TimeoutStopSec = "2s";
-
       # Sops Configuration
       sops = {
         defaultSopsFile = ./secrets.yaml; # Relative to THIS file (nixos/vms.nix)
@@ -101,22 +99,34 @@
     };
   };
 
-  # Host-side networking to communicate with the VM
-  # We use systemd-networkd BUT we must ensure it doesn't touch your main interfaces
-  systemd.network = {
-    enable = true;
-    wait-online.enable = false;
-    networks."10-microvm-tap" = {
-      matchConfig.Name = "vm-netgate";
-      networkConfig = {
-        Address = [ "192.168.100.1/24" ];
-        DHCPServer = true;
-        IPv4Forwarding = true;
+  # Host-side overrides for fast shutdown
+  systemd = {
+    services = {
+      "microvm@net-gate".serviceConfig.TimeoutStopSec = "10s";
+      "microvm-virtiofsd@net-gate" = {
+        serviceConfig = {
+          Type = lib.mkForce "simple";
+          TimeoutStopSec = "5s";
+        };
       };
-      # Ensure this network doesn't become the default route for the host
-      linkConfig.RequiredForOnline = "no";
+    };
+    network = {
+      enable = true;
+      wait-online.enable = false;
+      networks."10-microvm-tap" = {
+        matchConfig.Name = "vm-netgate";
+        networkConfig = {
+          Address = [ "192.168.100.1/24" ];
+          DHCPServer = true;
+          IPv4Forwarding = true;
+        };
+        # Ensure this network doesn't become the default route for the host
+        linkConfig.RequiredForOnline = "no";
+      };
     };
   };
+  # Host-side networking to communicate with the VM
+  # We use systemd-networkd BUT we must ensure it doesn't touch your main interfaces
 
   # Tell NetworkManager to ignore the VM tap so it doesn't try to manage it
   networking.networkmanager.unmanaged = [ "interface-name:vm-netgate" ];
