@@ -43,7 +43,7 @@
       "surface_container_high": "comet_low",
       "surface_container_highest": "comet_mid",
       "surface_variant": "comet_low",
-      "inverse_surface": "chromium",
+      "inverse_surface": "aspen",
       "sidebar_bg": "comet_deep",
       "popup_bg": "comet_dim",
       "cards_bg": "comet_dim"
@@ -71,10 +71,10 @@
       "links": "casual_lavender"
     },
     "text": {
-      "normal": "chromium",
-      "on_background": "chromium",
-      "on_surface": "chromium",
-      "on_surface_variant": "aspen",
+      "normal": "aspen",
+      "on_background": "aspen",
+      "on_surface": "aspen",
+      "on_surface_variant": "bluish_white",
       "on_primary": "comet_deep",
       "on_secondary": "comet_deep",
       "on_tertiary": "comet_deep",
