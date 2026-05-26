@@ -1,9 +1,15 @@
 {
-  "name": "Blackmeddle",
+  "name": "Blackmeddle (Detailed)",
   "palette": {
-    "bg": "#000000",
+    "bg_deep": "#121212",
+    "bg_dim": "#1c1c1c",
+    "bg": "#282828",
+    "bg_low": "#363636",
+    "bg_mid": "#444444",
+    "bg_high": "#545454",
+    "bg_highest": "#666666",
     "fg": "#c1c1c1",
-    "black": "#000000",
+    "black": "#121212",
     "teal": "#5f8787",
     "bone": "#f8f7f2",
     "deep_red": "#79241f",
@@ -15,13 +21,25 @@
   },
   "mappings": {
     "surfaces": {
-      "main_bg": "dark_gray",
-      "sidebar_bg": "dark_gray",
-      "popup_bg": "black",
-      "cards_bg": "dark_gray"
+      "main_bg": "bg_deep",
+      "background": "bg_deep",
+      "surface": "bg_dim",
+      "surface_dim": "bg_deep",
+      "surface_bright": "bg_low",
+      "surface_container_lowest": "bg_deep",
+      "surface_container_low": "bg_dim",
+      "surface_container": "bg",
+      "surface_container_high": "bg_low",
+      "surface_container_highest": "bg_mid",
+      "surface_variant": "bg_low",
+      "sidebar_bg": "bg_deep",
+      "popup_bg": "bg_dim",
+      "cards_bg": "bg_dim"
     },
     "accents": {
+      "primary": "teal",
       "primary_active": "teal",
+      "secondary": "deep_red",
       "secondary_active": "deep_red",
       "borders": "teal",
       "links": "bone"
@@ -29,7 +47,7 @@
     "text": {
       "normal": "fg",
       "subtle": "gray",
-      "on_accent": "dark_gray"
+      "on_accent": "bg_deep"
     },
     "terminal": {
       "black": "black",

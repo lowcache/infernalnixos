@@ -1,9 +1,15 @@
 {
-  "name": "BB",
+  "name": "BB (Detailed)",
   "palette": {
+    "bg_deep": "#110d18",
+    "bg_dim": "#15101f",
     "bg": "#191323",
+    "bg_low": "#20182d",
+    "bg_mid": "#271e36",
+    "bg_high": "#2e2340",
+    "bg_highest": "#36294b",
     "fg": "#cccccc",
-    "black": "#17141f",
+    "black": "#15101f",
     "red": "#ff6b7f",
     "green": "#00bd9c",
     "yellow": "#e6c62f",
@@ -23,13 +29,25 @@
   },
   "mappings": {
     "surfaces": {
-      "main_bg": "bg",
-      "sidebar_bg": "black",
-      "popup_bg": "bg",
-      "cards_bg": "bg"
+      "main_bg": "bg_deep",
+      "background": "bg_deep",
+      "surface": "bg_dim",
+      "surface_dim": "bg_deep",
+      "surface_bright": "bg_low",
+      "surface_container_lowest": "bg_deep",
+      "surface_container_low": "bg_dim",
+      "surface_container": "bg",
+      "surface_container_high": "bg_low",
+      "surface_container_highest": "bg_mid",
+      "surface_variant": "bg_low",
+      "sidebar_bg": "bg_deep",
+      "popup_bg": "bg_dim",
+      "cards_bg": "bg_dim"
     },
     "accents": {
+      "primary": "magenta",
       "primary_active": "magenta",
+      "secondary": "blue",
       "secondary_active": "blue",
       "borders": "br_black",
       "links": "green"
@@ -37,7 +55,7 @@
     "text": {
       "normal": "fg",
       "subtle": "white",
-      "on_accent": "black"
+      "on_accent": "bg_deep"
     },
     "terminal": {
       "black": "black",

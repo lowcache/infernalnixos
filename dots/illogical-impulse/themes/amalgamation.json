@@ -64,10 +64,10 @@
       "links": "light_coral"
     },
     "text": {
-      "normal": "fg",
-      "on_background": "fg",
-      "on_surface": "fg",
-      "on_surface_variant": "cream",
+      "normal": "cream",
+      "on_background": "cream",
+      "on_surface": "cream",
+      "on_surface_variant": "fg",
       "on_primary": "bg_deep",
       "on_secondary": "bg_deep",
       "on_tertiary": "bg_deep",
@@ -98,7 +98,7 @@
       "bright_blue": "muted_teal",
       "bright_magenta": "orange",
       "bright_cyan": "dark_teal",
-      "bright_white": "#ffffff"
+      "bright_white": "pure_white"
     }
   }
 }

@@ -63,10 +63,10 @@
       "links": "coral"
     },
     "text": {
-      "normal": "sage",
-      "on_background": "sage",
-      "on_surface": "sage",
-      "on_surface_variant": "cream",
+      "normal": "cream",
+      "on_background": "cream",
+      "on_surface": "cream",
+      "on_surface_variant": "sage",
       "on_primary": "basalt",
       "on_secondary": "basalt",
       "on_tertiary": "basalt",

@@ -38,7 +38,7 @@ Singleton {
         property bool darkmode: true
         property bool transparent: false
         property color m3background: "#111314"
-        property color m3onBackground: "#798581"
+        property color m3onBackground: "#EBD39D"
         property color m3surface: "#1A1C1D"
         property color m3surfaceDim: "#111314"
         property color m3surfaceBright: "#2A2C2D"
@@ -47,9 +47,9 @@ Singleton {
         property color m3surfaceContainer: "#212325"
         property color m3surfaceContainerHigh: "#2A2C2D"
         property color m3surfaceContainerHighest: "#35383A"
-        property color m3onSurface: "#798581"
+        property color m3onSurface: "#EBD39D"
         property color m3surfaceVariant: "#1A1C1D"
-        property color m3onSurfaceVariant: "#EBD39D"
+        property color m3onSurfaceVariant: "#798581"
         property color m3inverseSurface: "#798581"
         property color m3inverseOnSurface: "#212325"
         property color m3outline: "#44484A"

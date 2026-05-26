@@ -108,8 +108,13 @@ Singleton {
             }
         }
         onMultipliedBrightnessChanged: {
-            if (monitor.animationEnabled) syncBrightness();
+            if (!monitor.ready) return;
+            if (monitor.animateChanges) syncBrightness();
             else setTimer.restart();
+        }
+
+        onReadyChanged: {
+            if (monitor.ready) syncBrightness();
         }
 
         function initialize() {

@@ -70,6 +70,7 @@
           adw-gtk3
           cliphist
           hyprpicker
+          libnotify
           fuzzel
           kitty
           krita-plugin-gmic
