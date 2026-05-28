@@ -69,6 +69,8 @@
             ".local/share/Google"
             ".local/share/flatpak"
             ".local/share/applications"
+            ".local/share/Antigravity-x64"
+            ".local/share/Antigravity IDE"
             ".local/bin"
             ".local/state/quickshell"
             ".local/state/illogical-impulse"
