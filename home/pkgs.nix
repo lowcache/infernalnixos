@@ -117,6 +117,11 @@
         terminal = with pkgs; [
           fish
           git
+          gh
+          gh-s
+          ghdorker
+          ghfetch
+          ghgrab
           fzf
           eza
           tgpt
