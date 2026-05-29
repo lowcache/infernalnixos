@@ -122,6 +122,8 @@
           tgpt
           hdrop
           bat
+          gnugp1
+          gpg-tui
           ripgrep-all
           flatpak
           feh
