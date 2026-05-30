@@ -40,14 +40,21 @@
       url = "github:lowcache/infernal-init";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nur = {
+      url = "github:nix-community/NUR";
+    };
+    llm-agents = {
+      url = "github:numtide/llm-agents.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, microvm, infernal-init, ... }@inputs: {
+  outputs = { self, nixpkgs, home-manager, microvm, infernal-init, nur, llm-agents, ... }@inputs: {
     nixosConfigurations.infernalnix = nixpkgs.lib.nixosSystem {
       specialArgs = { inherit inputs; };
       modules = [
         { nixpkgs.hostPlatform = "x86_64-linux"; }
-        { nixpkgs.overlays = [ inputs.nix-cachyos-kernel.overlays.pinned ]; }
+        { nixpkgs.overlays = [ inputs.nix-cachyos-kernel.overlays.pinned inputs.nur.overlays.default inputs.llm-agents.overlays.default ]; }
         ./nixos/configuration.nix
         ./nixos/hardware-configuration.nix
         inputs.lanzaboote.nixosModules.lanzaboote
@@ -68,6 +75,7 @@
       specialArgs = { inherit inputs; };
       modules = [
         { nixpkgs.hostPlatform = "x86_64-linux"; }
+        { nixpkgs.overlays = [ inputs.nur.overlays.default inputs.llm-agents.overlays.default ]; }
         ./nixos/limbo/configuration.nix
         ./nixos/limbo/hardware-configuration.nix
         inputs.lix-module.nixosModules.default
