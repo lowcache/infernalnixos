@@ -231,20 +231,6 @@
           };
           extraOptions = [ "--device" "nvidia.com/gpu=0" ];
         };
-        "forge" = {
-          image = "ghcr.io/ai-dock/stable-diffusion-webui-forge:latest-cuda";
-          autoStart = false;
-          ports = [ "7866:17860" ];
-          volumes = [ "/home/lowcache/Storage/ai-generation/forge:/workspace" ];
-          environment = {
-            # AI-Dock Specific Vars
-            BASE_PORT = "17860";
-            WORKSPACE = "/workspace";
-            # WebUI Specific Vars
-            FORGE_ARGS = "--listen --port 17860";
-          };
-          extraOptions = [ "--device" "nvidia.com/gpu=0" ];
-        };
       };
     };
   };
@@ -316,6 +302,22 @@
     nvtopPackages.nvidia
     nvidia-vaapi-driver
     ffmpeg
+    #nix pkgs for nix-agent swarm
+    nh
+    statix
+    vulnix
+    deadnix
+    nix-diff
+    nix-init
+    manix
+    nixfmt
+    nixos-cli
+    optnix
+    nix-index
+    nvd
+    nurl
+    flake-utils-plus
+    flake-utils
   ];
 
   nix = {
