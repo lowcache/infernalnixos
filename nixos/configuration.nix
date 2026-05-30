@@ -311,10 +311,15 @@
     nix-init
     manix
     nixfmt
-    nixos-cli
+    nixos-option
+    nixos-shell
+    styx
+    tix
+    nixmate
     optnix
     nix-index
     nvd
+    searchix
     nurl
     flake-utils-plus
     flake-utils
