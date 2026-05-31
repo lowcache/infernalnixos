@@ -111,7 +111,8 @@
       ];
     };
 
-    # Add this to allow building/running the VM package
+    # Add this to allow building/running the VM packages
     packages.x86_64-linux.net-gate = self.nixosConfigurations.infernalnix.config.microvm.vms.net-gate.config.config.microvm.declaredRunner;
+    packages.x86_64-linux.tailscale-vm = self.nixosConfigurations.infernalnix.config.microvm.vms.tailscale.config.config.microvm.declaredRunner;
   };
 }

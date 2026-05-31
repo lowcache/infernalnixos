@@ -333,6 +333,32 @@
             echo "Sync complete. You can now commit changes in $REPO_DIR."
           '';
         };
+        ai = {
+          description = "Run an AI agent tool from llm-agents.nix on-the-fly";
+          body = ''
+            if test (count $argv) -eq 0
+              echo "Usage: ai <agent-tool> [args...]"
+              echo "Example: ai ralph-tui"
+              return 1
+            end
+            nix run "github:numtide/llm-agents.nix#$argv[1]" -- $argv[2..-1]
+          '';
+        };
+        ai-shell = {
+          description = "Spawn an ephemeral shell with one or more tools from llm-agents.nix";
+          body = ''
+            if test (count $argv) -eq 0
+              echo "Usage: ai-shell <tool1> <tool2> ..."
+              echo "Example: ai-shell ralph-tui apm ck"
+              return 1
+            end
+            set -l pkgs
+            for pkg in $argv
+              set pkgs $pkgs "github:numtide/llm-agents.nix#$pkg"
+            end
+            nix shell $pkgs
+          '';
+        };
       };
     };
     git = {

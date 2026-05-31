@@ -157,7 +157,7 @@
           spotatui
           inputs.infernal-init.packages.${pkgs.stdenv.hostPlatform.system}.default
         ];
-        mcp-servers = with pkgs; [
+        nixified-ai= with pkgs; [
           mcp-nixos
           mcp-gateway
           github-mcp-server
@@ -170,6 +170,6 @@
           github-copilot-cli
         ];
       in
-      mcp-servers ++ terminal ++ typography ++ hyprland ++ quickshell ++ basedevel;
+      nixified-ai ++ terminal ++ typography ++ hyprland ++ quickshell ++ basedevel;
   };
 }
