@@ -1,0 +1,203 @@
+I0531 09:40:48.372322 42777 server.go:1306] Starting language server process with pid 42777
+I0531 09:40:48.372844 42777 server.go:476] Language server will attempt to listen on host localhost
+I0531 09:40:48.374099 42777 server.go:490] Language server listening on random port at 32799 for HTTPS (gRPC)
+I0531 09:40:48.374657 42777 server.go:497] Language server listening on random port at 33595 for HTTP
+W0531 09:40:48.640669 42777 launchmanager.go:69] Entering local chrome mode! This is WRONG unless you are running tests or in eval mode on Linux.
+E0531 09:40:48.642529 42777 log.go:398] Failed to poll ListExperiments: error getting token source: You are not logged into Antigravity.
+W0531 09:40:48.642551 42777 log_context.go:117] Cache(loadCodeAssistResponse): Singleflight refresh failed: error getting token source: You are not logged into Antigravity.
+W0531 09:40:48.642566 42777 log_context.go:117] Cache(fetchAdminControls): Singleflight refresh failed: failed to get load code assist response: error getting token source: You are not logged into Antigravity.
+W0531 09:40:48.642587 42777 log_context.go:117] Cache(loadCodeAssistResponse): Singleflight refresh failed: error getting token source: You are not logged into Antigravity.
+W0531 09:40:48.642593 42777 log_context.go:117] Cache(fetchAdminControls): Singleflight refresh failed: failed to get load code assist response: error getting token source: You are not logged into Antigravity.
+W0531 09:40:48.643118 42777 log_context.go:117] Cache(loadCodeAssistResponse): Singleflight refresh failed: error getting token source: You are not logged into Antigravity.
+W0531 09:40:48.643135 42777 log_context.go:117] Cache(availableModels): Singleflight refresh failed: failed to get load code assist response: error getting token source: You are not logged into Antigravity.
+E0531 09:40:48.643163 42777 log.go:398] Failed to poll FetchAvailableModels: failed to get load code assist response: error getting token source: You are not logged into Antigravity.
+I0531 09:40:48.643492 42777 server.go:2274] Auth succeeded, refreshing features and managers
+E0531 09:40:48.643533 42777 log.go:398] Failed to poll ListExperiments: error getting token source: You are not logged into Antigravity.
+W0531 09:40:48.643696 42777 log_context.go:117] Cache(loadCodeAssistResponse): Singleflight refresh failed: error getting token source: You are not logged into Antigravity.
+W0531 09:40:48.643705 42777 log_context.go:117] Cache(availableModels): Singleflight refresh failed: failed to get load code assist response: error getting token source: You are not logged into Antigravity.
+E0531 09:40:48.643725 42777 log.go:398] Failed to poll FetchAvailableModels: failed to get load code assist response: error getting token source: You are not logged into Antigravity.
+I0531 09:40:48.643902 42777 server.go:2280] State refresh took 0ms
+I0531 09:40:48.661527 42777 server.go:1938] initialized server successfully in 289.135923ms
+W0531 09:40:48.662720 42777 log_context.go:117] Cache(loadCodeAssistResponse): Singleflight refresh failed: error getting token source: You are not logged into Antigravity.
+W0531 09:40:48.662754 42777 log_context.go:117] Cache(userInfo): Singleflight refresh failed: failed to get load code assist response: error getting token source: You are not logged into Antigravity.
+I0531 09:40:48.662858 42777 auto_updater.go:253] Spawned background update process with PID 42816
+E0531 09:40:48.662961 42777 server.go:609] Failed to get OAuth token: error getting token source from auth provider: You are not logged into Antigravity.
+W0531 09:40:48.662980 42777 client.go:81] failed to set auth token
+I0531 09:40:48.662996 42777 common.go:103] Launching CLI mode
+I0531 09:40:48.663323 42777 project.go:58] project: discovered project "/home/lowcache/.nix-config" (id=1cf15ca4-1285-4d79-9fe8-92daa1831d43) via /home/lowcache/.nix-config/.antigravitycli
+I0531 09:40:48.663332 42777 common.go:156] project: using project "/home/lowcache/.nix-config" (id=1cf15ca4-1285-4d79-9fe8-92daa1831d43) at /persist/home/lowcache/.nix-config/dots/gemini/config/projects/1cf15ca4-1285-4d79-9fe8-92daa1831d43.json
+E0531 09:40:48.663354 42777 common.go:194] Failed to resolve GeminiDir ".gemini": .gemini must be an absolute path: path is not absolute, falling back to default
+I0531 09:40:48.663366 42777 common.go:203] CLI app data directory: /home/lowcache/.gemini/antigravity-cli
+I0531 09:40:48.663375 42777 server.go:207] Creating CLI server backend: product=antigravity workspaceDirs=[] appDataDir=/home/lowcache/.gemini/antigravity-cli cascadeManager=true codeAssist=true
+I0531 09:40:48.663474 42777 manager.go:250] Initializing CLI store manager for workspace /home/lowcache/.nix-config
+I0531 09:40:48.663764 42777 cli_setting_manager.go:626] Skipping telemetry propagation because user is not logged in
+I0531 09:40:48.663772 42777 cli_setting_manager.go:66] CLI settings initialized: permissions=&{Allow:[command(git) command(ls) command(journalctl) command(find) command(nix) command(nix-shell) command(grep) command(rg) command(dmesg) command(npm) command(nvidia-smi) command(lspci) command(tail) command(systemctl status) command(coredumpctl) command(head) command(printenv) command(type) command(cp) command(nixos-version) command(cat) command(nix-channel) command(tar) command(/home/nondeus/.local/bin/antigravity-ide) command(nixpkgs-fmt)] Deny:[command(rm -rf) command(nixos-rebuild)] Ask:[]}, toolPermission=request-review
+I0531 09:40:48.663887 42777 manager.go:321] CLI store manager initialized successfully
+I0531 09:40:48.663899 42777 common.go:318] CLI store manager created successfully
+I0531 09:40:48.668635 42777 common.go:408] Starting CLI program
+CLI ready for user input (startup took 5.624289ms)
+ERROR: logging before google.Init: I0531 09:40:48.670383     148 terminal_info_manager.go:160] Terminal detection: TERM="xterm-kitty" altScreen=true ssh=false
+I0531 09:40:48.671186 42777 gemini_extensions.go:28] Detecting Gemini extensions in /home/lowcache/.gemini/extensions
+I0531 09:40:48.671236 42777 gemini_extensions.go:49] No extensions found
+I0531 09:40:48.671257 42777 root.go:132] Failed to add workspace dir: failed to add workspace folder /home/lowcache/.nix-config: file:///home/lowcache/.nix-config is hidden: ignore uri
+W0531 09:40:48.672652 42777 token_storage.go:113] Failed to load token from keyring, falling back to file: The name is not activatable
+I0531 09:40:48.721448 42777 manager.go:551] Full redraw completed (rerenderAll) for conversation  (epoch 0, items 1)
+W0531 09:40:48.943248 42777 token_storage.go:80] Failed to save token to keyring, falling back to file: The name is not activatable
+I0531 09:40:49.243861 42777 auth.go:114] ChainedAuth: authenticated via keyring (effective: keyring)
+I0531 09:40:49.243898 42777 server_oauth.go:212] applyAuthResult: email=drawpdeadredd@gmail.com, authMethod=consumer, quotaProject=
+I0531 09:40:49.243908 42777 server_oauth.go:217] OAuth: authenticated successfully as drawpdeadredd@gmail.com
+I0531 09:40:49.243917 42777 server_oauth.go:223] b.codeAssistClient.AuthProvider (0x2334405bb080) is same as b.cliAuth (0x2334405bb080)
+I0531 09:40:50.065141 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xedb80cee1983492f
+I0531 09:40:50.478650 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0xc7b2defdaa49fb38
+I0531 09:40:50.480393 42777 model_config_manager.go:157] Propagating selected model override to backend: label="Gemini 3.5 Flash (Medium)"
+I0531 09:40:50.580468 42777 input_loop.go:499] Auth done received, triggering experiment refresh
+I0531 09:40:50.580521 42777 experiment_manager.go:35] Starting experiment refresh after login
+I0531 09:40:50.804586 42777 experiment_manager.go:39] Experiments refreshed after login
+I0531 09:40:50.804756 42777 manager.go:941] Reloading system slash commands
+I0531 09:40:51.004490 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xf87ccedc542653a
+I0531 09:40:51.620424 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x4ea7f2d80b3f6ac7
+I0531 09:40:51.776229 42777 model_config_manager.go:157] Propagating selected model override to backend: label="Gemini 3.5 Flash (Medium)"
+I0531 09:40:51.776349 42777 model_config_manager.go:157] Propagating selected model override to backend: label="Gemini 3.5 Flash (Medium)"
+I0531 09:40:51.911466 42777 input_loop.go:499] Auth done received, triggering experiment refresh
+I0531 09:40:51.911516 42777 input_loop.go:499] Auth done received, triggering experiment refresh
+I0531 09:40:51.911532 42777 experiment_manager.go:35] Starting experiment refresh after login
+I0531 09:40:51.911548 42777 experiment_manager.go:35] Starting experiment refresh after login
+I0531 09:40:52.014056 42777 model_config_manager.go:157] Propagating selected model override to backend: label="Gemini 3.5 Flash (Medium)"
+I0531 09:40:52.215133 42777 input_loop.go:499] Auth done received, triggering experiment refresh
+I0531 09:40:52.215185 42777 experiment_manager.go:35] Starting experiment refresh after login
+I0531 09:40:52.316230 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xaf4e4f162f4be81f
+I0531 09:40:52.316906 42777 experiment_manager.go:39] Experiments refreshed after login
+I0531 09:40:52.316995 42777 experiment_manager.go:39] Experiments refreshed after login
+I0531 09:40:52.317043 42777 manager.go:941] Reloading system slash commands
+I0531 09:40:52.317078 42777 manager.go:941] Reloading system slash commands
+I0531 09:40:52.323583 42777 manager.go:945] Slash commands unchanged, skipping update
+I0531 09:40:52.325382 42777 manager.go:945] Slash commands unchanged, skipping update
+I0531 09:40:52.424153 42777 experiment_manager.go:39] Experiments refreshed after login
+I0531 09:40:52.424279 42777 manager.go:941] Reloading system slash commands
+I0531 09:40:52.429129 42777 manager.go:945] Slash commands unchanged, skipping update
+I0531 09:41:07.823814 42777 server.go:1886] Scanning conversations directory: /home/lowcache/.gemini/antigravity-cli/conversations
+I0531 09:41:07.823913 42777 server.go:1892] Found 26 entries in /home/lowcache/.gemini/antigravity-cli/conversations
+I0531 09:41:07.824040 42777 server.go:1886] Scanning conversations directory: /home/lowcache/.gemini/antigravity/conversations
+I0531 09:41:07.824056 42777 server.go:1892] Found 1 entries in /home/lowcache/.gemini/antigravity/conversations
+I0531 09:41:07.824068 42777 server.go:1851] ListConversations returning 27 summaries
+I0531 09:41:13.324246 42777 conversation_manager.go:378] Streaming conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac
+I0531 09:41:13.324516 42777 server.go:774] Starting conversation update stream for ba83894c-ea00-403a-96a5-1e2f9d0744ac
+I0531 09:41:59.621568 42777 input_loop.go:34] HandleUserInput called with text: "make me a trusted user while i add the list of llm-agent.nix apps"
+I0531 09:41:59.621651 42777 conversation_manager.go:321] Forwarding user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 09:41:59.621669 42777 server.go:1083] Sending user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 09:42:02.788981 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xb782e83f72cdbbf4
+I0531 09:42:04.610968 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xb8cf35b9a666aa7
+I0531 09:42:07.793305 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x9c51a4b301aba7d8
+I0531 09:42:09.634116 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x37109e349b7faf95
+I0531 09:42:09.776273 42777 text_drip.go:173] Drip stopped: lastStepIdx=193, charIdx=84, length=502
+I0531 09:42:18.202208 42777 clipboard_linux.go:44] xclip TARGETS query failed (xclip not available or no DISPLAY): exec: "xclip": executable file not found in $PATH
+I0531 09:42:18.202349 42777 clipboard_linux.go:100] xclip TARGETS query failed for file URI check: exec: "xclip": executable file not found in $PATH
+I0531 09:43:08.335237 42777 input_loop.go:34] HandleUserInput called with text: "ralph-tui, agent-browser, apm, ck, context-hub. Thats all for now. Creating a specific Ai environment  with all tools, mcp, drivers, etc might be the way to go, but i will leave that up to the\n  swarm as 30% of this software is tmp demo stuff to see how i like it which will either be implementedd into my workfloow or removed permanently"
+I0531 09:43:08.335320 42777 conversation_manager.go:321] Forwarding user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 09:43:08.335336 42777 server.go:1083] Sending user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 09:43:11.272513 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xc19d459f899492b9
+I0531 09:43:12.958207 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xcf9710fc3dab611b
+I0531 09:43:15.363398 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x7488ae7781b59458
+I0531 09:43:15.561298 42777 conversation_manager.go:733] Cancelling in-progress response for conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac
+I0531 09:43:15.561332 42777 server.go:1409] Cancelling conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (killBackgroundTasks=false)
+I0531 09:43:15.561435 42777 server.go:774] Starting conversation update stream for ba83894c-ea00-403a-96a5-1e2f9d0744ac
+I0531 09:46:48.983189 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0xa75675654d2f40d0
+I0531 09:46:49.391696 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x32117926e3899ab9
+I0531 09:51:16.031431 42777 input_loop.go:34] HandleUserInput called with text: "claude-code, bernstein, claw-code, codex, copilot-cli, crush, fforge,b gnhf, grok, iflow-cli, kilocode-cli, letta-code, nanocoder, hermes-agent, catnip, cc-switch-cli, claude-code-router, skills, skills-installer, agent-deck, ralph-tui, agent-browser, apm, ck, context-hub. Thats all for now. Creating a specific Ai environment  with all tools, mcp, drivers, etc might be the way to go, but i will leave that up to the swarm as 30% of this software is tmp demo stuff to see how i like it which will either be implementedd into my workfloow or removed permanently. if this is just installing a bunch of stuff thats probably just going to take up harddrive space, lets think of an elegant way to utilize llm-agent.nix, these specific apps, and a quick and easy way to be able to have one or many of these configured and running"
+I0531 09:51:16.031492 42777 conversation_manager.go:321] Forwarding user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 09:51:16.031502 42777 server.go:1083] Sending user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 09:51:18.806138 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x71bf79391ffda354
+I0531 09:51:25.256512 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xa71cc57b53a84479
+I0531 09:51:28.097082 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xfe8f0deed1c5b3d5
+I0531 09:51:29.580847 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x5c42bb9d9fa7f9e4
+I0531 09:51:31.695539 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xee57ce2c7191d6d5
+I0531 09:51:33.243804 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xc04b77790d4cf9f3
+I0531 09:51:34.984481 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x7b27ef7e7bc67b5c
+I0531 09:51:36.288295 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x9206e745ec19732a
+I0531 09:51:38.267630 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xa499c5eaf9f4185a
+I0531 09:51:39.514390 42777 text_drip.go:173] Drip stopped: lastStepIdx=219, charIdx=1002, length=2566
+I0531 09:52:49.020579 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0x610cac8f05c7607d
+I0531 09:52:49.426606 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xded37efd1736aad8
+I0531 09:54:24.119193 42777 input_loop.go:34] HandleUserInput called with text: "will ai-shell spawn MY fish shell with those binaries, or a bash shell with those binaries?"
+I0531 09:54:24.119274 42777 conversation_manager.go:321] Forwarding user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 09:54:24.119291 42777 server.go:1083] Sending user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 09:54:26.096043 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xe3a96a6de003d59f
+I0531 09:54:26.421150 42777 text_drip.go:173] Drip stopped: lastStepIdx=221, charIdx=230, length=564
+I0531 09:58:48.994793 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0x379c0bcf8aee46f6
+I0531 09:58:49.279920 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x84357183c8b902a8
+I0531 09:59:00.259803 42777 input_loop.go:34] HandleUserInput called with text: "the rebuild is in process it has to rebuild lix. something is going to with antigravity and antigravity-ide desktop files they are executing the apps they will only execute from terminal"
+I0531 09:59:00.259921 42777 conversation_manager.go:321] Forwarding user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 09:59:00.259935 42777 server.go:1083] Sending user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 09:59:02.428427 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xe581e3d4eae5d336
+I0531 09:59:06.165429 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xfb6cade39a3f7c17
+I0531 09:59:08.622158 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x949348b015765fec
+I0531 09:59:10.875934 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xa539266054039679
+I0531 09:59:13.494576 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x6891c2315ab7517e
+I0531 09:59:16.121557 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x547caf94da57e72
+I0531 09:59:18.453367 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xef13685b6886081d
+I0531 09:59:18.726508 42777 text_drip.go:173] Drip stopped: lastStepIdx=235, charIdx=240, length=1408
+I0531 10:00:07.719192 42777 input_loop.go:34] HandleUserInput called with text: "Ahh that was because they were running \"nondeus\" so i had tried to make it unbreakable should another username rotation ever happebn"
+I0531 10:00:07.719264 42777 conversation_manager.go:321] Forwarding user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 10:00:07.719290 42777 server.go:1083] Sending user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 10:00:10.575278 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xa42f4bcd3164b952
+I0531 10:00:11.604619 42777 text_drip.go:173] Drip stopped: lastStepIdx=237, charIdx=624, length=2424
+I0531 10:03:27.522276 42777 input_loop.go:34] HandleUserInput called with text: "for some reason i just a home manager/system version mismatch with home manager runing 26.11 and the system running 26.06"
+I0531 10:03:27.522766 42777 conversation_manager.go:321] Forwarding user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 10:03:27.522777 42777 server.go:1083] Sending user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 10:03:30.373627 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x9e7b591b79a0c39b
+I0531 10:03:34.794284 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:generateContent Trace: 0x861415d87acf822c
+I0531 10:03:37.304426 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x3bdce1583e226fe7
+I0531 10:03:39.144332 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x35d8753db1028ffd
+I0531 10:03:41.012598 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x889905c3d6b729e8
+I0531 10:03:43.248502 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x53ceb977a2feb0d5
+I0531 10:03:45.062754 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x3fa7f28d587b2ea8
+I0531 10:03:46.694718 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xfbc6b7c423cf9eb0
+I0531 10:03:48.257134 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x1bf4ce3e143534f6
+I0531 10:03:50.275143 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x17e20459a71538cb
+I0531 10:03:50.926067 42777 text_drip.go:173] Drip stopped: lastStepIdx=255, charIdx=612, length=1720
+I0531 10:03:51.183380 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0xb6579f9aaf118832
+I0531 10:03:51.416194 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x66f4bf88ef4df9a5
+I0531 10:04:44.996759 42777 input_loop.go:34] HandleUserInput called with text: "why disable the check instead of updating the system or rolling back home-manager"
+I0531 10:04:44.996906 42777 conversation_manager.go:321] Forwarding user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 10:04:44.996932 42777 server.go:1083] Sending user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 10:04:47.942656 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x2fd4c80f771888ff
+I0531 10:04:49.028530 42777 text_drip.go:173] Drip stopped: lastStepIdx=257, charIdx=924, length=2029
+I0531 10:06:40.377845 42777 input_loop.go:34] HandleUserInput called with text: "ok thats reasonable,"
+I0531 10:06:40.377963 42777 conversation_manager.go:321] Forwarding user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 10:06:40.377972 42777 server.go:1083] Sending user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 10:06:42.440962 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x1313af3ddff5f806
+I0531 10:06:42.726133 42777 text_drip.go:173] Drip stopped: lastStepIdx=259, charIdx=159, length=515
+I0531 10:09:49.170042 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0xcca99b7085bc75e0
+I0531 10:09:49.359099 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x3499f784ac198c17
+I0531 10:15:48.955735 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0x86c4156f4fcdc4ec
+I0531 10:15:49.301850 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x1ef5dc1466c19a3f
+I0531 10:19:30.021340 42777 input_loop.go:34] HandleUserInput called with text: "its doing a full build including the kernel the rebuild is over 1300 items at this point"
+I0531 10:19:30.024894 42777 conversation_manager.go:321] Forwarding user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 10:19:30.028025 42777 server.go:1083] Sending user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 10:19:36.101391 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x40040bd3f4768e31
+I0531 10:19:39.787444 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:generateContent Trace: 0xc10a219a092278bc
+I0531 10:19:43.527842 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xa0c3b9ecdb109498
+I0531 10:19:46.149310 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x999f890077c1221e
+I0531 10:19:49.216294 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x8185a29900e8594f
+I0531 10:19:50.968491 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xe5b3812f52ce3a3c
+I0531 10:19:52.701385 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x37a7853969390e18
+I0531 10:19:54.981214 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xdb468517fb7ff100
+I0531 10:19:57.092196 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x25a798e0264cbbfa
+I0531 10:19:57.743440 42777 text_drip.go:173] Drip stopped: lastStepIdx=275, charIdx=501, length=1404
+I0531 10:20:46.967923 42777 input_loop.go:34] HandleUserInput called with text: "why is that superior to re-compiling the updated kernel?"
+I0531 10:20:46.969758 42777 conversation_manager.go:321] Forwarding user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 10:20:46.973180 42777 server.go:1083] Sending user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 10:20:50.545575 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x916f8a5c7ac1bddd
+I0531 10:20:51.494694 42777 text_drip.go:173] Drip stopped: lastStepIdx=277, charIdx=672, length=1824
+I0531 10:20:51.775949 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0xea0b2ccd511d82fa
+I0531 10:20:51.882492 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x29604b42b592c280
+I0531 10:22:15.898816 42777 input_loop.go:34] HandleUserInput called with text: "cancelling the build mid-compile made my fans go crazy im waiting for my hardware to stablize then ill re-execute the buid, what about ollana is there a cache substitute for it?"
+I0531 10:22:15.899525 42777 conversation_manager.go:321] Forwarding user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 10:22:15.900176 42777 server.go:1083] Sending user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 10:22:18.524865 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x4d2b30f4c6743348
+I0531 10:22:19.131441 42777 text_drip.go:173] Drip stopped: lastStepIdx=279, charIdx=456, length=1266
+I0531 10:23:29.989946 42777 input_loop.go:34] HandleUserInput called with text: "it was compiling ollama from source, i believe it was only at 24% when i cancelled the build"
+I0531 10:23:29.990001 42777 conversation_manager.go:321] Forwarding user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 10:23:29.990009 42777 server.go:1083] Sending user message to conversation ba83894c-ea00-403a-96a5-1e2f9d0744ac (items=1, media=0)
+I0531 10:23:33.567693 42777 http_helpers.go:182] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x334c9f71d9c803e4
+I0531 10:23:34.431925 42777 text_drip.go:173] Drip stopped: lastStepIdx=281, charIdx=596, length=1688

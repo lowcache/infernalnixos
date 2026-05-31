@@ -25,5 +25,23 @@
       theme = null;
     };
   };
-
+  xdg.desktopEntries = {
+    antigravity = {
+      name = "Antigravity";
+      comment = "Antigravity Gemini Desktop Application";
+      exec = "${config.home.homeDirectory}/.local/bin/antigravity";
+      icon = "system-run";
+      type = "Application";
+      categories = [ "Utility" "Development" ];
+      mimetype = [ "x-scheme-handler/Antigravity"];  
+    };
+    antigravity-ide = {
+      name = "Antigravity-IDE";
+      comment = "Antigravity Desktop Integrated Development Environment";
+      exec = "${config.home.homeDirectory}/.local/bin/antigravity-ide";
+      icon = "${config.home.homeDirectory}/.local/share/Antigravity IDE/resources/app/resources/linux/code.png";
+      type = "Application";
+      categories = [ "Development" "IDE" ];
+    };
+  };
 }
