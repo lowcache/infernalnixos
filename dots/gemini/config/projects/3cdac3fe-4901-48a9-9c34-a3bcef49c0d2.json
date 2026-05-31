@@ -1,0 +1,14 @@
+{
+  "id": "3cdac3fe-4901-48a9-9c34-a3bcef49c0d2",
+  "name": "/home/lowcache",
+  "projectResources": {
+    "resources": [
+      {
+        "gitFolder": {
+          "folderUri": "file:///home/lowcache",
+          "allowWrite": true
+        }
+      }
+    ]
+  }
+}
