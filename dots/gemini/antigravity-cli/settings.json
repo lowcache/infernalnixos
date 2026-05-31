@@ -44,6 +44,7 @@
     "/home/nondeus/Projects/lcpool",
     "/home/nondeus/Downloads",
     "/home/nondeus/CodeRepo/kalinix",
-    "/home/lowcache/.nix-config"
+    "/home/lowcache/.nix-config",
+    "/home/lowcache"
   ]
 }

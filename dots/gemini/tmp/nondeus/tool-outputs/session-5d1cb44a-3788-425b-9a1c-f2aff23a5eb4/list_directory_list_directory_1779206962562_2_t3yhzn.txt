@@ -1,3 +1,0 @@
-{
-  "output": "Directory listing for /home/nondeus/.mcp-gateway:\ntransitions.json (2 bytes)\nusage.json (2 bytes)\nversion.stamp (6 bytes)"
-}

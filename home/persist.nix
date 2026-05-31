@@ -25,7 +25,8 @@
       ".gemini" = {
         source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/gemini";
         force = true;
-      };    
+      };
+      "Pictures/fromAi/ouputs".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/ai-generatiobn/fooocus/outputs";
     };
     persistence."/persist" = {
       directories =

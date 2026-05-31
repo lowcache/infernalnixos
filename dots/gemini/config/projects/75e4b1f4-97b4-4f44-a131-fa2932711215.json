@@ -1,11 +1,11 @@
 {
   "id": "75e4b1f4-97b4-4f44-a131-fa2932711215",
-  "name": "/home/nondeus",
+  "name": "/home/lowcache",
   "projectResources": {
     "resources": [
       {
         "gitFolder": {
-          "folderUri": "file:///home/nondeus",
+          "folderUri": "file:///home/lowcache",
           "allowWrite": true
         }
       }
