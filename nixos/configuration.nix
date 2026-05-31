@@ -71,6 +71,7 @@
       "d /home/lowcache/Storage/ai-generation 0755 lowcache users"
       "d /home/lowcache/Storage/ai-generation/fooocus 0755 lowcache users"
       "d /home/lowcache/Storage/ai-generation/forge 0755 lowcache users"
+      "d /persist/var/lib/tailscale-vm 0700 root root"
     ];
     services = {
       #greetd.serviceConfig = {
@@ -335,6 +336,7 @@
   nix = {
     settings = {
       experimental-features = [ "nix-command" "flakes" ];
+      trusted-users = [ "root" "lowcache" ];
       auto-optimise-store = true;
       substituters = [
         "https://hyprland.cachix.org"

@@ -99,11 +99,81 @@
     };
   };
 
+  microvm.vms.tailscale = {
+    autostart = false;
+    config = {
+      _module.args.inputs = inputs;
+
+      imports = [
+        inputs.microvm.nixosModules.microvm
+        inputs.sops-nix.nixosModules.sops
+      ];
+
+      networking = {
+        hostName = "tailscale";
+        useNetworkd = true;
+        firewall = {
+          enable = true;
+          allowedUDPPorts = [ 41641 ];
+        };
+      };
+
+      systemd = {
+        network = {
+          enable = true;
+          networks."10-lan" = {
+            matchConfig.Name = "en* eth*";
+            networkConfig.DHCP = "ipv4";
+          };
+        };
+      };
+
+      microvm = {
+        hypervisor = "cloud-hypervisor";
+        mem = 256;
+        vcpu = 1;
+        vsock.cid = 11;
+        interfaces = [{
+          type = "tap";
+          id = "vm-tailscale";
+          mac = "02:00:00:00:00:02";
+        }];
+        shares = [{
+          source = "/persist/var/lib/tailscale-vm";
+          mountPoint = "/var/lib/tailscale";
+          tag = "tailscale-state";
+          proto = "virtiofs";
+        }];
+      };
+
+      boot.kernelParams = [ "random.trust_cpu=on" ];
+
+      services.tailscale = {
+        enable = true;
+        useRoutingFeatures = "both";
+      };
+
+      boot.kernel.sysctl = {
+        "net.ipv4.ip_forward" = 1;
+        "net.ipv6.conf.all.forwarding" = 1;
+      };
+
+      system.stateVersion = "24.11";
+    };
+  };
+
   # Host-side overrides for fast shutdown
   systemd = {
     services = {
       "microvm@net-gate".serviceConfig.TimeoutStopSec = "10s";
       "microvm-virtiofsd@net-gate" = {
+        serviceConfig = {
+          Type = lib.mkForce "simple";
+          TimeoutStopSec = "5s";
+        };
+      };
+      "microvm@tailscale".serviceConfig.TimeoutStopSec = "10s";
+      "microvm-virtiofsd@tailscale" = {
         serviceConfig = {
           Type = lib.mkForce "simple";
           TimeoutStopSec = "5s";
@@ -123,11 +193,24 @@
         # Ensure this network doesn't become the default route for the host
         linkConfig.RequiredForOnline = "no";
       };
+      networks."11-tailscale-tap" = {
+        matchConfig.Name = "vm-tailscale";
+        networkConfig = {
+          Address = [ "192.168.101.1/24" ];
+          DHCPServer = true;
+          IPv4Forwarding = true;
+        };
+        # Ensure this network doesn't become the default route for the host
+        linkConfig.RequiredForOnline = "no";
+      };
     };
   };
   # Host-side networking to communicate with the VM
   # We use systemd-networkd BUT we must ensure it doesn't touch your main interfaces
 
-  # Tell NetworkManager to ignore the VM tap so it doesn't try to manage it
-  networking.networkmanager.unmanaged = [ "interface-name:vm-netgate" ];
+  # Tell NetworkManager to ignore the VM taps so it doesn't try to manage them
+  networking.networkmanager.unmanaged = [
+    "interface-name:vm-netgate"
+    "interface-name:vm-tailscale"
+  ];
 }

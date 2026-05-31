@@ -15,7 +15,6 @@
       "fonts".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/priv.bkup/fonts";
       "kritarc".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/krita-master/kritarc";
       "kritadisplayrc".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/krita-master/kritadisplayrc";
-      
     };
   };
 
