@@ -1,11 +1,11 @@
 {
   "id": "784bb5b2-9d28-46f7-821b-97ffc16fa002",
-  "name": "/home/nondeus/.gemini",
+  "name": "/home/lowcache/.gemini",
   "projectResources": {
     "resources": [
       {
         "gitFolder": {
-          "folderUri": "file:///home/nondeus/.gemini",
+          "folderUri": "file:///home/lowcache/.gemini",
           "allowWrite": true
         }
       }
