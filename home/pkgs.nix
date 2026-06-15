@@ -150,7 +150,7 @@
           jq
           bc
           tor
-          micro-full
+          micro
           cryptsetup
           htop
           bat-extras.batgrep
@@ -183,6 +183,7 @@
           open-websearch
           icm
           mcp-server-fetch
+          llmfit
          # mcp-server-filesystem
           claude-code
           claude-code-router
