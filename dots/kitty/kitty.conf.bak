@@ -21,6 +21,9 @@ tab_separator
 tab_title_template {f'{title[:30]}…' if len(title) > 30 else (title.center(6) if len(title) % 2 == 0 else (title.center(5)))}
 window_margin_width 21.75
 
+allow_remote_control yes
+listen_on unix:@mykitty
+
 map ctrl+0 change_font_size all 0
 map ctrl+c copy_or_interrupt
 map ctrl+equal change_font_size all +1
@@ -34,12 +37,10 @@ map ctrl+underscore change_font_size all -1
 map kitty_mod+f launch --location=hsplit --allow-remote-control kitty +kitten search.py @active-kitty-window-id
 map page_down scroll_page_down
 map page_up scroll_page_up
-
-
-font_family      family="TG Frekuent Mono Variable"
-bold_font        auto
-italic_font      auto
-bold_italic_font auto
+# font_family      family="TG Frekuent Mono Variable"
+# bold_font        auto
+# italic_font      auto
+# bold_italic_font auto
 font_size 11.0
 
 symbol_map U+E000-U+F8FF,U+F0000-U+FFFFD,U+100000-U+10FFFD Symbols Nerd Font
@@ -50,5 +51,15 @@ active_tab_background   #ffcc00
 inactive_tab_foreground #8f93a2
 inactive_tab_background #0f111a
 tab_bar_background      #0f111a
-include colorschemes/Modus Vivendi Tinted.conf
-include colorschemes/Custom.conf
+
+include current.conf
+
+
+
+
+# BEGIN_KITTY_FONTS
+font_family      family="JuliaMono Nerd Font"
+bold_font        auto
+italic_font      auto
+bold_italic_font auto
+# END_KITTY_FONTS

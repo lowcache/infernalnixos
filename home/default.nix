@@ -1,12 +1,11 @@
 { config, pkgs, lib, ... }: {
 
   imports = [
-    ./shell.nix
-    ./pkgs.nix
-    ./session.nix
     ./persist.nix
-    ./browsers.nix
-    ./memd.nix
+    ./pkgs.nix
+    ./scripts.nix
+    ./session.nix
+    ./shell.nix
   ];
 
   home = {
@@ -26,6 +25,7 @@
       theme = null;
     };
   };
+  
   xdg.desktopEntries = {
     antigravity = {
       name = "Antigravity";
