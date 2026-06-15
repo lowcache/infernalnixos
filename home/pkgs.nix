@@ -100,6 +100,7 @@
           matugen
           networkmanagerapplet
           spotify
+          floorp-bin # Firefox-fork backup browser
         ];
         typography = with pkgs; [
           material-symbols
@@ -184,7 +185,7 @@
           icm
           mcp-server-fetch
           llmfit
-         # mcp-server-filesystem
+          # mcp-server-filesystem
           claude-code
           claude-code-router
           gemini-cli

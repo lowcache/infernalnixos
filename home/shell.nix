@@ -47,6 +47,22 @@
   '';
 
   programs = {
+    # Brave Browser (primary). programs.chromium both installs the package and
+    # applies the Wayland/GPU command-line flags. Floorp (backup) is in pkgs.nix.
+    chromium = {
+      enable = true;
+      package = pkgs.brave;
+      commandLineArgs = [
+        "--ozone-platform-hint=auto"
+        "--disable-features=AcceleratedVideoDecodeLinuxGL,AcceleratedVideoEncoder,WaylandWpColorManagerV1"
+        "--disable-gpu-memory-buffer-video-frames"
+        "--enable-features=TouchpadOverscrollHistoryNavigation"
+        "--enable-gpu-rasterization"
+        "--enable-oop-rasterization"
+        "--enable-zero-copy"
+      ];
+    };
+
     fish = {
       enable = true;
       shellInit = ''
