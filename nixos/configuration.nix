@@ -72,6 +72,8 @@
       "d /home/lowcache/Storage/ai-generation/fooocus 0755 lowcache users"
       "d /home/lowcache/Storage/ai-generation/forge 0755 lowcache users"
       "d /persist/var/lib/tailscale-vm 0700 root root"
+      # Disk-backed build temp so nix builds never exhaust the 4G tmpfs root.
+      "d /nix/tmp 1777 root root -"
     ];
     services = {
       #greetd.serviceConfig = {
@@ -83,6 +85,9 @@
       #TTYDeallocate = true;
       #};
       nix-daemon.serviceConfig.KillMode = "process";
+      # Build temp on /nix (root-owned, nixbld-accessible) — never the RAM tmpfs.
+      # Must NOT live under /home/lowcache (0700) or nixbld can't traverse it.
+      nix-daemon.environment.TMPDIR = "/nix/tmp";
       decapitate-fuse-mounts = {
         description = "Force lazy unmount of xdg-document-portal FUSE to release /nix";
         before = [ "local-fs.target" ];

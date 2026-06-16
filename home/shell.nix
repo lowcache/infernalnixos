@@ -69,6 +69,11 @@
         set -gx EDITOR micro
         set -gx BROWSER brave
 
+        # Scratch/temp on the roomy Storage disk, NOT the 4G impermanence tmpfs
+        # root (which fills fast and breaks builds with "broken pipe"/ENOSPC).
+        test -d $HOME/Storage/tmp; or mkdir -p $HOME/Storage/tmp
+        set -gx TMPDIR $HOME/Storage/tmp
+
         # Toolchain Paths & Persistence
         set -gx GOPATH $HOME/.local/share/go
         set -gx CARGO_HOME $HOME/.cargo
