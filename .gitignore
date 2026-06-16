@@ -17,3 +17,6 @@ __pycache__/
 # Per-machine agent state (not config)
 .model/.claude/settings.local.json
 .model/.antigravitycli/
+
+# MkDocs build output
+/site/

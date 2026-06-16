@@ -1,0 +1,141 @@
+site_name: Vol[atile] NixOS
+site_description: >-
+  A stateless, flake-driven NixOS workstation — ephemeral tmpfs root, CachyOS
+  kernel, Lanzaboote Secure Boot, sops-nix secrets, microvm.nix gateways, and a
+  bespoke Qt6/QML Hyprland desktop.
+site_author: lowcache
+site_url: https://volnixos-wiki.pgs.sh/
+repo_url: https://github.com/lowcache/volnixos
+repo_name: lowcache/volnixos
+edit_uri: edit/main/docs/
+copyright: Vol[atile] NixOS · dev lowcache
+
+theme:
+  name: material
+  custom_dir: overrides
+  language: en
+  logo: assets/logo.png
+  favicon: assets/favicon.png
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+  font:
+    text: Inter
+    code: JetBrains Mono
+  palette:
+    - media: "(prefers-color-scheme)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: vol-light
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.tracking
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/lowcache
+      name: lowcache on GitHub
+    - icon: fontawesome/solid/snowflake
+      link: https://github.com/lowcache/volnixos
+      name: Vol[atile] NixOS
+  generator: false
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      permalink_title: Anchor link
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Architecture:
+      - architecture/index.md
+      - Boot & Secure Boot: architecture/boot.md
+      - Impermanence & Persistence: architecture/impermanence.md
+      - Kernel & Performance: architecture/kernel.md
+      - Secrets (sops-nix): architecture/secrets.md
+  - Networking:
+      - networking/index.md
+      - Tor net-gate: networking/net-gate.md
+      - Tailscale VM: networking/tailscale.md
+  - System:
+      - Hybrid GPU: system/gpu.md
+      - AI Stack: system/ai-stack.md
+  - Desktop:
+      - desktop/index.md
+      - Hyprland & UWSM: desktop/hyprland.md
+      - Quickshell (ii): desktop/quickshell.md
+      - Theming Engine: desktop/theming.md
+  - Reference:
+      - Flake Inputs & Outputs: reference/flake.md
+      - Home Manager Modules: reference/home-manager.md
+      - Dotfiles: reference/dotfiles.md
+  - Tooling:
+      - Makefile & Operations: tooling/makefile.md
+      - Fish Functions: tooling/fish.md
+      - Agent Toolchain: tooling/agents.md
+  - Limbo Profile: limbo.md
+  - Troubleshooting: troubleshooting.md

@@ -45,6 +45,7 @@
             ".ollama"
             ".gnupg"
             ".claude"
+            ".codex"
             ".nix-config"
             ".vscode-oss"
             ".antigravity"

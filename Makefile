@@ -15,9 +15,16 @@ THEMES_DIR  := $(II_DIR)/themes
 SCRIPTS_DIR := $(II_DIR)/scripts
 PYTHON      ?= python3
 
+# --- Documentation site (MkDocs Material) ---
+DOCS_PROJECT ?= wiki
+DOCS_REMOTE  ?= pgs.sh
+# Ephemeral MkDocs Material env from the flake's own pinned nixpkgs (no global install).
+MKDOCS = nix shell --impure --expr 'let f = builtins.getFlake (toString ./.); pkgs = f.inputs.nixpkgs.legacyPackages.x86_64-linux; in pkgs.python313.withPackages (ps: [ ps.mkdocs-material ])' -c mkdocs
+
 .PHONY: help switch build test dry-activate boot check fmt update update-nixpkgs gc run-netgate run-tailscale ghc \
         dots-log dots-split dots-remote dots-push dots-pull \
-        theme-list theme-apply theme-check theme-new
+        theme-list theme-apply theme-check theme-new \
+        docs-serve docs-build docs-deploy
 
 help:
 	@echo "Vol NixOS Helper Makefile"
@@ -54,6 +61,11 @@ help:
 	@echo "  make theme-check THEME=<name>   Validate a theme (hex + dangling refs + completeness)"
 	@echo "  make theme-new NAME=\"My Theme\" [COLORS=\"#a #b ...\"] [FROM=<file>] [APPLY=1] [FORCE=1]"
 	@echo "                                  Generate a new standards-compliant theme from colors"
+	@echo ""
+	@echo "Documentation Wiki (MkDocs Material -> $(DOCS_REMOTE)):"
+	@echo "  make docs-serve     Live-preview the docs site locally (http://127.0.0.1:8000)"
+	@echo "  make docs-build     Build the static site to ./site (strict)"
+	@echo "  make docs-deploy    Build then rsync ./site to $(DOCS_REMOTE):/$(DOCS_PROJECT)"
 
 switch:
 	sudo nixos-rebuild switch --flake .#$(HOST)
@@ -143,4 +155,17 @@ theme-new:
 		$(if $(FROM),--from "$(FROM)") \
 		$(if $(APPLY),--apply) \
 		$(if $(FORCE),--force)
+
+# --- Documentation wiki -----------------------------------------------------
+# Builds with MkDocs Material from the flake's pinned nixpkgs and deploys to
+# pgs.sh over SSH+rsync (project URL: https://<user>-$(DOCS_PROJECT).pgs.sh).
+
+docs-serve:
+	$(MKDOCS) serve
+
+docs-build:
+	$(MKDOCS) build --strict
+
+docs-deploy: docs-build
+	rsync --delete -rv ./site/ $(DOCS_REMOTE):/$(DOCS_PROJECT)
 

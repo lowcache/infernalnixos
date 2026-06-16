@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# playwright-mcp-nix — run playwright-mcp pinned to the Nix-provided chromium.
+#
+# Why: the nixpkgs playwright-mcp wrapper bakes PLAYWRIGHT_BROWSERS_PATH to a
+# read-only /nix/store path, and playwright-mcp then tries to install a managed
+# "chrome-for-testing" build *inside* that path -> mkdir EACCES/ENOENT, so the
+# browser never launches (every browser_* tool fails at runtime).
+#
+# Fix: point --executable-path at the chromium that nixpkgs already shipped, run
+# headless + isolated (in-memory profile, no user-data-dir writes), and keep any
+# output files on the roomy persistent /home/lowcache/Storage volume.
+#
+# Verified 2026-06-15: this chromium runs headless on this host (brave hangs; the
+# nix chromium does not). Resolves the binary by glob so it survives nixpkgs
+# bumps without a hardcoded store hash.
+set -euo pipefail
+
+OUT="${PLAYWRIGHT_MCP_OUTPUT:-$HOME/Storage/playwright-mcp}"
+mkdir -p "$OUT"
+
+CHROME="$(ls -1 /nix/store/*-playwright-chromium/chrome-linux64/chrome 2>/dev/null | head -1)"
+
+exec playwright-mcp \
+  --headless --no-sandbox --isolated \
+  --output-dir "$OUT" \
+  ${CHROME:+--executable-path "$CHROME"} \
+  "$@"

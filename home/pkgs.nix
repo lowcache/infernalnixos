@@ -190,6 +190,7 @@
           claude-code-router
           gemini-cli
           github-copilot-cli
+          codex
           rtk
           pkgs.llm-agents.claude-plugins
           pkgs.llm-agents.crush

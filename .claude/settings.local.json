@@ -3,7 +3,12 @@
     "allow": [
       "Bash(rtk ls *)",
       "Read(//tmp/claude-1001/**)",
-      "Bash(rtk read *)"
+      "Bash(rtk read *)",
+      "mcp__gateway__gateway_list_tools",
+      "mcp__gateway__gateway_invoke",
+      "Bash(playwright-mcp --help)",
+      "Bash(env)",
+      "Bash(command -v chromium)"
     ]
   }
 }

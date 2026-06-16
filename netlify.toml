@@ -1,0 +1,9 @@
+# Netlify build configuration. Cloudflare Pages uses the same idea:
+#   Build command:  pip install -r docs/requirements.txt && mkdocs build
+#   Output dir:     site
+[build]
+  publish = "site"
+  command = "pip install -r docs/requirements.txt && mkdocs build --strict"
+
+[build.environment]
+  PYTHON_VERSION = "3.12"
