@@ -22,7 +22,13 @@
       "cava".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/cava";
       "fuzzel".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/fuzzel";
       "wlogout".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/wlogout";
-      "starship.toml".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/starship/starship.toml";
+      # force: Noctalia natively themes starship and replaces this symlink with a
+      # real file (its [palettes.noctalia] block), which made HM refuse to clobber
+      # and failed the switch. force lets HM reclaim the symlink each activation.
+      "starship.toml" = {
+        source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/starship/starship.toml";
+        force = true;
+      };
       "fonts".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/priv.bkup/fonts";
       "kritarc".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/krita-master/kritarc";
       "kritadisplayrc".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/krita-master/kritadisplayrc";

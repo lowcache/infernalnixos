@@ -12,7 +12,7 @@ input {
     touchpad {
         tap
         natural-scroll
-        // off // @tptoggle@   -- toggled by F10 / touchpad_toggle.sh (uncommented = disabled)
+        off // @tptoggle@   -- toggled by F10 / touchpad_toggle.sh (uncommented = disabled)
     }
     mouse {}
     // focus-follows-mouse off to match prior habits.
@@ -23,7 +23,10 @@ input {
 
 layout {
     gaps 8
-    center-focused-column "never"
+    // "on-overflow": the focused column stays put until the row would overflow,
+    // then it centers — far less disorienting than columns sliding off both edges.
+    // Options: "never" | "always" | "on-overflow". Tune to taste.
+    center-focused-column "on-overflow"
     preset-column-widths {
         proportion 0.33333
         proportion 0.5
@@ -82,7 +85,7 @@ binds {
     Mod+W            { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh brave google-chrome-stable zen-browser firefox chromium"; } // Browser
     Mod+C            { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh antigravity code vscodium cursor zed kate gnome-text-editor emacs"; } // Code editor
     Mod+X            { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh kate gedit emacs"; } // Text editor
-    Mod+I            { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh systemsettings gnome-control-center better-control"; } // Settings
+    Mod+I            { spawn-sh "noctalia msg settings-open"; } // Noctalia settings
     Ctrl+Mod+V       { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh pavucontrol-qt pavucontrol"; } // Volume mixer
     Ctrl+Shift+Escape { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh gnome-system-monitor 'kitty -1 fish -c btop'"; } // Task manager
 
