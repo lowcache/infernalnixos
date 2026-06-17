@@ -2,6 +2,7 @@
 
   imports = [
     ./vms.nix
+    ./niri.nix
   ];
 
   # Kernel & Performance
@@ -291,7 +292,10 @@
       enable = true;
       settings = {
         default_session = {
-          command = "${pkgs.tuigreet}/bin/tuigreet --time --cmd 'uwsm start hyprland.desktop'";
+          # Session menu: Hyprland stays the default (--cmd fallback); niri.desktop
+          # (from programs.niri in ./niri.nix) is selectable for the Noctalia v5
+          # second session. Revert = restore the single --cmd line below.
+          command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-session --sessions ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions --cmd 'uwsm start hyprland.desktop'";
           user = "greeter";
         };
       };

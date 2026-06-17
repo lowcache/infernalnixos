@@ -358,11 +358,11 @@
     "lix": {
       "flake": false,
       "locked": {
-        "lastModified": 1781463378,
-        "narHash": "sha256-QwXrhy4E+hcFqceqqbTPaLZpWTRykB5jf6a3bbXKw9k=",
+        "lastModified": 1781658073,
+        "narHash": "sha256-Tts5tsFTKiuZ4S+F4QzUJiE9JLGbCBxiqnBxhwBz2mY=",
         "ref": "refs/heads/main",
-        "rev": "c019a776e9ea34682f9e785547f5267d35173522",
-        "revCount": 19236,
+        "rev": "0d6b372c19a2a86db5549cdda4cd342dec3e312c",
+        "revCount": 19239,
         "type": "git",
         "url": "https://git.lix.systems/lix-project/lix"
       },
@@ -557,6 +557,26 @@
         "type": "github"
       }
     },
+    "noctalia": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1781666546,
+        "narHash": "sha256-9mstXbgi7/FepdoaTB8QqbaME7sdELMdGLGOQHCrVlA=",
+        "owner": "noctalia-dev",
+        "repo": "noctalia",
+        "rev": "6b0e16179645e15693efd94f51109d22b199418c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "noctalia-dev",
+        "repo": "noctalia",
+        "type": "github"
+      }
+    },
     "nur": {
       "inputs": {
         "flake-parts": "flake-parts_3",
@@ -630,6 +650,7 @@
         "nix-cachyos-kernel": "nix-cachyos-kernel",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_3",
+        "noctalia": "noctalia",
         "nur": "nur",
         "quickshell": "quickshell",
         "sops-nix": "sops-nix",

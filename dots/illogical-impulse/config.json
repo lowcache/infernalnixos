@@ -84,9 +84,14 @@
       "widgetsFactor": 1.2,
       "workspaceZoom": 1
     },
-    "perMonitorWallpaper": {},
+    "perMonitorWallpaper": {
+      "Pictures/Wallpapers/paint1.png": "/home/lowcache/eDP-1",
+      "Pictures/Wallpapers/paint2.png": "/home/lowcache/DP-2",
+      "eDP-1": "/home/lowcache/Pictures/Wallpapers/paint1.png",
+      "DP-2": "/home/lowcache/Pictures/Wallpapers/paint2.png"
+    },
     "thumbnailPath": "",
-    "wallpaperPath": "/persist/home/lowcache/Pictures/Wallpapers/nkgmsingle.png",
+    "wallpaperPath": "/home/lowcache/Storage/tmp/ui/wall1.png",
     "widgets": {
       "clock": {
         "cookie": {

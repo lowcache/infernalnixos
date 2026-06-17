@@ -2,10 +2,18 @@
 
   xdg = {
     enable = true;
+    # Move the XDG cache root off the 4G tmpfs onto the roomy ~/Storage volume.
+    # This sets XDG_CACHE_HOME session-wide, so pip/quickshell-ii/llmfit/etc. all
+    # cache to Storage by default instead of filling root (see home/default.nix).
+    cacheHome = "${config.home.homeDirectory}/Storage/.cache";
     configFile = {
       "quickshell".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/quickshell/";
       "hypr".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/hypr";
       "illogical-impulse".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/illogical-impulse";
+      # niri + Noctalia v5 (second session). Live-edit symlinks like quickshell/ii;
+      # Home Manager writes no files here (see home/noctalia.nix), so no collision.
+      "niri".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/niri";
+      "noctalia".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/noctalia";
       "kitty".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/kitty";
       "fastfetch".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/fastfetch";
       "cava".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/cava";
@@ -67,11 +75,17 @@
             ".config/sops"
             ".config/memd"
           ];
+          # Note: with XDG_CACHE_HOME redirected to ~/Storage/.cache (see home/default.nix),
+          # caches no longer land on the 4G tmpfs by default. These entries remain as a
+          # safety net for any app that hardcodes ~/.cache and ignores XDG. ".cache/llmfit"
+          # added after it (an XDG-ignoring cache) filled root tmpfs to 100% on 2026-06-16.
           cache = [
             ".cache/pip"
             ".cache/quickshell"
             ".cache/illogical-impulse"
+            ".cache/noctalia"
             ".cache/nvidia"
+            ".cache/llmfit"
           ];
           local = [
             ".local/share/npm-global"
@@ -81,6 +95,7 @@
             ".local/share/direnv"
             ".local/share/fonts"
             ".local/share/quickshell"
+            ".local/share/noctalia"
             ".local/share/keyrings"
             ".local/share/illogical-impulse"
             ".local/share/Google"
@@ -91,6 +106,7 @@
             ".local/bin"
             ".local/state/quickshell"
             ".local/state/illogical-impulse"
+            ".local/state/noctalia"
             ".local/state/wireplumber"
             ".local/state/memd"
           ];

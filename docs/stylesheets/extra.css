@@ -10,10 +10,15 @@
    ===================================================================== */
 
 :root {
-  --vol-base:    #07200F;
-  --vol-surface: #0b2a16;
-  --vol-surface-2: #0f3520;
-  --vol-line:    #1c5230;
+  /* content canvas: neutral charcoal (faint warm) so green reads as ACCENT */
+  --vol-base:    #101311;
+  --vol-surface: #181c19;
+  --vol-surface-2: #1f2420;
+  /* green chrome: header/tabs sit ABOVE the neutral page as a distinct band */
+  --vol-header:   #0b3019;
+  --vol-header-2: #114a23;
+  --vol-tabs:     #0e2716;
+  --vol-line:    #2a5a3a;
   --vol-green:   #3e9e40;
   --vol-green-2: #65aa6f;
   --vol-neon:    #4de07a;
@@ -21,7 +26,7 @@
   --vol-gold:    #c7aa33;
   --vol-gold-2:  #b1a142;
   --vol-text:    #d6e6da;
-  --vol-muted:   #8fae98;
+  --vol-muted:   #93a59a;
 }
 
 /* ---- Dark scheme (default) ---------------------------------------- */
@@ -48,11 +53,11 @@
   --md-typeset-color:           var(--vol-text);
   --md-typeset-a-color:         var(--vol-green-2);
 
-  --md-code-bg-color:           #061a0d;
+  --md-code-bg-color:           #0c0f0d;
   --md-code-fg-color:           #cfe6d4;
 
-  --md-footer-bg-color:         #051409;
-  --md-footer-bg-color--dark:   #030d06;
+  --md-footer-bg-color:         #0b1a12;
+  --md-footer-bg-color--dark:   #081410;
 }
 
 /* ---- Light scheme (defined for completeness) ---------------------- */
@@ -65,12 +70,12 @@
 
 /* ---- Header: subtle circuit-board gradient ------------------------ */
 .md-header {
-  background: linear-gradient(90deg, #07200F 0%, #0e3a1c 55%, #143f22 100%);
-  box-shadow: 0 0 0 1px rgba(77, 224, 122, 0.18), 0 2px 14px rgba(0, 0, 0, 0.6);
+  background: linear-gradient(90deg, var(--vol-header) 0%, var(--vol-header-2) 70%, #15511f 100%);
+  box-shadow: 0 0 0 1px rgba(77, 224, 122, 0.20), 0 2px 16px rgba(0, 0, 0, 0.7);
 }
 .md-tabs {
-  background: linear-gradient(90deg, #061a0d 0%, #0b2a16 100%);
-  border-bottom: 1px solid rgba(77, 224, 122, 0.16);
+  background: var(--vol-tabs);
+  border-bottom: 1px solid rgba(77, 224, 122, 0.18);
 }
 
 /* ---- Links + accents ---------------------------------------------- */

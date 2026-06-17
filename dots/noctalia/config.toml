@@ -1,0 +1,16 @@
+# Vol NixOS — Noctalia v5 config-dir base (~/.config/noctalia/config.toml, live via
+# out-of-store symlink). The shell merges every *.toml here with runtime overrides in
+# the state dir (~/.local/state/noctalia/settings.toml). Schema: https://docs.noctalia.dev/v5
+# Validate after editing: `noctalia config validate`. Build the bar/widget layout with the
+# in-shell widgets_editor, then capture it here once validate confirms the schema.
+
+[shell]
+font = "JetBrainsMono Nerd Font"
+settings_show_advanced = true
+
+# Color engine: drive the M3 palette from apply_theme.py.
+# theme.source = "custom" loads ~/.config/noctalia/palettes/<custom_palette>.json (hot-reloaded).
+[theme]
+mode = "dark"
+source = "custom"
+custom_palette = "volnix"

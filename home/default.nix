@@ -45,6 +45,15 @@ let
       GTK_USE_PORTAL = "1";
       # Wayland support for Electron/Chromium
       NIXOS_OZONE_WL = "1";
+      # Keep scratch + caches OFF the 4G tmpfs root: redirect to the roomy ~/Storage
+      # volume at the environment level so it holds for every session process (shells,
+      # tools, the Claude Code harness) without depending on per-action discipline.
+      # XDG_CACHE_HOME is set canonically via xdg.cacheHome in persist.nix (setting it
+      # here would conflict with home-manager's xdg module). It is honored by pip,
+      # quickshell/ii (applycolor.sh), llmfit, etc.
+      TMPDIR = "${config.home.homeDirectory}/Storage/tmp";
+      PIP_CACHE_DIR = "${config.home.homeDirectory}/Storage/.cache/pip";
+      CLAUDE_CODE_TMPDIR = "${config.home.homeDirectory}/Storage/tmp/claude";
       # nvidia specific (commented out to allow Hyprland session to render on integrated AMD GPU)
       # LIBVA_DRIVER_NAME = "nvidia";
       # GBM_BACKEND = "nvidia-drm";
@@ -61,6 +70,7 @@ in
     ./pkgs.nix
     ./scripts.nix
     ./shell.nix
+    ./noctalia.nix
   ];
 
   home = {
@@ -69,6 +79,10 @@ in
     stateVersion = "24.11";
     enableNixpkgsReleaseCheck = false;
     sessionVariables = sessionVariables;
+    # Ensure the redirected scratch/cache roots exist before anything writes to them.
+    activation.ensureScratchDirs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      run mkdir -p "$HOME/Storage/tmp/claude" "$HOME/Storage/.cache/pip"
+    '';
     pointerCursor = {
       package = pkgs.bibata-cursors-translucent;
       name = "Bibata-Modern-Translucent";

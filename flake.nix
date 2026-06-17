@@ -26,6 +26,19 @@
       url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Noctalia v5 (C++/native shell). follows nixpkgs per decision (source build,
+    # no Cachix). Wired via home/noctalia.nix (homeModules.default).
+    noctalia = {
+      url = "github:noctalia-dev/noctalia";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    # Pinned v4.7.7 backup (emergency rollback). Kept COMMENTED so an unused input
+    # can't fail `nix flake lock`. To use: uncomment, lock, point home/noctalia.nix
+    # package at inputs.noctalia-stable.packages.${system}.default.
+    # noctalia-stable = {
+    #   url = "github:noctalia-dev/noctalia?ref=v4.7.7";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
     lix-module = {
       url = "git+https://git.lix.systems/lix-project/nixos-module";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -49,14 +62,15 @@
   };
 
   outputs =
-    { self
-    , nixpkgs
-    , home-manager
-    , microvm
-    , volinit
-    , nur
-    , llm-agents
-    , ...
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      microvm,
+      volinit,
+      nur,
+      llm-agents,
+      ...
     }@inputs:
     {
       nixosConfigurations.volnix = nixpkgs.lib.nixosSystem {
@@ -105,10 +119,11 @@
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = { inherit inputs; };
             home-manager.users.inlimbo =
-              { config
-              , pkgs
-              , lib
-              , ...
+              {
+                config,
+                pkgs,
+                lib,
+                ...
               }:
               {
                 imports = [

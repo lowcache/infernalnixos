@@ -3,6 +3,12 @@
 
 HOST ?= volnix
 
+# Stage rebuild temp on the fast Storage NVMe, not the 4G RAM tmpfs root.
+# sudo resets the environment, so pass TMPDIR explicitly on privileged targets.
+# (Daemon-internal build temp is set separately to /nix/tmp in configuration.nix,
+# since nixbld users can't traverse the 0700 home that ~/Storage lives under.)
+REBUILD_TMPDIR ?= $(HOME)/Storage/tmp
+
 # --- Dotfiles subtree config (override on the command line if needed) ---
 DOTS_PREFIX       ?= dots
 DOTS_REMOTE       ?= dotfiles
@@ -68,19 +74,19 @@ help:
 	@echo "  make docs-deploy    Build then rsync ./site to $(DOCS_REMOTE):/$(DOCS_PROJECT)"
 
 switch:
-	sudo nixos-rebuild switch --flake .#$(HOST)
+	sudo TMPDIR=$(REBUILD_TMPDIR) nixos-rebuild switch --flake .#$(HOST)
 
 build:
-	nixos-rebuild build --flake .#$(HOST)
+	TMPDIR=$(REBUILD_TMPDIR) nixos-rebuild build --flake .#$(HOST)
 
 test:
-	sudo nixos-rebuild test --flake .#$(HOST)
+	sudo TMPDIR=$(REBUILD_TMPDIR) nixos-rebuild test --flake .#$(HOST)
 
 dry-activate:
-	sudo nixos-rebuild dry-activate --flake .#$(HOST)
+	sudo TMPDIR=$(REBUILD_TMPDIR) nixos-rebuild dry-activate --flake .#$(HOST)
 
 boot:
-	sudo nixos-rebuild boot --flake .#$(HOST)
+	sudo TMPDIR=$(REBUILD_TMPDIR) nixos-rebuild boot --flake .#$(HOST)
 
 run-netgate:
 	nix run .#net-gate

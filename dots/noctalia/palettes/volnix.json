@@ -1,0 +1,21 @@
+{
+  "_comment": "Vol NixOS M3 palette for Noctalia v5. apply_theme.py overwrites this at runtime (hot-reloaded). 16 roles per variant; light optional. Placeholder forest/green seed matching project branding.",
+  "dark": {
+    "mPrimary": "#7fd88f",
+    "mOnPrimary": "#003917",
+    "mSecondary": "#b6ccb6",
+    "mOnSecondary": "#213527",
+    "mTertiary": "#a4cdd4",
+    "mOnTertiary": "#04363c",
+    "mError": "#ffb4ab",
+    "mOnError": "#690005",
+    "mSurface": "#101311",
+    "mOnSurface": "#e0e3dd",
+    "mSurfaceVariant": "#414941",
+    "mOnSurfaceVariant": "#c0c9bf",
+    "mOutline": "#8a938a",
+    "mShadow": "#000000",
+    "mHover": "#1b211c",
+    "mOnHover": "#e0e3dd"
+  }
+}
