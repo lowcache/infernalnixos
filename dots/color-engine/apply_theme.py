@@ -259,6 +259,56 @@ plugin {{
         except Exception as e:
             if verbose: print(f"Error updating starship: {e}")
 
+    # 6. Noctalia v5 palette (Material 3) — ADDITIVE. Writes the custom palette
+    # consumed by the niri/Noctalia session (theme.source="custom",
+    # custom_palette="volnix"); hot-reloaded live by Noctalia on file change.
+    # Wrapped in its own try/except so it never affects the ii outputs above.
+    NOCTALIA_PALETTE = os.path.expanduser("~/.config/noctalia/palettes/volnix.json")
+    def _resolve(section, role):
+        key = mappings.get(section, {}).get(role)
+        v = palette.get(key) if key else None
+        if v and not v.startswith("#"): v = "#" + v
+        return v
+    def _pick(*cands):
+        for c in cands:
+            if c: return c
+        return None
+    try:
+        roles = {
+            "mPrimary":          _pick(_resolve("accents", "primary_active"), primary),
+            "mOnPrimary":        _pick(_resolve("text", "on_primary"), bg),
+            "mSecondary":        _pick(_resolve("accents", "secondary_active"), secondary),
+            "mOnSecondary":      _pick(_resolve("text", "on_secondary"), bg),
+            "mTertiary":         _pick(_resolve("accents", "tertiary_active"), secondary),
+            "mOnTertiary":       _pick(_resolve("text", "on_tertiary"), bg),
+            "mError":            _pick(_resolve("states", "error"), "#ffb4ab"),
+            "mOnError":          _pick(_resolve("states", "on_error"), bg),
+            "mSurface":          _pick(_resolve("surfaces", "main_bg"), bg),
+            "mOnSurface":        _pick(_resolve("text", "on_surface"), _resolve("text", "normal"), fg),
+            "mSurfaceVariant":   _pick(_resolve("surfaces", "surface_variant"), bg),
+            "mOnSurfaceVariant": _pick(_resolve("text", "on_surface_variant"), fg),
+            "mOutline":          _pick(_resolve("accents", "outline"), secondary),
+            "mShadow":           "#000000",
+            "mHover":            _pick(_resolve("surfaces", "surface_container_high"), bg),
+            "mOnHover":          _pick(_resolve("text", "on_surface"), _resolve("text", "normal"), fg),
+        }
+        tnames = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]
+        on_surface = roles["mOnSurface"]
+        term_block = {
+            "background": roles["mSurface"], "foreground": on_surface,
+            "cursor": roles["mPrimary"], "cursorText": roles["mSurface"],
+            "selectionBg": roles["mPrimary"], "selectionFg": roles["mSurface"],
+            "normal": {n: (term_hex[i] or on_surface) for i, n in enumerate(tnames)},
+            "bright": {n: (term_hex[i + 8] or on_surface) for i, n in enumerate(tnames)},
+        }
+        dark = dict(roles); dark["terminal"] = term_block
+        os.makedirs(os.path.dirname(NOCTALIA_PALETTE), exist_ok=True)
+        with open(NOCTALIA_PALETTE, "w") as f:
+            json.dump({"dark": dark}, f, indent=2)
+        if verbose: print("Updated Noctalia palette (volnix.json)")
+    except Exception as e:
+        if verbose: print(f"Error updating Noctalia palette: {e}")
+
     return True
 
 if __name__ == "__main__":

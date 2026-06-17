@@ -31,10 +31,12 @@ let
       QML2_IMPORT_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/qml:${pkg}/lib/qml") qtDependencies + ":${config.home.homeDirectory}/.config/quickshell/ii";
       QML_IMPORT_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/qml:${pkg}/lib/qml") qtDependencies + ":${config.home.homeDirectory}/.config/quickshell/ii";
       QT_PLUGIN_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/plugins:${pkg}/lib/plugins") qtDependencies;
-      # wayland/hyprland/quickshell variables
-      XDG_CURRENT_DESKTOP = "Hyprland";
+      # Wayland session vars. XDG_CURRENT_DESKTOP / XDG_SESSION_DESKTOP are deliberately
+      # NOT hardcoded here: each compositor session self-declares its identity, and a
+      # global "Hyprland" value mislabeled the niri session (muddying portals/app hints).
+      #   - hyprland.desktop: launched via `uwsm start -e -D Hyprland` → uwsm exports them.
+      #   - niri.desktop: `niri-session` exports XDG_CURRENT_DESKTOP=niri itself.
       XDG_SESSION_TYPE = "wayland";
-      XDG_SESSION_DESKTOP = "Hyprland";
       QT_QPA_PLATFORM = "wayland";
       QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
       QT_AUTO_SCREEN_SCALE_FACTOR = "1";

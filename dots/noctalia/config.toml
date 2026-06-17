@@ -5,7 +5,7 @@
 # in-shell widgets_editor, then capture it here once validate confirms the schema.
 
 [shell]
-font = "JetBrainsMono Nerd Font"
+font_family = "JetBrainsMono Nerd Font"
 settings_show_advanced = true
 
 # Color engine: drive the M3 palette from apply_theme.py.

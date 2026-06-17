@@ -1,21 +1,48 @@
 {
-  "_comment": "Vol NixOS M3 palette for Noctalia v5. apply_theme.py overwrites this at runtime (hot-reloaded). 16 roles per variant; light optional. Placeholder forest/green seed matching project branding.",
   "dark": {
-    "mPrimary": "#7fd88f",
-    "mOnPrimary": "#003917",
-    "mSecondary": "#b6ccb6",
-    "mOnSecondary": "#213527",
-    "mTertiary": "#a4cdd4",
-    "mOnTertiary": "#04363c",
-    "mError": "#ffb4ab",
+    "mPrimary": "#AAD71E",
+    "mOnPrimary": "#151515",
+    "mSecondary": "#fbcb97",
+    "mOnSecondary": "#151515",
+    "mTertiary": "#1ed759",
+    "mOnTertiary": "#151515",
+    "mError": "#FFB4AB",
     "mOnError": "#690005",
-    "mSurface": "#101311",
-    "mOnSurface": "#e0e3dd",
-    "mSurfaceVariant": "#414941",
-    "mOnSurfaceVariant": "#c0c9bf",
-    "mOutline": "#8a938a",
+    "mSurface": "#151515",
+    "mOnSurface": "#f3ecd4",
+    "mSurfaceVariant": "#2e2e2e",
+    "mOnSurfaceVariant": "#c1c1c1",
+    "mOutline": "#888888",
     "mShadow": "#000000",
-    "mHover": "#1b211c",
-    "mOnHover": "#e0e3dd"
+    "mHover": "#2e2e2e",
+    "mOnHover": "#f3ecd4",
+    "terminal": {
+      "background": "#151515",
+      "foreground": "#f3ecd4",
+      "cursor": "#AAD71E",
+      "cursorText": "#151515",
+      "selectionBg": "#AAD71E",
+      "selectionFg": "#151515",
+      "normal": {
+        "black": "#1c1c1c",
+        "red": "#96333E",
+        "green": "#1ed759",
+        "yellow": "#E8E53F",
+        "blue": "#AAD71E",
+        "magenta": "#F7882D",
+        "cyan": "#90C722",
+        "white": "#c1c1c1"
+      },
+      "bright": {
+        "black": "#404040",
+        "red": "#1ed759",
+        "green": "#fbcb97",
+        "yellow": "#f3ecd4",
+        "blue": "#AAD71E",
+        "magenta": "#F7882D",
+        "cyan": "#90C722",
+        "white": "#f7f4ec"
+      }
+    }
   }
 }

@@ -45,7 +45,7 @@
       "enableTerminal": false,
       "masterTheme": {
         "enable": true,
-        "jsonPath": "~/.config/illogical-impulse/themes/amalgamation.json",
+        "jsonPath": "~/.config/color-engine/themes/radioactive_slime.json",
         "verboseOutput": true
       },
       "terminalGenerationProps": {

@@ -34,7 +34,7 @@ pre_process() {
     mkdir -p "$CACHE_DIR"/user/generated
 }
 
-    ~/.config/illogical-impulse/scripts/apply_theme.py petrified_spittoon
+    ~/.config/color-engine/apply_theme.py
 post_process() {
     handle_kde_material_you_colors > /dev/null 2>&1 &
     "$SCRIPT_DIR/code/material-code-set-color.sh" > /dev/null 2>&1 &
@@ -130,7 +130,7 @@ switch() {
         # But matugen already applied some themes.
     fi
 
-    ~/.config/illogical-impulse/scripts/apply_theme.py petrified_spittoon
+    ~/.config/color-engine/apply_theme.py
     post_process
 }
 

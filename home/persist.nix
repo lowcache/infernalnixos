@@ -10,6 +10,9 @@
       "quickshell".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/quickshell/";
       "hypr".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/hypr";
       "illogical-impulse".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/illogical-impulse";
+      # Compositor-agnostic color engine (apply_theme.py + themes/), used by both the
+      # Hyprland/ii and niri/Noctalia sessions. Moved out of dots/illogical-impulse.
+      "color-engine".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/color-engine";
       # niri + Noctalia v5 (second session). Live-edit symlinks like quickshell/ii;
       # Home Manager writes no files here (see home/noctalia.nix), so no collision.
       "niri".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/niri";

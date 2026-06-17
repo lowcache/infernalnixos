@@ -283,7 +283,6 @@
         setwall = {
           description = "Set wallpaper for a specific monitor or globally";
           body = ''
-            set -l script ~/.config/quickshell/ii/scripts/colors/switchwall.sh
             if test (count $argv) -eq 0
               echo "Usage: setwall <image_path> [monitor_name]"
               echo "Example: setwall ~/Pictures/wall.png DP-1"
@@ -291,14 +290,28 @@
             end
             set -l img (realpath $argv[1])
             set -l mon $argv[2]
-            # Update the wallpaper.png symlink for matugen service
+            # Convention symlink (referenced elsewhere); harmless on either session.
             ln -sf "$img" ~/Pictures/wallpaper.png
-            if test -n "$mon"
-              echo "Setting wallpaper for $mon..."
-              $script --monitor $mon --image "$img"
+            if set -q NIRI_SOCKET
+              # niri + Noctalia: WALLPAPER ONLY. No color logic — apply_theme.py is the
+              # single source of truth for the colorscheme, and nothing here clobbers it
+              # (no matugen on this path). noctalia msg wallpaper-set is persisted.
+              if test -n "$mon"
+                noctalia msg wallpaper-set "$mon" "$img"
+              else
+                noctalia msg wallpaper-set "$img"
+              end
             else
-              echo "Setting wallpaper globally..."
-              $script --image "$img"
+              # Hyprland/quickshell-ii: switchwall.sh runs matugen, so it re-runs
+              # apply_theme.py at the end to restore the canonical scheme.
+              set -l script ~/.config/quickshell/ii/scripts/colors/switchwall.sh
+              if test -n "$mon"
+                echo "Setting wallpaper for $mon..."
+                $script --monitor $mon --image "$img"
+              else
+                echo "Setting wallpaper globally..."
+                $script --image "$img"
+              end
             end
           '';
         };
