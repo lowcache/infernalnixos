@@ -61,9 +61,13 @@
           name = "krita";
           paths = [ pkgs.krita ];
           nativeBuildInputs = [ pkgs.makeWrapper ];
+          # Compositor-aware platform: Qt6-native-Wayland Krita froze on canvas/tab
+          # switch under Hyprland + hybrid GPU (decision #4), so force xcb (XWayland)
+          # there. niri has no built-in XWayland and native Wayland Krita works fine
+          # (better stylus/tablet support too), so use wayland under niri.
           postBuild = ''
             wrapProgram $out/bin/krita \
-              --set QT_QPA_PLATFORM xcb
+              --run 'if [ -n "$NIRI_SOCKET" ]; then export QT_QPA_PLATFORM=wayland; else export QT_QPA_PLATFORM=xcb; fi'
           '';
         };
         hyprland = with pkgs; [
