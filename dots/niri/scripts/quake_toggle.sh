@@ -1,44 +1,32 @@
 #!/usr/bin/env bash
-# Quake terminal toggle for niri (port of the Hyprland quake_toggle.sh).
-# Strategy per state.md §5: a kitty instance with app-id "quake" parked on a
-# dedicated "quake" stash workspace; toggle = move it to the focused workspace
-# (floating, revealed) or back to the stash. Verb-swap of hyprctl -> niri msg.
-#
-# INERT until symlinked (Phase 1). Requires: niri, kitty, jq.
+# Quake drop-down terminal for niri.
+# A floating kitty (app-id "quake") is parked on a declared named workspace
+# "scratch" when hidden. Toggle: show on the active workspace, or hide to scratch.
+# Requires: niri, kitty, jq. "scratch" workspace is declared in config.kdl.
 set -euo pipefail
-LOG="/tmp/quake_toggle_niri.log"
-exec 2>>"$LOG"; echo "--- $(date) $* ---" >>"$LOG"
-
 APPID="quake"
-STASH="quake"   # named stash workspace
+SCRATCH="scratch"
 
-win_json() { niri msg --json windows; }
+win=$(niri msg --json windows | jq -c ".[] | select(.app_id==\"$APPID\")" | head -n1)
 
-# Find the quake window (by app-id). Empty if not running.
-QUAKE=$(win_json | jq -c ".[] | select(.app_id == \"$APPID\")" 2>/dev/null | head -n1)
-
-if [ -z "$QUAKE" ]; then
-    echo "quake not running, launching floating" >>"$LOG"
-    niri msg action spawn -- kitty --single-instance --app-id "$APPID"
-    # The window-rule (open-floating) in config.kdl floats it on the focused ws.
+# Not running yet -> launch (window-rule open-floating floats it on the current ws).
+if [ -z "$win" ]; then
+    kitty --app-id "$APPID" & disown
     exit 0
 fi
 
-WIN_ID=$(printf '%s' "$QUAKE" | jq -r '.id')
-WIN_WS=$(printf '%s' "$QUAKE" | jq -r '.workspace_id')
-IS_FOCUSED=$(printf '%s' "$QUAKE" | jq -r '.is_focused')
+win_id=$(jq '.id' <<<"$win")
+win_ws=$(jq '.workspace_id' <<<"$win")
 
-# Current focused workspace id.
-CUR_WS=$(niri msg --json workspaces | jq -r '.[] | select(.is_focused == true) | .id')
+active=$(niri msg --json workspaces | jq -c '.[] | select(.is_active)' | head -n1)
+active_id=$(jq '.id' <<<"$active")
+active_idx=$(jq '.idx' <<<"$active")
 
-if [ "$WIN_WS" = "$CUR_WS" ] && [ "$IS_FOCUSED" = "true" ]; then
-    # Visible and focused -> stash it away.
-    echo "stashing quake (id=$WIN_ID) to $STASH" >>"$LOG"
-    niri msg action move-window-to-workspace --window-id "$WIN_ID" "$STASH" || \
-        niri msg action move-window-to-workspace "$STASH"
+if [ "$win_ws" = "$active_id" ]; then
+    # Visible on the active workspace -> hide to scratch.
+    niri msg action move-window-to-workspace "$SCRATCH" --window-id "$win_id"
 else
-    # Hidden or unfocused -> bring to current workspace, float, focus.
-    echo "revealing quake (id=$WIN_ID)" >>"$LOG"
-    niri msg action move-window-to-workspace --window-id "$WIN_ID" "$CUR_WS" 2>/dev/null || true
-    niri msg action focus-window --id "$WIN_ID" 2>/dev/null || true
+    # Hidden (on scratch or elsewhere) -> bring to active workspace and focus.
+    niri msg action move-window-to-workspace "$active_idx" --window-id "$win_id" --focus true
+    niri msg action focus-window --id "$win_id"
 fi

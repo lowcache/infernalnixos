@@ -1,6 +1,7 @@
-// Vol NixOS — niri compositor config (INERT until symlinked via home/persist.nix in Phase 1).
-// niri 25.11 (KDL). Validate next session with: niri validate -c dots/niri/config.kdl
-// Noctalia v5 is the shell/bar — launched via spawn-at-startup below.
+// Vol NixOS — niri compositor config (niri 26.04, KDL). Live via out-of-store symlink.
+// Validate: niri validate -c ~/.config/niri/config.kdl   (hot-reloads on save)
+// Keybinds ported from dots/hypr/hyprland/keybinds.conf to match muscle memory.
+// Noctalia v5 is the shell/bar (spawn-at-startup below); shell actions use `noctalia msg`.
 
 input {
     keyboard {
@@ -11,12 +12,13 @@ input {
     touchpad {
         tap
         natural-scroll
+        // off // @tptoggle@   -- toggled by F10 / touchpad_toggle.sh (uncommented = disabled)
     }
     mouse {}
-    // Focus follows mouse can be enabled later; left off to match current ii habits.
+    // focus-follows-mouse off to match prior habits.
 }
 
-// Outputs: niri auto-detects. Add explicit blocks after `niri msg outputs` next session.
+// Outputs: niri auto-detects. Pin explicitly after `niri msg outputs` if needed.
 // output "eDP-1" { mode "1920x1080@60.000"; scale 1.0 }
 
 layout {
@@ -28,20 +30,27 @@ layout {
         proportion 0.66667
     }
     default-column-width { proportion 0.5; }
+    // Neon focus-ring (toxic/radioactive_slime primary). TODO: drive from color-engine.
     focus-ring {
         width 2
+        active-color "#B4FF00"
+        inactive-color "#2e2e2e"
     }
     border {
         off
     }
 }
 
-// --- Startup: launch Noctalia v5 shell (bar, control center, panels) ---
+// --- Startup: Noctalia v5 shell (bar, control center, panels) ---
 spawn-at-startup "noctalia"
-// Wallpaper/portals are handled by Noctalia + the NixOS xdg.portal config.
 
 prefer-no-csd
 screenshot-path "~/Storage/screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
+
+// Quake stash: a declared named workspace is always the LOWEST index (idx 1),
+// so the quake terminal parks here when hidden and the real (dynamic) workspaces
+// occupy idx 2+. The Mod+1..9 binds therefore target indices 2..10 (see below).
+workspace "scratch"
 
 // Quake terminal: floating kitty (app-id "quake"), toggled by the niri-port script.
 window-rule {
@@ -51,48 +60,112 @@ window-rule {
 }
 
 binds {
-    // --- Session / shell ---
-    Mod+Return       { spawn "kitty"; }
-    Mod+Space        { spawn "fuzzel"; }        // or noctalia's launcher once mapped
+    // ===== Shell / Noctalia (replaces quickshell IPC) =====
+    Mod+Space        { spawn-sh "noctalia msg panel-toggle launcher"; }      // Launcher (was Super-tap)
+    Mod+Tab          { toggle-overview; }                                    // Overview
+    Mod+A            { spawn-sh "noctalia msg panel-toggle control-center"; } // Left sidebar -> control center
+    Mod+N            { spawn-sh "noctalia msg panel-toggle control-center"; } // Right sidebar -> control center
+    Mod+J            { spawn-sh "noctalia msg bar-toggle"; }                 // Toggle bar
+    Mod+M            { spawn-sh "noctalia msg panel-toggle control-center media"; } // Media controls
+    Mod+Period       { spawn-sh "noctalia msg panel-toggle launcher /emo"; } // Emoji picker
+    Mod+Slash        { show-hotkey-overlay; }                                // Cheatsheet
+    Mod+V            { spawn-sh "cliphist list | fuzzel --dmenu | cliphist decode | wl-copy"; } // Clipboard history
+    Ctrl+Alt+Delete  { spawn-sh "wlogout -p layer-shell"; }                  // Session menu
+    F10              { spawn-sh "~/.config/niri/scripts/touchpad_toggle.sh"; }      // Touchpad on/off (ASUS Fn)
+    XF86TouchpadToggle { spawn-sh "~/.config/niri/scripts/touchpad_toggle.sh"; }    // Touchpad on/off
+
+    // ===== Apps =====
+    Mod+Return       { spawn-sh "~/.config/niri/scripts/quake_toggle.sh toggle"; } // Quake terminal
+    Mod+T            { spawn "kitty"; }                                       // Terminal
+    Ctrl+Alt+T       { spawn "kitty"; }                                       // Terminal (alt)
+    Mod+E            { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh dolphin nautilus nemo thunar 'kitty -1 fish -c yazi'"; } // Files
+    Mod+W            { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh brave google-chrome-stable zen-browser firefox chromium"; } // Browser
+    Mod+C            { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh antigravity code vscodium cursor zed kate gnome-text-editor emacs"; } // Code editor
+    Mod+X            { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh kate gedit emacs"; } // Text editor
+    Mod+I            { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh systemsettings gnome-control-center better-control"; } // Settings
+    Ctrl+Mod+V       { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh pavucontrol-qt pavucontrol"; } // Volume mixer
+    Ctrl+Shift+Escape { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh gnome-system-monitor 'kitty -1 fish -c btop'"; } // Task manager
+
+    // ===== Window =====
     Mod+Q            { close-window; }
-    Mod+Grave        { spawn "bash" "-c" "~/.config/niri/scripts/quake_toggle.sh toggle"; }
-
-    // --- Focus / movement (scrollable tiling) ---
-    Mod+H            { focus-column-left; }
-    Mod+L            { focus-column-right; }
-    Mod+J            { focus-window-down; }
-    Mod+K            { focus-window-up; }
-    Mod+Shift+H      { move-column-left; }
-    Mod+Shift+L      { move-column-right; }
-    Mod+Shift+J      { move-window-down; }
-    Mod+Shift+K      { move-window-up; }
-
-    // --- Columns / windows ---
+    Alt+F4           { close-window; }
+    Mod+Alt+Space    { toggle-window-floating; }
+    Mod+D            { maximize-column; }       // "Maximize"
+    Mod+F            { fullscreen-window; }      // Fullscreen
+    // Focus (arrows + brackets, per Hyprland binds)
+    Mod+Left         { focus-column-left; }
+    Mod+Right        { focus-column-right; }
+    Mod+Up           { focus-window-up; }
+    Mod+Down         { focus-window-down; }
+    Mod+BracketLeft  { focus-column-left; }
+    Mod+BracketRight { focus-column-right; }
+    // Move
+    Mod+Shift+Left   { move-column-left; }
+    Mod+Shift+Right  { move-column-right; }
+    Mod+Shift+Up     { move-window-up; }
+    Mod+Shift+Down   { move-window-down; }
     Mod+R            { switch-preset-column-width; }
-    Mod+F            { maximize-column; }
-    Mod+Shift+F      { fullscreen-window; }
-    Mod+V            { toggle-window-floating; }
-    Mod+W            { toggle-column-tabbed-display; }
 
-    // --- Workspaces ---
-    Mod+1            { focus-workspace 1; }
-    Mod+2            { focus-workspace 2; }
-    Mod+3            { focus-workspace 3; }
-    Mod+4            { focus-workspace 4; }
-    Mod+5            { focus-workspace 5; }
-    Mod+Shift+1      { move-column-to-workspace 1; }
-    Mod+Shift+2      { move-column-to-workspace 2; }
-    Mod+Shift+3      { move-column-to-workspace 3; }
-    Mod+Shift+4      { move-column-to-workspace 4; }
-    Mod+Shift+5      { move-column-to-workspace 5; }
+    // ===== Workspaces =====
+    // Indices are offset by +1: idx 1 is the hidden "scratch" stash, so workspace
+    // "1" (what you press Mod+1 for) is idx 2, ... workspace "9" is idx 10.
+    Mod+1            { focus-workspace 2; }
+    Mod+2            { focus-workspace 3; }
+    Mod+3            { focus-workspace 4; }
+    Mod+4            { focus-workspace 5; }
+    Mod+5            { focus-workspace 6; }
+    Mod+6            { focus-workspace 7; }
+    Mod+7            { focus-workspace 8; }
+    Mod+8            { focus-workspace 9; }
+    Mod+9            { focus-workspace 10; }
+    Mod+Alt+1        { move-column-to-workspace 2; }
+    Mod+Alt+2        { move-column-to-workspace 3; }
+    Mod+Alt+3        { move-column-to-workspace 4; }
+    Mod+Alt+4        { move-column-to-workspace 5; }
+    Mod+Alt+5        { move-column-to-workspace 6; }
+    Mod+Alt+6        { move-column-to-workspace 7; }
+    Mod+Alt+7        { move-column-to-workspace 8; }
+    Mod+Alt+8        { move-column-to-workspace 9; }
+    Mod+Alt+9        { move-column-to-workspace 10; }
     Mod+Page_Down    { focus-workspace-down; }
     Mod+Page_Up      { focus-workspace-up; }
+    Ctrl+Mod+Right   { focus-workspace-down; }
+    Ctrl+Mod+Left    { focus-workspace-up; }
+    Mod+WheelScrollDown { focus-workspace-down; }
+    Mod+WheelScrollUp   { focus-workspace-up; }
 
-    // --- Screenshot ---
-    Print            { screenshot; }
-    Mod+Print        { screenshot-window; }
+    // ===== Media / Volume / Brightness (function keys) =====
+    XF86AudioRaiseVolume  allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%+ -l 1.5"; }
+    XF86AudioLowerVolume  allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-"; }
+    XF86AudioMute         allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"; }
+    XF86AudioMicMute      allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
+    XF86MonBrightnessUp   allow-when-locked=true { spawn-sh "noctalia msg brightness-up"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn-sh "noctalia msg brightness-down"; }
+    XF86AudioNext         allow-when-locked=true { spawn-sh "noctalia msg media next"; }
+    XF86AudioPrev         allow-when-locked=true { spawn-sh "noctalia msg media previous"; }
+    XF86AudioPlay         allow-when-locked=true { spawn-sh "noctalia msg media toggle"; }
+    XF86AudioPause        allow-when-locked=true { spawn-sh "noctalia msg media toggle"; }
+    Mod+Shift+P      { spawn-sh "noctalia msg media toggle"; }   // Play/pause
+    Mod+Shift+N      { spawn-sh "noctalia msg media next"; }     // Next
+    Mod+Shift+B      { spawn-sh "noctalia msg media previous"; } // Previous
+    Mod+Shift+M      { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"; } // Toggle mute
 
-    // --- Session control ---
-    Mod+Shift+E      { quit; }
-    Mod+Shift+P      { power-off-monitors; }
+    // ===== Screenshots / capture =====
+    Print            { screenshot-screen; }          // Full screen
+    Mod+Shift+S      { screenshot; }                  // Region (interactive)
+    Mod+Shift+C      { spawn-sh "hyprpicker -a"; }    // Color picker
+    Mod+Shift+X      { spawn-sh "grim -g \"$(slurp)\" /tmp/ocr.png && tesseract /tmp/ocr.png stdout | wl-copy && rm /tmp/ocr.png"; } // OCR
+
+    // ===== Session =====
+    Mod+L            { spawn-sh "loginctl lock-session"; }       // Lock
+    Mod+Shift+L      { spawn-sh "systemctl suspend"; }           // Suspend
+    Mod+Shift+Delete { spawn-sh "systemctl poweroff"; }         // Power off
+    Ctrl+Mod+R       { spawn-sh "noctalia msg config-reload"; }  // Reload Noctalia config
+
+    // ===== niri control =====
+    Mod+Shift+Slash  { show-hotkey-overlay; }
+    Ctrl+Mod+Shift+E { quit; }                        // Exit niri (moved off Mod+Shift+E)
+    Mod+Shift+O      { power-off-monitors; }           // DPMS off
 }
+
+include "noctalia.kdl"
