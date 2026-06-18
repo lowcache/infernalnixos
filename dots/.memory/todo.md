@@ -11,17 +11,38 @@ Open loops and pending verification for the `dots/` subtree. Scoped layer beneat
 [`todo.md`](file:///home/lowcache/.nix-config/.memory/todo.md). Move done items to
 [`archive/`](file:///home/lowcache/.nix-config/dots/.memory/archive/).
 
-## Open
+## Strategic: Niri Desktop Completion (per [[decisions]] D10)
+
+Complete verification and paradigm decoupling to declare niri 100% ready; then decide
+Hyprland's fate (fallback or removal).
+
+* [ ] **Niri verification checklist** — confirm each on live system:
+  - [ ] Workspace navigation (Mod+1..9 focus; dynamic vs. named workspace behavior)
+  - [ ] Krita performance under sustained drawing load (regression check)
+  - [ ] Touchpad F10 enable/disable toggle; pointer inhibition during input
+  - [ ] App launchers (Super+T, E, W, C, Space, Tab) all launch correctly
+  - [ ] Audio subsystem (speaker default, BT headset auto-switch, volume/mute)
+
+* [ ] **Decouple niri and Hyprland in `dots/`.** Several niri keybinds currently invoke
+  `~/.config/hypr/hyprland/scripts/…` (shared launcher helpers). Make these
+  compositor-agnostic or relocate out of `hypr/` before demoting Hyprland, or they will
+  break niri.
+
+* [ ] **Decide Hyprland's fate after niri verification 100% complete.** Options:
+  (a) Fallback — keep functional but marked secondary; (b) Removal — delete `dots/hypr/`,
+  clean up Home-Manager wiring and dependencies. Make the decision explicit, not implicit.
+
+## Open (pre-niri, ongoing)
 
 * [ ] **`make switch` needed to activate `~/.config/color-engine` symlink.** Added to
   `home/persist.nix` 2026-06-17, no rebuild run yet. Until then, `apply_theme.py` /
   `make_theme.py` / `check_theme.py` / `themes/` are only at `dots/color-engine/` relative
   paths, not the live `~/.config/color-engine/` path that scripts expect post-switch.
 
-* [ ] **Decide whether to publish the dotfiles subtree.** If yes: create a standalone repo,
+* [ ] **Decide whether to publish the dotfiles subtree.** If yes: create standalone repo,
   then `make dots-remote URL=<git-url>` and `make dots-push`. If no: `make dots-log` /
-  `make dots-split` are enough for an independent local history view. (No remote configured
-  yet as of 2026-06-09.)
+  `make dots-split` sufficient for independent local history. (No remote configured yet
+  as of 2026-06-09.)
 
 * [ ] **First `make dots-split` run is untested** — it walks full history and builds the
   `dots-history` branch. Run once to confirm it succeeds on this repo's history size.
@@ -31,9 +52,9 @@ Open loops and pending verification for the `dots/` subtree. Scoped layer beneat
   for full compositor-agnosticism. Low urgency — works across both compositors as-is.
 
 * [ ] **Optional: compositor-agnostic touchpad toggle via kernel `inhibited` sysfs.** A udev
-  rule granting `users`/`input` group write to the device's `inhibited` file would avoid the
+  rule granting `users`/`input` group write to device's `inhibited` file would avoid the
   current niri workaround (config-marker flip + load-config-file). Needs rebuild + reboot.
-  Current `touchpad_toggle.sh` approach is functional; this is a cleanup option only.
+  Current approach functional; cleanup option only.
 
 ## Done / Verified
 

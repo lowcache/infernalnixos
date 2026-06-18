@@ -80,3 +80,22 @@ keybind sets per orientation:
 State persisted per-axis in `$XDG_RUNTIME_DIR/kitty-quake.state` (4 fields: `orient`,
 `pos_h`, `pos_v`, `size`). Each axis remembers its own side independently. A separate
 keybind set for portrait-only was rejected as insufficient benefit for the cognitive load.
+
+## D10 — Commit to full niri desktop; Hyprland to fallback or removal
+The dotfiles must transition from maintaining two half-finished desktop environments to
+a complete, verified niri desktop. Hyprland will be demoted to fallback or removed once
+niri verification is 100% complete and the paradigms are fully decoupled.
+
+**Why:** Two parallel DM/WMs in one configuration means neither reaches "finished" —
+they become entangled, progressively harder to separate, and reduce overall velocity.
+A clear commitment — either a FULL niri or a FULL Hyprland, not two entangled partials
+— improves clarity and maintainability.
+
+**Scope:** Complete the niri verification checklist (workspace nav, Krita, touchpad,
+launchers, audio) and decouple niri/Hyprland paradigms in `dots/` (eliminate
+cross-dependencies like niri binds calling `~/.config/hypr/**`). Once both are done,
+decide explicitly: Hyprland → fallback (secondary, kept) or → removed entirely.
+
+**What it rules out:** Indefinite maintenance of two equally-capable, equally-maintained
+desktop environments; half-finished niri (the quake terminal and keybind architecture are
+done, but basic OS verification is incomplete).
