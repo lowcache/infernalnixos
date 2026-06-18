@@ -1,7 +1,7 @@
 ---
 type: state
 project: Vol NixOS — Dots
-last_updated: 2026-06-09
+last_updated: 2026-06-18
 status: active
 ---
 
@@ -26,69 +26,125 @@ All are **whole-directory** out-of-store symlinks from `~/.config/<name>` →
 | `cava` | `dots/cava` |
 | `fuzzel` | `dots/fuzzel` |
 | `wlogout` | `dots/wlogout` |
+| `color-engine` | `dots/color-engine/` (**new 2026-06-17**; needs `make switch`) |
+| `niri` | `dots/niri/` |
 | `starship.toml` | `dots/starship/starship.toml` (single file) |
 | `~/.gemini` | `dots/gemini` (in `home.file`, `force = true`) |
 
-`dots/` itself is **not** symlinked — only its children are. This is why `dots/.memory/`
-and `dots/.model/` are safe homes for scoped context (they never reach `~/.config`).
+`dots/` itself is **not** symlinked — only its children are. `dots/.memory/` and
+`dots/.model/` are safe homes for scoped context (they never reach `~/.config`).
+
+**`~/.config/color-engine` symlink requires `make switch`** — added to `home/persist.nix`
+2026-06-17, no rebuild run yet. Until then scripts/themes exist only at `dots/color-engine/`
+relative paths.
 
 ## Theming Pipeline
 
-* Palette source of truth: `dots/illogical-impulse/themes/amalgamation.json`
-  ("Muted Amalgamation (Detailed)").
-* Generator: `dots/illogical-impulse/scripts/apply_theme.py`.
+* Palette/theme location: `dots/color-engine/themes/` (moved from
+  `dots/illogical-impulse/themes/` 2026-06-17).
+* Active theme JSON: `dots/color-engine/themes/radioactive_slime.json`.
+* Generator: `dots/color-engine/apply_theme.py` (was `dots/illogical-impulse/scripts/apply_theme.py`).
   - Reads palette path from `argv[1]`, else
     `~/.config/illogical-impulse/config.json → appearance.wallpaperTheming.masterTheme.jsonPath`.
+  - `config.json` `masterTheme.jsonPath` corrected to
+    `~/.config/color-engine/themes/radioactive_slime.json`.
   - Patches: `quickshell/ii/modules/common/Appearance.qml`, `hypr/hyprland/colors.conf`,
     `kitty/current.conf`, `kitty/tab_bar.py`, `starship.toml`.
+  - Also emits `~/.config/noctalia/palettes/volnix.json` (M3 palette for niri/Noctalia).
   - Post-actions: `hyprctl reload`, `killall -USR1 kitty`.
-* Invocation used: `python3 scripts/apply_theme.py <palette.json> true`.
-* Generated files are overwritten on each apply — edit the palette, not the outputs.
-* Theme generator: `scripts/make_theme.py` builds a new standards-compliant theme JSON
-  from raw colors (CLI args / `--colors "<str>"`) or any file containing hex codes
-  (`--from`). It derives the background ramp, accents, containers, dim variants and a
-  16-color terminal set, fills in M3 error/success tones, and validates (hex via
-  `apply_theme.validate_palette` + dangling-reference check) before writing — refuses to
-  write on failure. `--apply` applies it live.
-* Theme validator: `scripts/check_theme.py <theme.json>` — hard-fails on bad hex / dangling
-  refs, warns on roles missing vs amalgamation (the [[decisions]] D5 canonical template).
-* Makefile targets (run from repo root; cut out long paths). `THEME` = bare name:
-  - `make theme-list` — list theme names.
-  - `make theme-apply THEME=<name>` — apply + reload.
-  - `make theme-check THEME=<name>` — validate.
-  - `make theme-new NAME="X" [COLORS="#a #b"] [FROM=<file>] [APPLY=1] [FORCE=1]` — generate.
-    COLORS must be one quoted string (bare `#` args are shell comments otherwise).
-* Coverage (as of 2026-06-09 expansion): the script now also patches `Appearance.qml`
-  `term0`–`term15` (kept in sync with the kitty terminal palette via a single shared
-  `term_hex` list), plus `m3primaryContainer`, `m3surfaceVariant`, `m3inverseSurface`, and
-  the `m3error*` / `m3success*` families — all driven by the theme's `accents`/`surfaces`/
-  `states`/`terminal` mappings. Palette gained derived tokens: `pure_white` (fixes the
-  previously-dropped kitty `color15`), `peach_dim`, `coral_dim`, `coral_container`, and the
-  M3 `error*` / `success*` sets.
+* `dots/color-engine/make_theme.py`, `dots/color-engine/check_theme.py` — moved from ii/scripts/.
+* Remaining nuitka artifacts (`apply_theme.bin`, `apply_theme.dist/`) left at
+  `dots/illogical-impulse/scripts/` — regenerable, not relocated.
+* `switchwall.sh` (`dots/quickshell/ii/scripts/colors/switchwall.sh`, 2 sites): updated
+  to call `~/.config/color-engine/apply_theme.py` with **no arg** (defers to configured
+  `masterTheme.jsonPath`). Callers outside `apply_theme.py` never name a theme — see D7.
+* Generated files overwritten on each apply — edit the palette, not the outputs.
+* Makefile targets (run from repo root; `THEME` = bare name):
+  `make theme-list`, `make theme-apply THEME=<name>`, `make theme-check THEME=<name>`,
+  `make theme-new NAME="X" [COLORS="#a #b"] [FROM=<file>] [APPLY=1] [FORCE=1]`.
+* ii's in-shell theme picker (lists `~/.config/illogical-impulse/themes/`) no longer sees
+  themes after relocation; theming via setwall/apply_theme is unaffected.
 
 ## Active Theme & Live Reload
 
 * **Active theme (2026-06-09):** `radioactive_slime.json` — neon green/yellow/orange "toxic"
-  scheme on a green-tinted near-black background ramp. The **volinit** colors (`~/CodeRepo/volinit`,
-  `src/volinit.nim`) are woven in as the structural/dim tones: PCB green `#AAD71E` →
-  `primary_dim`/`inverse_primary`, die-gold `#CDB964` → `secondary_dim`, die-silver `#C8CDC8`
-  → `fg`, grey-green `#96AA96` → outline/subtle. Hand-authored (not the generator) for
-  art-direction control; 77 roles, `make theme-check` clean.
-* Canonical templates: `amalgamation.json` + `petrified_spittoon.json` carry the full role
-  set; new themes clone their mappings (see [[decisions]] D5).
-* **Kitty live color reload (no restart):** `kitty.conf` has `allow_remote_control` +
-  `listen_on unix:@mykitty`. `apply_theme.py` pushes to running windows via
-  `kitty @ --to unix:@mykitty set-colors --all --configured <args>` (module constant
-  `KITTY_SOCKET`), so `make theme-apply` recolors live; it skips gracefully when nothing is
-  listening, and the `USR1` reload still handles tab-bar colors. Caveats: `@mykitty` is a
-  fixed abstract socket so only the first kitty instance binds it; and `listen_on` applies
-  only at kitty start, so windows opened before the config change need one restart.
+  scheme on a green-tinted near-black background. Now at `dots/color-engine/themes/`.
+* Canonical templates: `amalgamation.json` + `petrified_spittoon.json` (both in `color-engine/themes/`).
+* **Kitty live color reload:** `kitty.conf` has `allow_remote_control` +
+  `listen_on unix:@mykitty`. `apply_theme.py` pushes via
+  `kitty @ --to unix:@mykitty set-colors --all --configured`. `@mykitty` is abstract,
+  bound by first kitty instance; applies only at kitty start.
+
+## Quake Drop-Down Terminal (niri/kitty)
+
+Architecture: **niri spawns process only; kitty owns all window logic** via wlr-layer-shell
+(`quick-access-terminal` kitten) + kitty remote control. Compositor never manages the
+quake window. This supersedes the old workspace-shuffling approach (deleted 2026-06-18).
+
+**Files (all live via existing out-of-store symlinks):**
+- `dots/kitty/quick-access-terminal.conf` — kitten config: `edge`, `lines`, `columns`,
+  opacity, `focus_policy exclusive`, `app_id quake`, `allow_remote_control yes`, `listen_on`.
+  Live at `~/.config/kitty/quick-access-terminal.conf`.
+- `dots/niri/scripts/quake.sh` — control helper; 4-field state in
+  `$XDG_RUNTIME_DIR/kitty-quake.state` (`orient`/`pos_h`/`pos_v`/`size`).
+  Tunables at top: `NORMAL_LINES=25`, `PORTRAIT_FRAC=50`.
+- `dots/niri/config.kdl` — keybinds in Apps section.
+- **Deleted:** `dots/niri/scripts/quake_toggle.sh` (git rm'd 2026-06-18).
+
+**Keybinds (orientation-aware, Hyprland parity):**
+
+| Key | Landscape | Portrait |
+|---|---|---|
+| `Mod+Return` | show / hide | show / hide |
+| `Mod+Shift+Return` | top ↔ bottom | left ↔ right |
+| `Mod+Alt+Return` | normal ↔ full height | normal ↔ full width |
+| `Mod+Ctrl+Return` | → switch to vertical | → switch to horizontal |
+
+Full size (`Mod+Alt+Return → full`) is fullscreen in any orientation/edge — all four
+full states measured pixel-identical: 266×62 cells on 1920×1200 (verified live 2026-06-18).
+Each axis remembers its own side independently (flipping orientation preserves both
+last top/bottom and last left/right).
+
+**kitty layer-shell axis rules (verified live, kitty 0.47.2):**
+- top/bottom panels: always full width, size HEIGHT via `lines`, `columns` silently ignored.
+- left/right panels: always full height, size WIDTH via `columns`, `lines` ignored.
+- Portrait = true vertical-edge panel (`edge=left`/`right`), NOT a margin-narrowed top strip.
+- Width on horizontal panels: `margin-left`/`margin-right` (dashes, not underscores).
+- Toggle visibility preserving geometry: `resize-os-window --action=toggle-visibility`.
+  Bare `kitten quick-access-terminal` re-invoke RESETS geometry to conf defaults.
+- Quake RC socket: `$XDG_RUNTIME_DIR/kitty-quake-<pid>` (pid-suffixed, a file).
+- Single-instance group socket: `@kitty-ipc-<uid>-panel-quick-access` (abstract, not a file).
+- **kitty config has NO inline comments** — everything after an option value on its line is
+  the value. Comments must be on their own lines. Silent exit = likely a comment-as-value.
+- `allow_remote_control` + `listen_on` must be in the kitten conf (via `kitty_override`).
+  kitty appends `-<pid>` to the listen socket path.
+
+## Niri Config (`dots/niri/`)
+
+`dots/niri/` symlinked to `~/.config/niri`. Active config: `config.kdl`.
+
+- Numeric workspace refs = INDEX; named refs = NAME. Declared named workspace is always idx 1;
+  dynamic workspaces = idx 2+. Mod+1..9 bound to focus-workspace 2..10.
+- Touchpad toggle: `dots/niri/scripts/touchpad_toggle.sh` flips `// off // @tptoggle@` marker
+  in `config.kdl` touchpad block + `niri msg action load-config-file`. Default/committed =
+  enabled. Bound to F10 + XF86TouchpadToggle.
+- Launch scripts reuse `~/.config/hypr/hyprland/scripts/launch_first_available.sh` (agnostic).
+- Audio: BT headset (`hardware.bluetooth.enable = true`) auto-grabs default sink.
+  Workaround: `wpctl set-default <analog-id>`. Consider WirePlumber rule to suppress auto-switch.
+- `niri validate -c <config>` for pre-apply validation.
+
+## memd Registration
+
+As of 2026-06-18: `dots` is registered as a memd project
+(`/home/lowcache/.nix-config/dots`). `scripts/memd/memd.py` (`transcript_files`) patched:
+claude dirs owned by a longer-prefix registered project are excluded from the parent
+project's sweep — mirrors `find_project`'s existing longest-prefix logic; backward-compatible.
+Dots inbox notes now swept and attributed independently from root `.memory/`.
 
 ## Subtree / Independent History
 
-* Tracked in the single `nix-config` repo; publishable with filtered history via `git subtree`.
-* Make targets (root Makefile): `dots-log`, `dots-split`, `dots-remote URL=`, `dots-push`,
-  `dots-pull`. Config vars: `DOTS_PREFIX=dots`, `DOTS_REMOTE=dotfiles`, `DOTS_BRANCH=main`,
+* Make targets: `dots-log`, `dots-split`, `dots-remote URL=`, `dots-push`, `dots-pull`.
+* Config: `DOTS_PREFIX=dots`, `DOTS_REMOTE=dotfiles`, `DOTS_BRANCH=main`,
   `DOTS_SPLIT_BRANCH=dots-history`.
-* `git subtree` confirmed available in this environment (2026-06-09).
-* Standalone `dotfiles` remote: **not yet configured** (no `make dots-remote` run yet).
+* `git subtree` confirmed available (2026-06-09).
+* Standalone `dotfiles` remote: **not yet configured**.
