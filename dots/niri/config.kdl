@@ -1,8 +1,8 @@
-// Vol NixOS — niri compositor config (niri 26.04, KDL). Live via out-of-store symlink.
+// Vol NixOS — Niri compositor config (niri 26.04, KDL). Persisted live via out-of-store symlink (~/.nix-config/home/persist.nix).
 // Validate: niri validate -c ~/.config/niri/config.kdl   (hot-reloads on save)
-// Keybinds ported from dots/hypr/hyprland/keybinds.conf to match muscle memory.
+// Attempted Keybind port from dots/hypr/hyprland/keybinds.conf was successful, a more focused attempt in the future might be beneficial to a more comprehensive config.
 // Noctalia v5 is the shell/bar (spawn-at-startup below); shell actions use `noctalia msg`.
-
+// **C** = ATTN CLAUDE QUAKE ENGINE 
 input {
     keyboard {
         xkb {
@@ -12,35 +12,82 @@ input {
     touchpad {
         tap
         natural-scroll
-        off // @tptoggle@   -- toggled by F10 / touchpad_toggle.sh (uncommented = disabled)
+        disabled-on-external-mouse
+        // off // @tptoggle@   -- toggled by F10 / touchpad_toggle.sh (uncommented = disabled)
     }
-    mouse {}
-    // focus-follows-mouse off to match prior habits.
+    mouse {
+      // off
+    }
+    focus-follows-mouse max-scroll-amount="0%"
 }
 
 // Outputs: niri auto-detects. Pin explicitly after `niri msg outputs` if needed.
 // output "eDP-1" { mode "1920x1080@60.000"; scale 1.0 }
 
 layout {
-    gaps 8
+    gaps 5
     // "on-overflow": the focused column stays put until the row would overflow,
     // then it centers — far less disorienting than columns sliding off both edges.
     // Options: "never" | "always" | "on-overflow". Tune to taste.
     center-focused-column "on-overflow"
+    always-center-single-column
+    empty-workspace-above-first
+    default-column-display "normal" 
+    // default-column-display "tabbed"
     preset-column-widths {
+        proportion 0.33333 // 3 equal columns or 2 unequal columns
+        proportion 0.5 // 2 equal columns
+        proportion 0.66667 // 2 unequal columns
+        proportion 1.0  // 1 column (whole screen)
+    }
+    default-column-width { proportion 1.0; } // whole screen as default then adjustment through the presets
+    preset-window-heights { 
         proportion 0.33333
         proportion 0.5
         proportion 0.66667
     }
-    default-column-width { proportion 0.5; }
     // Neon focus-ring (toxic/radioactive_slime primary). TODO: drive from color-engine.
     focus-ring {
-        width 2
+        on
+        width 1
         active-color "#B4FF00"
+        // active-gradient from="" to="" angle=
         inactive-color "#2e2e2e"
     }
     border {
         off
+        // active-color/gradient
+        // inactive-color/gradient
+        // urgent-color/gradient
+    }
+    shadow {
+      off
+      // softness 30
+      // spread 5
+      // offset x=0 y=0
+      // draw-behind-window true
+      // color/inactive-color
+    }
+    tab-indicator {
+      off
+      // hide-when-single-tab
+      // place-within-column
+      // gap 5
+      // width 4
+      // length total-proportion=1.0
+      // position "right"
+      // gaps-between-tabs 2
+      // corner-radius 8
+      // active-color/gradient
+      // inactive-color/gradient
+      // urgent-color/gradient
+    }
+    insert-hint {
+      off
+      // color/gradient
+    }
+    struts {
+      // left/right/top/bottom
     }
 }
 
@@ -53,14 +100,16 @@ screenshot-path "~/Storage/screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 // Quake stash: a declared named workspace is always the LOWEST index (idx 1),
 // so the quake terminal parks here when hidden and the real (dynamic) workspaces
 // occupy idx 2+. The Mod+1..9 binds therefore target indices 2..10 (see below).
-workspace "scratch"
+// **C**this is superfluous due to the quake terminal being spawn totally through kitty and wlr-layer-shell bypassing the compositor (niri) in this case
+// workspace "scratch"
 
 // Quake terminal: floating kitty (app-id "quake"), toggled by the niri-port script.
-window-rule {
-    match app-id="^quake$"
-    open-floating true
-    default-column-width { proportion 0.98; }
-}
+// **C**This functionality is performed by kitty's kitten+quick-access-terminal syntax seen below
+// window-rule {
+//     match app-id="^quake$"
+//     open-floating true
+//     default-column-width { proportion 0.98; }
+// }
 
 binds {
     // ===== Shell / Noctalia (replaces quickshell IPC) =====
@@ -78,7 +127,16 @@ binds {
     XF86TouchpadToggle { spawn-sh "~/.config/niri/scripts/touchpad_toggle.sh"; }    // Touchpad on/off
 
     // ===== Apps =====
-    Mod+Return       { spawn-sh "~/.config/niri/scripts/quake_toggle.sh toggle"; } // Quake terminal
+    // **C** Quake terminal: niri only spawns a process; ALL window logic (show/hide,
+    // position, height, aspect) is done by kitty's quick-access-terminal kitten over
+    // wlr-layer-shell + kitty remote control, bypassing the compositor entirely.
+    // Config: ~/.config/kitty/quick-access-terminal.conf  Helper: scripts/quake.sh
+    // (app-id "quake" is set in the kitten conf, for debugging/matching only.)
+    // All controls are two-state, orientation-aware toggles hung off Mod+Return:
+    Mod+Return       { spawn-sh "~/.config/niri/scripts/quake.sh toggle"; }      // show / hide
+    Mod+Shift+Return { spawn-sh "~/.config/niri/scripts/quake.sh position"; }    // top/bottom (landscape) · left/right (portrait)
+    Mod+Alt+Return   { spawn-sh "~/.config/niri/scripts/quake.sh size"; }        // normal / full extent
+    Mod+Ctrl+Return  { spawn-sh "~/.config/niri/scripts/quake.sh orientation"; } // landscape (horizontal) / portrait (vertical)
     Mod+T            { spawn "kitty"; }                                       // Terminal
     Ctrl+Alt+T       { spawn "kitty"; }                                       // Terminal (alt)
     Mod+E            { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh dolphin nautilus nemo thunar 'kitty -1 fish -c yazi'"; } // Files
@@ -107,8 +165,11 @@ binds {
     Mod+Shift+Right  { move-column-right; }
     Mod+Shift+Up     { move-window-up; }
     Mod+Shift+Down   { move-window-down; }
-    Mod+R            { switch-preset-column-width; }
-
+    Mod+KP_Subtract  { switch-preset-column-width-back; }
+    Mod+KP_Add       { switch-preset-column-width; }
+    Mod+equal        { switch-preset-column-width; }
+    Mod+minus        { switch-preset-column-width-back; }
+    
     // ===== Workspaces =====
     // Indices are offset by +1: idx 1 is the hidden "scratch" stash, so workspace
     // "1" (what you press Mod+1 for) is idx 2, ... workspace "9" is idx 10.

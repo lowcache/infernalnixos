@@ -614,13 +614,28 @@ def cap_digest(text, cap):
 
 
 def transcript_files(cfg, project_path):
-    """All transcript sources for a project: claude dirs + extra globs."""
+    """All transcript sources for a project: claude dirs + extra globs.
+
+    Honors nested registered projects: a claude dir owned by a longer-prefix
+    registered project (e.g. .nix-config/dots under .nix-config) belongs to that
+    sub-project, not this one — mirroring find_project / project_ag_dbs which
+    already attribute by longest matching prefix.
+    """
     import glob as _glob
     files = []
-    enc = encode_claude_dir(os.path.realpath(project_path))
+    rp = os.path.realpath(project_path)
+    enc = encode_claude_dir(rp)
+    sub_encs = [
+        encode_claude_dir(os.path.realpath(p))
+        for p in cfg["projects"]
+        if os.path.realpath(p) != rp
+        and os.path.realpath(p).startswith(rp.rstrip("/") + "/")
+    ]
     for d in _glob.glob(os.path.join(CLAUDE_PROJECTS_DIR, "*")):
         base = os.path.basename(d)
         if base == enc or base.startswith(enc + "-"):
+            if any(base == s or base.startswith(s + "-") for s in sub_encs):
+                continue  # owned by a nested registered project
             files.extend(_glob.glob(os.path.join(d, "*.jsonl")))
     for pattern in cfg["projects"].get(project_path, {}).get("extra_sources", []):
         files.extend(_glob.glob(os.path.expanduser(pattern)))
