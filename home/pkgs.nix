@@ -1,6 +1,5 @@
-{ config, pkgs, lib, inputs, ... }:
+{ config, pkgs, lib, inputs, ... }:{
 
-{
   home = {
     packages =
       let
@@ -70,7 +69,7 @@
               --run 'if [ -n "$NIRI_SOCKET" ]; then export QT_QPA_PLATFORM=wayland; else export QT_QPA_PLATFORM=xcb; fi'
           '';
         };
-        hyprland = with pkgs; [
+        hyprland-niri = with pkgs; [
           hypridle
           hyprlock
           hyprcursor
@@ -80,6 +79,7 @@
           xwayland
           awww
           waypaper
+          thunderbird
           hyprpaper
           adw-gtk3
           cliphist
@@ -200,6 +200,6 @@
           pkgs.llm-agents.crush
         ];
       in
-      nixified-ai ++ terminal ++ typography ++ hyprland ++ quickshell ++ basedevel;
+      nixified-ai ++ terminal ++ typography ++ hyprland-niri ++ quickshell ++ basedevel;
   };
 }
