@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }: 
+{ config, pkgs, lib, ... }:
 
 let
   # We define the entire set of session variables once in this let block.
@@ -110,7 +110,7 @@ in
       sessionVariables = sessionVariables;
     };
   };
-  
+
   xdg.desktopEntries = {
     antigravity = {
       name = "Antigravity";
@@ -130,4 +130,21 @@ in
       categories = [ "Development" "IDE" ];
     };
   };
+
+  # niri portal routing override. The niri-shipped niri-portals.conf routes the
+  # FileChooser interface to "default=gnome;gtk" (gnome first), but
+  # xdg-desktop-portal-gnome 50.x advertises FileChooser in its .portal metadata
+  # yet does NOT export org.freedesktop.impl.portal.FileChooser at runtime, so
+  # every file dialog (Brave downloads, virt-manager ISO picker, GTK Save-As)
+  # silently failed with "No such interface ... FileChooser". A user-scoped
+  # config takes precedence over /etc and pins FileChooser to the gtk backend,
+  # which actually implements it. The other routes mirror the niri defaults.
+  xdg.configFile."xdg-desktop-portal/niri-portals.conf".text = ''
+    [preferred]
+    default=gnome;gtk
+    org.freedesktop.impl.portal.Access=gtk
+    org.freedesktop.impl.portal.Notification=gtk
+    org.freedesktop.impl.portal.Secret=gnome-keyring
+    org.freedesktop.impl.portal.FileChooser=gtk
+  '';
 }

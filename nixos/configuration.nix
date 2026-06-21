@@ -3,6 +3,7 @@
   imports = [
     ./vms.nix
     ./niri.nix
+    ./windows-vm.nix
   ];
 
   # Kernel & Performance

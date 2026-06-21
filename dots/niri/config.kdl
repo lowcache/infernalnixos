@@ -197,6 +197,11 @@ binds {
     Ctrl+Mod+Left    { focus-workspace-up; }
     Mod+WheelScrollDown { focus-workspace-down; }
     Mod+WheelScrollUp   { focus-workspace-up; }
+    // Move focused column to the adjacent workspace (Shift = move, mirroring focus above)
+    Mod+Shift+Page_Down  { move-column-to-workspace-down; }
+    Mod+Shift+Page_Up    { move-column-to-workspace-up; }
+    Ctrl+Mod+Shift+Right { move-column-to-workspace-down; }
+    Ctrl+Mod+Shift+Left  { move-column-to-workspace-up; }
 
     // ===== Media / Volume / Brightness (function keys) =====
     XF86AudioRaiseVolume  allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%+ -l 1.5"; }
