@@ -89,6 +89,7 @@
           kitty
           krita-plugin-gmic
           krita-wrapped
+          gimp 
           imagemagick
           spacedrive
           papirus-icon-theme
