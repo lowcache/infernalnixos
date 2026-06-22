@@ -198,7 +198,11 @@
           codex
           rtk
           pkgs.llm-agents.claude-plugins
-          pkgs.llm-agents.crush
+          pkgs.llm-agents.hermes-agent
+          pkgs.llm-agents.hermes-hud
+          pkgs.llm-agents.hermes-desktop
+          pkgs.llm-agents.catnip
+          pkgs.llm-agents.letta-code
         ];
       in
       nixified-ai ++ terminal ++ typography ++ hyprland-niri ++ quickshell ++ basedevel;
