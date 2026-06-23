@@ -17,7 +17,6 @@
           moreutils
           cpufrequtils
           strace
-          toybox
           ltrace
           gperf
           patch
@@ -90,7 +89,7 @@
           pamixer
           pavucontrol
           xwayland
-          xwayland-sattelite
+          xwayland-satellite
           awww
           waypaper
           thunderbird
