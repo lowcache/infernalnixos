@@ -21,12 +21,12 @@
 {
   virtualisation.libvirtd = {
     enable = true;
-    onBoot = "ignore";      # don't auto-start guests at boot
+    onBoot = "ignore"; # don't auto-start guests at boot
     onShutdown = "shutdown";
     qemu = {
       package = pkgs.qemu_kvm;
       runAsRoot = false;
-      swtpm.enable = true;                  # emulated TPM 2.0 (Win11 requirement)
+      swtpm.enable = true; # emulated TPM 2.0 (Win11 requirement)
       # OVMF UEFI firmware (incl. Secure Boot variants) ships by default now;
       # the old qemu.ovmf submodule was removed upstream.
     };
@@ -34,7 +34,7 @@
 
   # virt-manager GUI to create/run the VM.
   programs.virt-manager.enable = true;
-  programs.dconf.enable = true;             # virt-manager stores settings in dconf
+  programs.dconf.enable = true; # virt-manager stores settings in dconf
 
   # SPICE USB redirection (handy if the assessment needs a USB device/webcam).
   virtualisation.spiceUSBRedirection.enable = true;
@@ -45,7 +45,7 @@
     virt-manager
     virt-viewer
     spice-gtk
-    virtio-win            # virtio driver ISO for the guest (storage/net/balloon)
+    virtio-win # virtio driver ISO for the guest (storage/net/balloon)
     swtpm
   ];
 

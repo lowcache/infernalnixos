@@ -4,12 +4,12 @@
 [colors]
 background=0b0e14CC
 text=d1d1c7ff
-prompt=e6b450ff
+prompt=aad94cff
 placeholder=39bae6ff
-input=aad94cff
+input=e6b450ff
 match=39bae6ff
-selection=aad94c80
+selection=e6b45080
 selection-text=d1d1c7ff
 selection-match=0b0e14ff
-counter=e6b450ff
-border=aad94cff
+counter=aad94cff
+border=e6b450ff

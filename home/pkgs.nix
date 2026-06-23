@@ -1,4 +1,4 @@
-{ config, pkgs, lib, inputs, ... }:{
+{ config, pkgs, lib, inputs, ... }: {
 
   home = {
     packages =
@@ -13,7 +13,11 @@
           gdb
           cmake
           gnumake
+          progress
+          moreutils
+          cpufrequtils
           strace
+          toybox
           ltrace
           gperf
           patch
@@ -29,6 +33,9 @@
           python3
           glib
           nodejs
+          gtk3
+          gtk4
+          dconf
         ];
         quickshell = with pkgs; [
           inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default
@@ -70,26 +77,31 @@
           '';
         };
         hyprland-niri = with pkgs; [
+          # hyprland utils
           hypridle
           hyprlock
           hyprcursor
           hyprland-qt-support
+          hyprpaper
+          hyprpicker
+          # niri-utils
+          nirius
+          nirimon
           pamixer
           pavucontrol
           xwayland
+          xwayland-sattelite
           awww
           waypaper
           thunderbird
-          hyprpaper
           adw-gtk3
           cliphist
-          hyprpicker
           libnotify
           fuzzel
           kitty
           krita-plugin-gmic
           krita-wrapped
-          gimp 
+          gimp-with-plugins
           imagemagick
           spacedrive
           papirus-icon-theme
@@ -175,7 +187,6 @@
           nil
           android-tools
           nixpkgs-fmt
-          spotatui
           inputs.volinit.packages.${pkgs.stdenv.hostPlatform.system}.default
         ];
         nixified-ai = with pkgs; [
