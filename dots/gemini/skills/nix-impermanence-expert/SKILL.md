@@ -1,6 +1,6 @@
 ---
 name: nix-impermanence-expert
-description: Deep expertise in managing declarative ephemeral states, impermanence layout paradigms, persistent bindings, disk mapping, and tmpfs storage tuning on NixOS.
+description: Deep expertise in managing declarative ephemeral states, impermanence layout paradigms, persistent bindings, disk mapping, and tmpfs storage tuning on NixOS. Use when touching persist.nix or persistent bindings, tuning tmpfs sizing, mapping disks, or diagnosing wiped-state / ENOSPC issues.
 ---
 
 # Nix Ephemeral State & Impermanence Instruction Set

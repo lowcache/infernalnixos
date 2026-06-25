@@ -48,7 +48,13 @@ DEF_POS_V=right      # left | right   (used while portrait)
 DEF_SIZE=normal      # normal | full
 # -------------------------------------------------------------------------------
 
-sock() { ls -t $SOCK_GLOB 2>/dev/null | head -n1; }
+# A missing socket (terminal not running yet) is a normal answer, not an error:
+# `ls` exits non-zero on no match, and under `set -euo pipefail` that aborts the
+# whole script at `s=$(sock)` on a cold start, so the panel could never launch the
+# first time (it only worked once already running). On a tmpfs root /run is wiped
+# every boot, so every boot started cold -> first keypress did nothing. `|| true`
+# keeps the query non-fatal (empty output = not running).
+sock() { ls -t $SOCK_GLOB 2>/dev/null | head -n1 || true; }
 
 # WIDTH HEIGHT of the focused output, in logical pixels.
 out_dim() { niri msg --json focused-output | jq -r '.logical | "\(.width) \(.height)"'; }

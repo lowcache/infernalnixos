@@ -1,28 +1,14 @@
 { config, pkgs, lib, ... }:
-let
-  memd = pkgs.stdenv.mkDerivation {
-    pname = "memd";
-    version = "0.1.0";
-    src = ../scripts/memd;
-    nativeBuildInputs = [ pkgs.python3 ];
-    dontBuild = true;
-    installPhase = ''
-      mkdir -p $out/bin
-      install -m755 memd.py $out/bin/memd
-      patchShebangs $out/bin/memd
-    '';
-    meta.description = "Agent-driven project memory curator for AI CLI sessions";
-  };
-in
 {
-  home.packages = [ memd ];
-
   # Global agent tooling on PATH for every project, not just this repo.
   # Out-of-store symlinks (same rationale as dots/: live-editable without a
-  # rebuild); the sweep timer keeps using the hermetic store copy above.
+  # rebuild). memd graduated to its own repo (~/CodeRepo/memd, decision #18):
+  # both interactive use and the sweep timer run this single live copy, so there
+  # is no store/live drift to reconcile. python3 for the shebang comes from the
+  # user profile already on the service PATH below.
   home.file = {
     ".local/bin/memd" = {
-      source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/scripts/memd/memd.py";
+      source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/CodeRepo/memd/memd.py";
       force = true;
     };
     ".local/bin/tether" = {
@@ -42,8 +28,9 @@ in
     Unit.Description = "memd project-memory sweep";
     Service = {
       Type = "oneshot";
-      ExecStart = "${memd}/bin/memd sweep";
-      # claude lives in ~/.local/bin; git comes from the system profile
+      ExecStart = "${config.home.homeDirectory}/.local/bin/memd sweep";
+      # memd + claude live in ~/.local/bin; python3 (shebang) + git from the
+      # user/system profiles.
       Environment = "PATH=${config.home.homeDirectory}/.local/bin:/run/current-system/sw/bin:/etc/profiles/per-user/${config.home.username}/bin";
       Nice = 10;
     };

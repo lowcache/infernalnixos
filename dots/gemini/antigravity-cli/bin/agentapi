@@ -1,2 +1,2 @@
 #!/bin/sh
-exec "/home/lowcache/.local/bin/agy" agentapi "$@"
+exec "/home/lowcache/.local/bin/agy.1782362564902599269.old" agentapi "$@"

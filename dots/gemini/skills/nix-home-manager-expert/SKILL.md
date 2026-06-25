@@ -1,6 +1,6 @@
 ---
 name: nix-home-manager-expert
-description: Deep expertise in designing, packaging, and maintaining modular Home Manager user profiles, interactive shells, custom window managers (Hyprland), and symlinked dotfile structures on NixOS.
+description: Deep expertise in designing, packaging, and maintaining modular Home Manager user profiles, interactive shells, custom window managers (Hyprland), and symlinked dotfile structures on NixOS. Use when editing home/ modules, Home Manager options, dotfile symlinks, or shell/WM (niri/Hyprland) configuration.
 ---
 
 # Nix Home Manager Expert Instruction Set

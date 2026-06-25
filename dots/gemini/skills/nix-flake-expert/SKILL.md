@@ -1,6 +1,6 @@
 ---
 name: nix-flake-expert
-description: Deep expertise in designing, authoring, packaging, and maintaining modular and hermetic Nix Flakes, locks, and inputs/outputs.
+description: Deep expertise in designing, authoring, packaging, and maintaining modular and hermetic Nix Flakes, locks, and inputs/outputs. Use when editing flake.nix or flake.lock, resolving input/follows conflicts or lock-update failures, or designing flake outputs/devShells/overlays.
 ---
 
 # Nix Flake Expert Instruction Set

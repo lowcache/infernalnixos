@@ -1,6 +1,6 @@
 ---
 name: nix-expert
-description: Chief Architect of Nix configurations, specializing in planning, troubleshooting, debugging, testing, quality control, and conducting the specialized nix-agent swarm.
+description: Chief Architect of Nix configurations, specializing in planning, troubleshooting, debugging, testing, quality control, and conducting the specialized nix-agent swarm. Use when planning or debugging a multi-part nix change, doing quality control on nix work, or orchestrating the nix-agent swarm (routes to the flake/home-manager/impermanence/options/virtualization experts).
 ---
 
 # Nix Architect Instruction Set

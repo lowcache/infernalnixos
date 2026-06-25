@@ -20,9 +20,9 @@ flowchart LR
 
 ## memd — project-memory curator
 
-`memd` ([`scripts/memd/`](https://github.com/lowcache/volnixos/tree/main/scripts/memd)) autonomously
-distills AI session transcripts into a project's `.memory/` files. It is packaged as a Nix derivation
-and also symlinked live for editing.
+`memd` (its own repo at `~/CodeRepo/memd`) autonomously distills AI session transcripts into a
+project's `.memory/` files. It runs from a live out-of-store symlink (`~/.local/bin/memd`) shared by
+interactive sessions and the `memd-sweep` user timer, so there is no packaged/live drift.
 
 | File                  | Holds                                              |
 | :-------------------- | :------------------------------------------------ |

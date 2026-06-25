@@ -1,6 +1,6 @@
 ---
 name: nix-virtualization-expert
-description: Deep expertise in declarative MicroVM hypervisors, isolated container networking, systemd-networkd TAP configurations, and GPU hardware passthrough parameters.
+description: Deep expertise in declarative MicroVM hypervisors, isolated container networking, systemd-networkd TAP configurations, and GPU hardware passthrough parameters. Use when configuring microvm.nix guests, TAP/systemd-networkd container networking, or GPU/device passthrough.
 ---
 
 # Nix Virtualization & MicroVM Instruction Set

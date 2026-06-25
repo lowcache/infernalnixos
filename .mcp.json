@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "noctalia": {
+      "type": "stdio",
+      "command": "python3",
+      "args": [
+        "/home/lowcache/Projects/noctalia-claude-plugin/shim/noctalia-mcp.py"
+      ],
+      "env": {}
+    }
+  }
+}

@@ -27,7 +27,7 @@ DOCS_REMOTE  ?= pgs.sh
 # Ephemeral MkDocs Material env from the flake's own pinned nixpkgs (no global install).
 MKDOCS = nix shell --impure --expr 'let f = builtins.getFlake (toString ./.); pkgs = f.inputs.nixpkgs.legacyPackages.x86_64-linux; in pkgs.python313.withPackages (ps: [ ps.mkdocs-material ])' -c mkdocs
 
-.PHONY: help switch build test dry-activate boot check fmt update update-nixpkgs gc run-netgate run-tailscale ghc \
+.PHONY: help switch switch-detached build test dry-activate boot check fmt update update-nixpkgs gc run-netgate run-tailscale ghc \
         dots-log dots-split dots-remote dots-push dots-pull \
         theme-list theme-apply theme-check theme-new \
         docs-serve docs-build docs-deploy
@@ -37,6 +37,8 @@ help:
 	@echo ""
 	@echo "System Operations:"
 	@echo "  make switch         Rebuild and switch system live (Default HOST: $(HOST))"
+	@echo "  make switch-detached  Switch as a detached system unit (survives a session/greetd"
+	@echo "                        teardown mid-rebuild); follow: journalctl -u nixos-switch -f"
 	@echo "  make build          Build system configuration without switching"
 	@echo "  make test           Temporarily switch to configuration (no boot entry)"
 	@echo "  make dry-activate   See what service transitions will happen"
@@ -74,7 +76,21 @@ help:
 	@echo "  make docs-deploy    Build then rsync ./site to $(DOCS_REMOTE):/$(DOCS_PROJECT)"
 
 switch:
-	sudo TMPDIR=$(REBUILD_TMPDIR) nixos-rebuild switch --flake .#$(HOST)
+	sudo TMPDIR=$(REBUILD_TMPDIR) nixos-rebuild switch --flake .#$(HOST) --option fallback true
+
+# Detached switch: run the activation as a transient SYSTEM service under PID1,
+# fully decoupled from the graphical/login session. If the rebuild restarts the
+# session manager (greetd) or the terminal dies, the switch keeps running to
+# completion instead of aborting mid-activation (see .memory mistake #1). Use for
+# rebuilds that touch the session bus, display manager, or graphics stack.
+# --collect reaps the unit when done; pass TMPDIR via --setenv since the service
+# starts from a clean environment.
+switch-detached:
+	sudo systemd-run --collect --unit=nixos-switch --setenv=TMPDIR=$(REBUILD_TMPDIR) nixos-rebuild switch --flake /persist/home/lowcache/.nix-config/#$(HOST) 
+	@echo ""
+	@echo ">>> Switch running detached as system unit 'nixos-switch'."
+	@echo ">>> Follow:  journalctl -u nixos-switch -f"
+	@echo ">>> Status:  systemctl status nixos-switch"
 
 build:
 	TMPDIR=$(REBUILD_TMPDIR) nixos-rebuild build --flake .#$(HOST)
