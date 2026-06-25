@@ -102,7 +102,6 @@
           krita-wrapped
           gimp-with-plugins
           imagemagick
-          spacedrive
           papirus-icon-theme
           gsettings-desktop-schemas
           vscodium
