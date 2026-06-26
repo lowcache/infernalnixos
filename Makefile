@@ -86,7 +86,7 @@ switch:
 # --collect reaps the unit when done; pass TMPDIR via --setenv since the service
 # starts from a clean environment.
 switch-detached:
-	sudo systemd-run --collect --unit=nixos-switch --setenv=TMPDIR=$(REBUILD_TMPDIR) nixos-rebuild switch --flake /persist/home/lowcache/.nix-config/#$(HOST) 
+	sudo systemd-run --collect --unit=nixos-switch --setenv=TMPDIR=$(REBUILD_TMPDIR) --setenv=SUDO_UID=$$(id -u) nixos-rebuild switch --flake /persist/home/lowcache/.nix-config/#$(HOST)
 	@echo ""
 	@echo ">>> Switch running detached as system unit 'nixos-switch'."
 	@echo ">>> Follow:  journalctl -u nixos-switch -f"
