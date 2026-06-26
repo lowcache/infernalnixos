@@ -111,6 +111,17 @@ in
     };
   };
 
+  # ~/.local/bin holds user scripts (memd, agent-scaffold, tether, claude shims).
+  # The graphical session's PATH comes from the systemd --user manager — niri runs
+  # as niri.service, hyprland via uwsm, both under systemd --user — which reads
+  # ~/.config/environment.d/. Unlike systemd.user.sessionVariables (no var
+  # expansion → would clobber PATH), environment.d expands ${PATH}, so we PREPEND.
+  # This makes ~/.local/bin reachable session-wide, compositor-agnostic: e.g. the
+  # memd / agent-scaffold Claude Code hooks resolve in GUI-launched sessions (a
+  # /cc launch) the same as in a terminal. Takes effect on next login.
+  xdg.configFile."environment.d/10-local-bin.conf".text =
+    "PATH=\${HOME}/.local/bin:\${PATH}\n";
+
   xdg.desktopEntries = {
     antigravity = {
       name = "Antigravity";
