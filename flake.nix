@@ -62,16 +62,32 @@
   };
 
   outputs =
-    { self
-    , nixpkgs
-    , home-manager
-    , microvm
-    , volinit
-    , nur
-    , llm-agents
-    , ...
-    }@inputs:
     {
+      self,
+      nixpkgs,
+      home-manager,
+      microvm,
+      volinit,
+      nur,
+      llm-agents,
+      ...
+    }@inputs:
+    let
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
+    in
+    {
+      # Lint gate for in-repo agent scripts kept as live-edit symlinks (not
+      # store-packaged) — see home/scripts.nix. `nix flake check` runs these.
+      checks.${system} = {
+        tether-shellcheck =
+          pkgs.runCommandLocal "tether-shellcheck" { nativeBuildInputs = [ pkgs.shellcheck ]; }
+            ''
+              shellcheck -S warning ${./.model/agent-tether/bin/tether}
+              touch "$out"
+            '';
+      };
+
       nixosConfigurations.volnix = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; };
         modules = [
@@ -118,10 +134,11 @@
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = { inherit inputs; };
             home-manager.users.inlimbo =
-              { config
-              , pkgs
-              , lib
-              , ...
+              {
+                config,
+                pkgs,
+                lib,
+                ...
               }:
               {
                 imports = [
