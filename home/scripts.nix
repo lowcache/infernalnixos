@@ -2,17 +2,17 @@
 {
   # Global agent tooling on PATH for every project, not just this repo.
   # Out-of-store symlinks (same rationale as dots/: live-editable without a
-  # rebuild). memd graduated to its own repo (~/CodeRepo/memd, decision #18):
-  # both interactive use and the sweep timer run this single live copy, so there
-  # is no store/live drift to reconcile. python3 for the shebang comes from the
-  # user profile already on the service PATH below.
+  # rebuild). memd and tether each graduated to their own repos under
+  # ~/CodeRepo (decision #18 for memd): a single live copy runs everywhere, so
+  # there is no store/live drift to reconcile. python3 for the shebang comes from
+  # the user profile already on the service PATH below.
   home.file = {
     ".local/bin/memd" = {
       source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/CodeRepo/memd/memd.py";
       force = true;
     };
     ".local/bin/tether" = {
-      source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/.model/agent-tether/bin/tether";
+      source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/CodeRepo/tether/bin/tether";
       force = true;
     };
     ".local/bin/agent-scaffold" = {

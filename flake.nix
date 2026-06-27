@@ -72,22 +72,7 @@
       llm-agents,
       ...
     }@inputs:
-    let
-      system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
-    in
     {
-      # Lint gate for in-repo agent scripts kept as live-edit symlinks (not
-      # store-packaged) — see home/scripts.nix. `nix flake check` runs these.
-      checks.${system} = {
-        tether-shellcheck =
-          pkgs.runCommandLocal "tether-shellcheck" { nativeBuildInputs = [ pkgs.shellcheck ]; }
-            ''
-              shellcheck -S warning ${./.model/agent-tether/bin/tether}
-              touch "$out"
-            '';
-      };
-
       nixosConfigurations.volnix = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; };
         modules = [

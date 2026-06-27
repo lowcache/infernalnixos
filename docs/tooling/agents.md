@@ -45,21 +45,23 @@ interactive sessions and the `memd-sweep` user timer, so there is no packaged/li
 
 ## tether — Claude → Gemini delegation
 
-`tether` ([`scripts/agent-tether/`](https://github.com/lowcache/volnixos/tree/main/scripts/agent-tether),
-contract mirrored under `.model/agent-tether/`) lets Claude (the **orchestrator**) hand scoped task
-briefs to Gemini (the **worker**) via `agy`. The worker executes literally and reports in a
-`RESULT / EVIDENCE / BLOCKERS` format.
+`tether` (standalone tool in its own repo, `~/CodeRepo/tether`; put on `PATH` as
+`~/.local/bin/tether` by [`home/scripts.nix`](https://github.com/lowcache/volnixos/blob/main/home/scripts.nix))
+lets Claude (the **orchestrator**) hand scoped task briefs to Gemini (the **worker**) via `agy`. The
+worker executes literally and reports in a `RESULT / EVIDENCE / BLOCKERS` format.
 
 ```bash
-tether run [-m pro|pro-low|flash|flash-high|flash-low] [-d DIR] [-t TASK] [-y] "BRIEF"
-tether continue TASK "FOLLOW-UP"
+tether run [-m pro|pro-low|flash|flash-high|flash-low] [-d DIR] [-t TASK] [-y] [-f FILE]... [-o OUT] "BRIEF"
+tether ask  [-d DIR] [-f FILE]... "QUESTION"   # one-shot: flash tier, RESULT-only
+tether continue TASK [-f FILE]... [-o OUT] "FOLLOW-UP"
 tether status [TASK] | log [N] | models
 ```
 
 - Default workdir is `$PWD`; paths under `~/.nix-config` auto-map to the non-hidden `~/volnix` alias
   (the Antigravity CLI rejects hidden workspace paths).
-- The full contract is in
-  [`.model/agent-tether/PROTOCOL.md`](https://github.com/lowcache/volnixos/blob/main/scripts/agent-tether/PROTOCOL.md).
+- `-f FILE` embeds a file's contents inline so the worker never tool-reads it (avoids the read-timeout)
+  and the bytes never enter the orchestrator's context; `-o OUT` writes the report to a file.
+- The full contract is in `~/CodeRepo/tether/PROTOCOL.md`.
 
 !!! note "Never delegate"
     Architecture decisions, `.memory/` curation, destructive/system operations, and final
