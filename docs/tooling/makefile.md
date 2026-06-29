@@ -2,7 +2,7 @@
 
 The [`Makefile`](https://github.com/lowcache/volnixos/blob/main/Makefile) is the **canonical**
 operations interface — prefer it over ad-hoc `nixos-rebuild` invocations. `HOST` defaults to `volnix`
-(override with `make <target> HOST=limbo`). Run `make help` for the live list.
+(the only host). Run `make help` for the live list.
 
 ## System
 

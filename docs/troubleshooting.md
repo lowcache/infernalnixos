@@ -4,7 +4,7 @@ Active mitigations baked into the configuration, and notes on hardware-specific 
 
 ## Krita canvas freeze (Qt6 / Wayland on Hyprland)
 
-*Note: Hyprland is no longer the primary desktop (replaced by niri), but this historical mitigation applies for environments like the `limbo` profile.*
+*Note: Hyprland is no longer the desktop (replaced by niri); this entry is kept as a historical record of the mitigation.*
 
 Krita 6 (Qt6) native Wayland crashes/freezes on document or canvas switching under Hyprland with a
 hybrid GPU. **Historical Mitigation:** Krita was repackaged in

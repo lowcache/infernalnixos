@@ -39,17 +39,14 @@ nixpkgs.overlays = [
 ```mermaid
 graph TD
     F["flake.nix"] --> V["nixosConfigurations.volnix"]
-    F --> L["nixosConfigurations.limbo"]
     F --> NG["packages.x86_64-linux.net-gate"]
     F --> TS["packages.x86_64-linux.tailscale-vm"]
     V --> HM["home-manager.users.lowcache → ./home"]
-    L --> HM2["home-manager.users.inlimbo"]
 ```
 
 | Output                                  | Description                                   |
 | :-------------------------------------- | :-------------------------------------------- |
-| `nixosConfigurations.volnix`            | Primary host (`x86_64-linux`)                 |
-| `nixosConfigurations.limbo`             | [Portable generic host](../limbo.md) (`inlimbo`) |
+| `nixosConfigurations.volnix`            | The host (`x86_64-linux`)                     |
 | `packages.x86_64-linux.net-gate`        | Tor MicroVM runner (`nix run .#net-gate`)     |
 | `packages.x86_64-linux.tailscale-vm`    | Tailscale MicroVM runner                      |
 

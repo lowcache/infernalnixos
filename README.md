@@ -34,7 +34,6 @@ adds a CachyOS low-latency kernel, UEFI Secure Boot (Lanzaboote), `sops-nix` sec
 | [Desktop](https://volnixos-wiki.pgs.sh/desktop/) | niri, Noctalia, theming engine |
 | [Reference](https://volnixos-wiki.pgs.sh/reference/flake/) | Flake, Home Manager modules, dotfiles |
 | [Tooling](https://volnixos-wiki.pgs.sh/tooling/makefile/) | Makefile, Fish, agent toolchain |
-| [Limbo profile](https://volnixos-wiki.pgs.sh/limbo/) | Portable, generic-hardware install |
 
 The docs source is in [`docs/`](docs/) (MkDocs Material). Preview locally with `make docs-serve`.
 
@@ -48,18 +47,18 @@ make build          # build without switching
 sudo make switch    # rebuild + switch (HOST=volnix)
 ```
 
-> [!WARNING]
-> The `volnix` host targets specific hardware (AMD Ryzen + hybrid AMD/NVIDIA GPU, ASUS laptop) and is
-> published as a **reference**, not a turnkey install. For a clean build on standard x86_64 hardware,
-> use the [`limbo`](https://volnixos-wiki.pgs.sh/limbo/) profile.
+> [!NOTE]
+> This is my personal, hardware-specific configuration (AMD Ryzen + hybrid AMD/NVIDIA GPU, ASUS
+> laptop), published as a **portfolio and reference** — meant to be read and borrowed from, not
+> installed wholesale. Treat it as proof-of-work, not a distro.
 
 ## Layout
 
 ```text
 .nix-config/
-├── flake.nix          # inputs, overlays, hosts (volnix, limbo), VM runners
+├── flake.nix          # inputs, overlays, host (volnix), VM runners
 ├── Makefile           # canonical operations interface (make help)
-├── nixos/             # system modules + nixos/limbo (generic host)
+├── nixos/             # system modules
 ├── home/              # Home Manager modules
 ├── dots/              # dotfiles (out-of-store symlinked to ~/.config)
 ├── scripts/           # agent toolchain (memd, tether, agent-scaffold)

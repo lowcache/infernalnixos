@@ -137,5 +137,4 @@ nav:
       - Makefile & Operations: tooling/makefile.md
       - Fish Functions: tooling/fish.md
       - Agent Toolchain: tooling/agents.md
-  - Limbo Profile: limbo.md
   - Troubleshooting: troubleshooting.md

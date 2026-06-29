@@ -61,9 +61,9 @@ CUDA Ollama + Open WebUI, GPU-passthrough Fooocus, and a custom agent toolchain.
 </div>
 
 <div class="vol-card" markdown>
-### 💿 Portable "Limbo"
-A generic, hardware-independent profile that installs cleanly on any x86_64 machine.
-[Read more →](limbo.md)
+### 📖 Portfolio, Not a Distro
+A personal, hardware-specific config published as proof-of-work — read it and borrow patterns; it is not a turnkey install.
+[Read more →](architecture/index.md)
 </div>
 
 </div>
@@ -83,10 +83,10 @@ make build          # build without switching
 sudo make switch    # rebuild + switch the live system (HOST=volnix)
 ```
 
-!!! warning "Hardware specificity"
+!!! note "A portfolio, not a distro"
     The `volnix` host targets a specific machine (AMD Ryzen + hybrid AMD iGPU / NVIDIA RTX 4050,
-    ASUS laptop) and is published as a **reference**, not a turnkey install. For a clean, generic
-    build on standard x86_64 hardware, use the decoupled [`limbo`](limbo.md) profile.
+    ASUS laptop) and is published as **proof-of-work** — meant to be read and borrowed from, not
+    installed wholesale.
 
 [Architecture overview](architecture/index.md){ .md-button .md-button--primary }
 [Browse the source](https://github.com/lowcache/volnixos){ .md-button }
