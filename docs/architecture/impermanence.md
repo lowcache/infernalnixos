@@ -23,8 +23,8 @@ Persistence is declared per-user in
 | :---------- | :----------------------------------------------------------------------- |
 | Credentials | `.ssh`, `.gnupg`, `.config/sops`, `.local/share/keyrings`                |
 | Tooling     | `.cargo`, `.rustup`, `.npm`, `.local/share/go`, `.foundry`, `.solc-select` |
-| App state   | `.config/BraveSoftware`, `.config/VSCodium`, `.ollama`, `.claude`, `.var/app` |
-| Caches      | `.cache/pip`, `.cache/quickshell`, `.cache/nvidia`                        |
+| App state   | `.config/BraveSoftware`, `.config/VSCodium`, `.ollama`, `.claude`, `.var/app`, `.config/niri`, `.config/noctalia`, `.local/state/noctalia` |
+| Caches      | `.cache/pip`, `.cache/noctalia`, `.cache/nvidia`                        |
 | Home dirs   | `Documents`, `Pictures`, `Downloads`, `Projects`, `CodeRepo`, `AppImage` |
 | Memory tool | `.config/memd`, `.local/state/memd`                                       |
 | Single file | `.claude.json` (Claude Code state, lives outside `~/.claude`)            |
@@ -36,9 +36,9 @@ User dotfiles are **not** copied into the Nix store. Instead,
 `config.lib.file.mkOutOfStoreSymlink` from the repo checkout into `~/.config/`:
 
 ```nix
-xdg.configFile."hypr".source =
+xdg.configFile."niri".source =
   config.lib.file.mkOutOfStoreSymlink
-    "/persist${config.home.homeDirectory}/.nix-config/dots/hypr";
+    "/persist${config.home.homeDirectory}/.nix-config/dots/niri";
 ```
 
 !!! tip "Why out-of-store"

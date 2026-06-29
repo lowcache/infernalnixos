@@ -1,25 +1,24 @@
 # Desktop Stack Overview 🖥️
 
-The desktop stack utilizes a Wayland ecosystem, customized with a dedicated shell architecture and theming engine.
+The desktop stack is a pure-Wayland ecosystem: the [niri](niri.md) scrollable-tiling compositor paired with the [Noctalia v5](noctalia.md) native shell and a JSON [Theming Engine](theming.md).
 
 !!! info
-    The desktop session relies on [Hyprland](hyprland.md) operating under the Universal Wayland Session Manager (UWSM). The interface is provided by a custom [Quickshell](quickshell.md) layer and styled using a JSON [Theming Engine](theming.md).
+    The desktop session runs [niri](niri.md) under the Universal Wayland Session Manager (UWSM), launched from `greetd`/`tuigreet`. The shell, bar, lock screen, and OSD are provided by [Noctalia v5](noctalia.md) (C++/native), styled by the JSON [Theming Engine](theming.md). This replaces the former Hyprland + Quickshell (ii) stack.
 
 ## Architecture
 
 ```mermaid
 graph TD
-    A[greetd + tuigreet] -->|uwsm start hyprland.desktop| B[UWSM]
-    B --> C[Hyprland]
-    C --> D[Quickshell ii]
+    A[greetd + tuigreet] -->|uwsm start niri.desktop| B[UWSM]
+    B --> C[niri]
+    C --> D[Noctalia v5 shell]
     C --> E[kitty & Apps]
     F[Theming Engine] -.->|Applies Colors| D
-    F -.->|Applies Colors| C
     F -.->|Applies Colors| E
 ```
 
 ## Core Components
 
-- **[Hyprland & Session](hyprland.md)**: The Wayland compositor, keybind routing, idle/lock management, shaders, and a Quake-style drop-down terminal.
-- **[Quickshell Architecture](quickshell.md)**: The "ii" Qt6/QML shell that replaces standard panels and runners. It handles panels, overview, OSD, and notifications.
-- **[Theming Engine](theming.md)**: A global JSON-based color scheme generator and applier, accessible via Makefile targets.
+- **[niri Compositor](niri.md)**: The scrollable-tiling Wayland compositor — keybind routing, app launchers, lock via `loginctl`, and a `kitten`-based Quake drop-down terminal.
+- **[Noctalia Shell](noctalia.md)**: The C++/native v5 shell that replaces panels and runners — bar, wallpaper picker, lock/idle, OSD, and the Claude Code companion plugin.
+- **[Theming Engine](theming.md)**: A global JSON-based color scheme generator and applier (color-engine), accessible via Makefile targets.

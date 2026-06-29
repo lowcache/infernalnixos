@@ -209,10 +209,6 @@
         cups
       ];
     };
-    hyprland = {
-      enable = true;
-      withUWSM = true;
-    };
     appimage = {
       enable = true;
       binfmt = true;
@@ -276,11 +272,10 @@
       scheduler = "scx_bpfland";
     };
     flatpak.enable = true;
-    # dbus-broker (uwsm default) is back: the 2026-06-10 portal failure was never
-    # a dbus/pidfd issue — Hyprland's cap_sys_nice wrapper leaked ambient
-    # CAP_SYS_NICE to clients, so the portal (capless) failed the kernel's
-    # cap_ptrace_access_check opening /proc/<pid>/root. Fixed upstream in
-    # Hyprland 0.55.3. See .memory/inbox/2026-06-12-portal-bug-real-root-cause.md.
+    # dbus-broker (the uwsm default) is in use. A historical 2026-06-10 portal
+    # failure on this host traced to the old Hyprland session's cap_sys_nice
+    # wrapper leaking ambient CAP_SYS_NICE (not a dbus/pidfd issue) — moot now
+    # that Hyprland is gone. See .memory/inbox/2026-06-12-portal-bug-real-root-cause.md.
     asusd.enable = true;
     supergfxd.enable = false;
     power-profiles-daemon.enable = false;
@@ -293,9 +288,8 @@
       enable = true;
       settings = {
         default_session = {
-          # Session menu: niri is the default (--cmd fallback); hyprland.desktop
-          # remains selectable from the menu. niri.desktop comes from programs.niri
-          # in ./niri.nix. Revert = swap --cmd back to 'uwsm start hyprland.desktop'.
+          # niri is the sole session. niri.desktop comes from programs.niri in
+          # ./niri.nix; launched via uwsm (uwsm binary lives in systemPackages).
           command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-session --sessions ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions --cmd 'uwsm start niri.desktop'";
           user = "greeter";
         };
@@ -365,7 +359,6 @@
       trusted-users = [ "root" "lowcache" ];
       auto-optimise-store = true;
       substituters = [
-        "https://hyprland.cachix.org"
         "https://nix-community.cachix.org"
         "https://cache.lix.systems"
         "https://cuda-maintainers.cachix.org"
@@ -373,7 +366,6 @@
         "https://attic.xuyh0120.win/lantian"
       ];
       trusted-public-keys = [
-        "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
         "cache.lix.systems:aBnZU3F19808R5N0sczBmsWwI5YI+433R9M2iS2Hcy4="
         "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="

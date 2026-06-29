@@ -36,54 +36,21 @@
           gtk4
           dconf
         ];
-        quickshell = with pkgs; [
-          inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default
-          qt6.qtwayland
-          qt6.qtsvg
-          qt6.qt5compat
-          qt6.qtdeclarative
-          qt6.qtpositioning
-          qt6.qtmultimedia
-          qt6.qtquicktimeline
-          qt6.qtimageformats
-          qt6.qtvirtualkeyboard
-          qt6.qtsensors
-          qt6.qttools
-          qt6.qttranslations
-          qt6.qtwebsockets
-          qt6.qtshadertools
-          qt6.qtscxml
-          kdePackages.kirigami.unwrapped
-          kdePackages.kirigami-addons
-          kdePackages.breeze-icons
-          kdePackages.qqc2-desktop-style
-          kdePackages.syntax-highlighting
-          kdePackages.dolphin
-          bibata-cursors
-          bibata-cursors-translucent
-        ];
         krita-wrapped = pkgs.symlinkJoin {
           name = "krita";
           paths = [ pkgs.krita ];
           nativeBuildInputs = [ pkgs.makeWrapper ];
-          # Compositor-aware platform: Qt6-native-Wayland Krita froze on canvas/tab
-          # switch under Hyprland + hybrid GPU (decision #4), so force xcb (XWayland)
-          # there. niri has no built-in XWayland and native Wayland Krita works fine
-          # (better stylus/tablet support too), so use wayland under niri.
+          # Krita runs native Wayland under niri (better stylus/tablet support).
+          # The former xcb (XWayland) fallback existed only for Hyprland + hybrid-GPU
+          # canvas freezes (decision #4); Hyprland is gone, so Wayland is unconditional.
           postBuild = ''
             wrapProgram $out/bin/krita \
-              --run 'if [ -n "$NIRI_SOCKET" ]; then export QT_QPA_PLATFORM=wayland; else export QT_QPA_PLATFORM=xcb; fi'
+              --set QT_QPA_PLATFORM wayland
           '';
         };
-        hyprland-niri = with pkgs; [
-          # hyprland utils
-          hypridle
-          hyprlock
-          hyprcursor
-          hyprland-qt-support
-          hyprpaper
-          hyprpicker
-          # niri-utils
+        niri-desktop = with pkgs; [
+          hyprpicker # wlroots screen color picker (niri Mod+Shift+C)
+          # niri utils
           nirius
           nirimon
           pamixer
@@ -214,6 +181,6 @@
           pkgs.llm-agents.letta-code
         ];
       in
-      nixified-ai ++ terminal ++ typography ++ hyprland-niri ++ quickshell ++ basedevel;
+      nixified-ai ++ terminal ++ typography ++ niri-desktop ++ basedevel;
   };
 }

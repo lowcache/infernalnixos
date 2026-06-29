@@ -16,9 +16,9 @@ DOTS_BRANCH       ?= main
 DOTS_SPLIT_BRANCH ?= dots-history
 
 # --- Colorscheme / theme workflow paths ---
-II_DIR      := dots/illogical-impulse
+II_DIR      := dots/color-engine
 THEMES_DIR  := $(II_DIR)/themes
-SCRIPTS_DIR := $(II_DIR)/scripts
+SCRIPTS_DIR := $(II_DIR)
 PYTHON      ?= python3
 
 # --- Documentation site (MkDocs Material) ---

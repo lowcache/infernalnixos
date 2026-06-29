@@ -10,7 +10,7 @@ projects before launch.
 | Function    | Description                                                                   |
 | :---------- | :--------------------------------------------------------------------------- |
 | `priv-sync` | `rsync` live persistent dirs (Documents, Pictures, repos, keys) into `priv.bkup` |
-| `setwall`   | Set wallpaper globally or per-monitor and re-run the theme pipeline           |
+| `setwall`   | Set wallpaper via `noctalia msg wallpaper-set` and re-run the theme pipeline  |
 | `tablet`    | Use a phone as a Krita pen tablet over USB (Weylus + `adb reverse` on port 1701) |
 | `colorhex`  | Render colored swatches around hex codes in stdin/files/args                  |
 | `extract`   | Universal archive extractor (`.tar.zst`, `.tar.xz`, `.zip`, `.deb`, …)        |
@@ -29,7 +29,7 @@ projects before launch.
 | `nvrun`                     | PRIME render-offload prefix (run a command on the dGPU)     |
 | `stbldff-on` / `stbldff-off`| Start / stop the Fooocus container                         |
 | `wifi` / `wifilist`         | `nmtui` / `nmcli device wifi list`                          |
-| `qii`                       | `qs -c ii` (launch the Quickshell `ii` config)             |
+| `noc`                       | `noctalia msg` (interact with Noctalia IPC)                |
 | `shutdown` / `bootbios`     | `systemctl poweroff` / `systemctl reboot --firmware`       |
 
 ## Environment

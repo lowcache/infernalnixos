@@ -12,8 +12,8 @@ graph TD
     IMP --> P["/persist<br/>durable state"]
     LB --> NIX["NixOS · Lix daemon"]
     NIX --> HM["Home Manager<br/>user: lowcache"]
-    HM --> HYP["Hyprland + UWSM<br/>greetd / tuigreet"]
-    HYP --> QS["Quickshell shell (ii)"]
+    HM --> NIRI["niri compositor<br/>greetd / tuigreet"]
+    NIRI --> NOCT["Noctalia v5 shell"]
     NIX --> VM["microvm.nix guests"]
     VM --> TOR["net-gate · Tor proxy"]
     VM --> TS["tailscale-vm"]
@@ -42,4 +42,4 @@ flake input. The flake keeps `inputs.lix.url` tracking Lix `main` with
 | Performance      | CachyOS kernel + sysctl tuning             | [Kernel & Performance](kernel.md)      |
 | Secrets          | `sops-nix` + age                           | [Secrets](secrets.md)                  |
 | Isolation        | `microvm.nix` gateways                     | [Networking](../networking/index.md)   |
-| Desktop          | Hyprland + Quickshell                      | [Desktop](../desktop/index.md)         |
+| Desktop          | niri + Noctalia v5                         | [Desktop](../desktop/index.md)         |

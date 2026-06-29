@@ -12,11 +12,11 @@ dots/
 ├── fuzzel/              # application launcher (fuzzel.ini + theme)
 ├── gemini/              # Gemini / Antigravity agent config (credentials git-ignored)
 ├── htop/                # process viewer (htoprc)
-├── hypr/                # Hyprland: keybinds, idle/lock, shaders, quake, scripts
-├── illogical-impulse/   # Quickshell theme engine: JSON themes + scripts + config.json
+├── color-engine/        # JSON theme engine: apply_theme.py + palettes
 ├── kitty/              # terminal: kitty.conf + tab_bar.py + current.conf
 ├── kitty_colorschemes/  # extra kitty colorschemes
-├── quickshell/ii/       # bespoke Qt6/QML shell (modules, services, panel families)
+├── niri/                # niri compositor: config.kdl, scripts, quake terminal
+├── noctalia/            # Noctalia v5 shell: config.toml, plugins
 ├── starship/            # prompt (starship.toml)
 └── wlogout/             # Wayland logout menu (layout + style.css)
 ```
@@ -25,9 +25,9 @@ Most of these are detailed in the [Desktop](../desktop/index.md) section. A quic
 
 | Dotfile             | Notable settings                                                          |
 | :------------------ | :----------------------------------------------------------------------- |
-| `hypr/`             | Keybinds route through Quickshell IPC with script fallbacks; idle/lock via hypridle/hyprlock; GLSL screen shaders; Kitty quake terminal |
-| `quickshell/ii/`    | ~45 QML backend services + `ii`/`waffle` panel families + color/AI/thumbnail scripts |
-| `illogical-impulse/`| JSON theme engine (`apply_theme.py`); themes: amalgamation, petrified_spittoon, radioactive_slime |
+| `niri/`             | Keybinds, window rules, startup apps, IPC scripts, and Kitty quake terminal |
+| `noctalia/`         | Noctalia v5 shell config, Lua UI plugins, Claude MCP integration, custom bar |
+| `color-engine/`     | JSON theme engine (`apply_theme.py`); palettes mapped to Noctalia, Kitty, and Starship |
 | `kitty/`            | PunkMono Nerd Font, fish shell, custom bottom tab bar, `listen_on unix:@mykitty` for live theming |
 | `fuzzel/`           | Google Sans Flex, overlay layer, rounded borders                         |
 | `wlogout/`          | Six session actions; kills client PIDs before logout/reboot/shutdown     |

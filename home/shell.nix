@@ -94,10 +94,6 @@
       '';
       interactiveShellInit = ''
         if status is-interactive
-            if test -f ~/.local/state/quickshell/user/generated/terminal/sequences.txt
-                cat ~/.local/state/quickshell/user/generated/terminal/sequences.txt
-            end
-
             set -g fish_greeting
             # Navigation
             alias ..='cd ..'
@@ -154,7 +150,6 @@
         c = "clear";
         color = "colorhex";
         chex = "colorhex";
-        qii = "qs -c ii";
         edit = "$EDITOR";
         nf = "fastfetch";
         pf = "fastfetch";
@@ -292,26 +287,13 @@
             set -l mon $argv[2]
             # Convention symlink (referenced elsewhere); harmless on either session.
             ln -sf "$img" ~/Pictures/wallpaper.png
-            if set -q NIRI_SOCKET
-              # niri + Noctalia: WALLPAPER ONLY. No color logic — apply_theme.py is the
-              # single source of truth for the colorscheme, and nothing here clobbers it
-              # (no matugen on this path). noctalia msg wallpaper-set is persisted.
-              if test -n "$mon"
-                noctalia msg wallpaper-set "$mon" "$img"
-              else
-                noctalia msg wallpaper-set "$img"
-              end
+            # niri + Noctalia: WALLPAPER ONLY. No color logic — apply_theme.py is the
+            # single source of truth for the colorscheme, and nothing here clobbers it
+            # (no matugen on this path). noctalia msg wallpaper-set is persisted.
+            if test -n "$mon"
+              noctalia msg wallpaper-set "$mon" "$img"
             else
-              # Hyprland/quickshell-ii: switchwall.sh runs matugen, so it re-runs
-              # apply_theme.py at the end to restore the canonical scheme.
-              set -l script ~/.config/quickshell/ii/scripts/colors/switchwall.sh
-              if test -n "$mon"
-                echo "Setting wallpaper for $mon..."
-                $script --monitor $mon --image "$img"
-              else
-                echo "Setting wallpaper globally..."
-                $script --image "$img"
-              end
+              noctalia msg wallpaper-set "$img"
             end
           '';
         };

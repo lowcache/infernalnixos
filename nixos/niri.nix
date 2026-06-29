@@ -1,10 +1,8 @@
-# nixos/niri.nix — niri compositor + Noctalia v5 second-session enablement.
-# Additive & reversible: delete this file and drop the ./niri.nix import from
-# configuration.nix to fully revert. Hyprland/ii stays the default greeter session.
+# nixos/niri.nix — niri compositor + Noctalia v5 desktop enablement.
 { ... }:
 {
-  # Scrollable-tiling Wayland compositor (nixpkgs 25.11). Registers niri.desktop
-  # as a selectable session alongside hyprland.desktop in the tuigreet menu.
+  # Scrollable-tiling Wayland compositor (nixpkgs 25.11). Registers niri.desktop,
+  # the sole graphical session (launched via uwsm from greetd; see configuration.nix).
   programs.niri.enable = true;
 
   # Noctalia v5 runtime deps (docs.noctalia.dev/v5/getting-started/nixos).

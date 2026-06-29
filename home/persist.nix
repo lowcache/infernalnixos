@@ -3,18 +3,14 @@
   xdg = {
     enable = true;
     # Move the XDG cache root off the 4G tmpfs onto the roomy ~/Storage volume.
-    # This sets XDG_CACHE_HOME session-wide, so pip/quickshell-ii/llmfit/etc. all
+    # This sets XDG_CACHE_HOME session-wide, so pip/llmfit/etc. all
     # cache to Storage by default instead of filling root (see home/default.nix).
     cacheHome = "${config.home.homeDirectory}/Storage/.cache";
     configFile = {
-      "quickshell".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/quickshell/";
-      "hypr".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/hypr";
-      "illogical-impulse".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/illogical-impulse";
-      # Compositor-agnostic color engine (apply_theme.py + themes/), used by both the
-      # Hyprland/ii and niri/Noctalia sessions. Moved out of dots/illogical-impulse.
+      # Color engine (apply_theme.py + themes/) for the niri/Noctalia session.
       "color-engine".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/color-engine";
-      # niri + Noctalia v5 (second session). Live-edit symlinks like quickshell/ii;
-      # Home Manager writes no files here (see home/noctalia.nix), so no collision.
+      # niri + Noctalia v5. Live-edit symlinks; Home Manager writes no files here
+      # (see home/noctalia.nix), so no collision.
       "niri".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/niri";
       "noctalia".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/noctalia";
       "kitty".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/kitty";
@@ -89,8 +85,6 @@
           # added after it (an XDG-ignoring cache) filled root tmpfs to 100% on 2026-06-16.
           cache = [
             ".cache/pip"
-            ".cache/quickshell"
-            ".cache/illogical-impulse"
             ".cache/noctalia"
             ".cache/nvidia"
             ".cache/llmfit"
@@ -102,18 +96,14 @@
             ".local/share/fish"
             ".local/share/direnv"
             ".local/share/fonts"
-            ".local/share/quickshell"
             ".local/share/noctalia"
             ".local/share/keyrings"
-            ".local/share/illogical-impulse"
             ".local/share/Google"
             ".local/share/flatpak"
             ".local/share/applications"
             ".local/share/Antigravity-x64"
             ".local/share/Antigravity IDE"
             ".local/bin"
-            ".local/state/quickshell"
-            ".local/state/illogical-impulse"
             ".local/state/noctalia"
             ".local/state/wireplumber"
             ".local/state/memd"

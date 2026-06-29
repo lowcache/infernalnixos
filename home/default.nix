@@ -28,14 +28,12 @@ let
       ];
     in
     {
-      QML2_IMPORT_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/qml:${pkg}/lib/qml") qtDependencies + ":${config.home.homeDirectory}/.config/quickshell/ii";
-      QML_IMPORT_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/qml:${pkg}/lib/qml") qtDependencies + ":${config.home.homeDirectory}/.config/quickshell/ii";
+      QML2_IMPORT_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/qml:${pkg}/lib/qml") qtDependencies;
+      QML_IMPORT_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/qml:${pkg}/lib/qml") qtDependencies;
       QT_PLUGIN_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/plugins:${pkg}/lib/plugins") qtDependencies;
       # Wayland session vars. XDG_CURRENT_DESKTOP / XDG_SESSION_DESKTOP are deliberately
-      # NOT hardcoded here: each compositor session self-declares its identity, and a
-      # global "Hyprland" value mislabeled the niri session (muddying portals/app hints).
-      #   - hyprland.desktop: launched via `uwsm start -e -D Hyprland` → uwsm exports them.
-      #   - niri.desktop: `niri-session` exports XDG_CURRENT_DESKTOP=niri itself.
+      # NOT hardcoded here: the niri session self-declares its identity
+      # (`niri-session` exports XDG_CURRENT_DESKTOP=niri itself).
       XDG_SESSION_TYPE = "wayland";
       QT_QPA_PLATFORM = "wayland";
       QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
@@ -52,11 +50,11 @@ let
       # tools, the Claude Code harness) without depending on per-action discipline.
       # XDG_CACHE_HOME is set canonically via xdg.cacheHome in persist.nix (setting it
       # here would conflict with home-manager's xdg module). It is honored by pip,
-      # quickshell/ii (applycolor.sh), llmfit, etc.
+      # llmfit, etc.
       TMPDIR = "${config.home.homeDirectory}/Storage/tmp";
       PIP_CACHE_DIR = "${config.home.homeDirectory}/Storage/.cache/pip";
       CLAUDE_CODE_TMPDIR = "${config.home.homeDirectory}/Storage/tmp/claude";
-      # nvidia specific (commented out to allow Hyprland session to render on integrated AMD GPU)
+      # nvidia specific (commented out to render on the integrated AMD GPU)
       # LIBVA_DRIVER_NAME = "nvidia";
       # GBM_BACKEND = "nvidia-drm";
       # __NV_PRIME_RENDER_OFFLOAD = "1";
@@ -113,7 +111,7 @@ in
 
   # ~/.local/bin holds user scripts (memd, agent-scaffold, tether, claude shims).
   # The graphical session's PATH comes from the systemd --user manager — niri runs
-  # as niri.service, hyprland via uwsm, both under systemd --user — which reads
+  # under systemd --user (launched via uwsm) — which reads
   # ~/.config/environment.d/. Unlike systemd.user.sessionVariables (no var
   # expansion → would clobber PATH), environment.d expands ${PATH}, so we PREPEND.
   # This makes ~/.local/bin reachable session-wide, compositor-agnostic: e.g. the

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Quick-and-dirty theme generator for the illogical-impulse pipeline.
+"""Quick-and-dirty theme generator for the color-engine pipeline.
 
 Takes a handful of colors (CLI args) or a file containing colors (any text/conf/JSON
 with hex codes in it) and emits a theme JSON that meets the current standard: a full

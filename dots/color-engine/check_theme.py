@@ -13,7 +13,7 @@ import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from make_theme import validate_theme  # reuses apply_theme.validate_palette under the hood
 
-REFERENCE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+REFERENCE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                          "themes", "amalgamation.json")
 
 def main():

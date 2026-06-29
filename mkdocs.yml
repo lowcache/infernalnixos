@@ -2,7 +2,7 @@ site_name: Vol[atile] NixOS
 site_description: >-
   A stateless, flake-driven NixOS workstation — ephemeral tmpfs root, CachyOS
   kernel, Lanzaboote Secure Boot, sops-nix secrets, microvm.nix gateways, and a
-  bespoke Qt6/QML Hyprland desktop.
+  niri + Noctalia v5 Wayland desktop.
 site_author: lowcache
 site_url: https://volnixos-wiki.pgs.sh/
 repo_url: https://github.com/lowcache/volnixos
@@ -126,8 +126,8 @@ nav:
       - AI Stack: system/ai-stack.md
   - Desktop:
       - desktop/index.md
-      - Hyprland & UWSM: desktop/hyprland.md
-      - Quickshell (ii): desktop/quickshell.md
+      - niri Compositor: desktop/niri.md
+      - Noctalia Shell: desktop/noctalia.md
       - Theming Engine: desktop/theming.md
   - Reference:
       - Flake Inputs & Outputs: reference/flake.md

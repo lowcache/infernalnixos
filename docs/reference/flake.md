@@ -15,7 +15,7 @@
 | `impermanence`       | `nix-community/impermanence`             | Ephemeral root / `/persist`            |
 | `lanzaboote`         | `nix-community/lanzaboote`               | UEFI Secure Boot                       |
 | `microvm`            | `astro/microvm.nix`                       | Isolated VM guests                     |
-| `quickshell`         | `git.outfoxxed.me/outfoxxed/quickshell`  | Qt6/QML desktop shell                  |
+| `noctalia`           | `github:noctalia-dev/noctalia`           | Noctalia v5 desktop shell              |
 | `lix-module`         | `git.lix.systems/.../nixos-module`       | Lix daemon (+ `lix` input)             |
 | `sops-nix`           | `Mic92/sops-nix`                          | Encrypted secrets                      |
 | `volinit`            | `lowcache/volinit`                        | Shell welcome banner                   |

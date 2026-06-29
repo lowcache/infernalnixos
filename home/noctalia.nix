@@ -1,6 +1,6 @@
 # home/noctalia.nix — Noctalia v5 shell (package + enable only).
 # Config is deliberately NOT managed here: ~/.config/noctalia is an out-of-store
-# symlink to dots/noctalia (see persist.nix), matching the ii/quickshell live-edit
+# symlink to dots/noctalia (see persist.nix), following the live-edit dotfile
 # pattern (decision #1) and leaving apply_theme.py free to write the M3 palette at
 # runtime (~/.config/noctalia/palettes/volnix.json, hot-reloaded).
 # Additive & reversible: drop the ./noctalia.nix import from home/default.nix.

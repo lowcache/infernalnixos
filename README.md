@@ -5,7 +5,7 @@
 <p>
   <img alt="NixOS unstable" src="https://img.shields.io/badge/NixOS-unstable-5277C3?style=for-the-badge&logo=nixos&logoColor=white">
   <img alt="Lix" src="https://img.shields.io/badge/Nix_daemon-Lix-3a3a3a?style=for-the-badge&logo=nixos&logoColor=88c0d0">
-  <img alt="Hyprland" src="https://img.shields.io/badge/WM-Hyprland-00AAFF?style=for-the-badge&logo=hyprland&logoColor=white">
+  <img alt="niri" src="https://img.shields.io/badge/WM-niri-7E9CD8?style=for-the-badge&logoColor=white">
   <img alt="Wayland" src="https://img.shields.io/badge/Display-Wayland-FFB300?style=for-the-badge&logo=wayland&logoColor=white">
 </p>
 <p>
@@ -21,7 +21,7 @@ A declarative, performance-tuned, **ephemeral** NixOS configuration built on Nix
 [Lix](https://lix.systems) daemon. The root filesystem is a `tmpfs` wiped on every boot; all durable
 state is mapped onto `/persist` via [`impermanence`](https://github.com/nix-community/impermanence). It
 adds a CachyOS low-latency kernel, UEFI Secure Boot (Lanzaboote), `sops-nix` secrets, isolated
-`microvm.nix` gateways, CUDA-accelerated local AI, and a bespoke Qt6/QML Hyprland desktop.
+`microvm.nix` gateways, CUDA-accelerated local AI, and a niri + Noctalia v5 Wayland desktop.
 
 ## 📖 Documentation
 
@@ -31,7 +31,7 @@ adds a CachyOS low-latency kernel, UEFI Secure Boot (Lanzaboote), `sops-nix` sec
 | :--- | :--- |
 | [Architecture](https://volnixos-wiki.pgs.sh/architecture/) | Boot, impermanence, kernel, secrets |
 | [Networking](https://volnixos-wiki.pgs.sh/networking/) | Tor `net-gate` & Tailscale MicroVMs |
-| [Desktop](https://volnixos-wiki.pgs.sh/desktop/) | Hyprland, Quickshell, theming engine |
+| [Desktop](https://volnixos-wiki.pgs.sh/desktop/) | niri, Noctalia, theming engine |
 | [Reference](https://volnixos-wiki.pgs.sh/reference/flake/) | Flake, Home Manager modules, dotfiles |
 | [Tooling](https://volnixos-wiki.pgs.sh/tooling/makefile/) | Makefile, Fish, agent toolchain |
 | [Limbo profile](https://volnixos-wiki.pgs.sh/limbo/) | Portable, generic-hardware install |

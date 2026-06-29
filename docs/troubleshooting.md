@@ -2,10 +2,12 @@
 
 Active mitigations baked into the configuration, and notes on hardware-specific quirks.
 
-## Krita canvas freeze (Qt6 / Wayland)
+## Krita canvas freeze (Qt6 / Wayland on Hyprland)
+
+*Note: Hyprland is no longer the primary desktop (replaced by niri), but this historical mitigation applies for environments like the `limbo` profile.*
 
 Krita 6 (Qt6) native Wayland crashes/freezes on document or canvas switching under Hyprland with a
-hybrid GPU. **Mitigation:** Krita is repackaged in
+hybrid GPU. **Historical Mitigation:** Krita was repackaged in
 [`home/pkgs.nix`](https://github.com/lowcache/volnixos/blob/main/home/pkgs.nix) with `symlinkJoin` +
 `makeWrapper` to force XWayland:
 
@@ -28,6 +30,8 @@ Symptom (file dialogs / file-roller failing):
 GDBus.Error:org.freedesktop.DBus.Error.AccessDenied:
 Portal operation not allowed: Unable to open /proc/[pid]/root
 ```
+
+*Note: This originated under Hyprland, which is no longer the primary desktop, but is preserved for historical context.*
 
 Per the note in
 [`nixos/configuration.nix`](https://github.com/lowcache/volnixos/blob/main/nixos/configuration.nix),

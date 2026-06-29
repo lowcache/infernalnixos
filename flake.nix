@@ -22,10 +22,6 @@
       url = "github:astro/microvm.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    quickshell = {
-      url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     # Noctalia v5 (C++/native shell). follows nixpkgs per decision (source build,
     # no Cachix). Wired via home/noctalia.nix (homeModules.default).
     noctalia = {

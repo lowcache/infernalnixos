@@ -11,7 +11,7 @@ hide:
 <div class="vol-badges" markdown>
 ![NixOS unstable](https://img.shields.io/badge/NixOS-unstable-5277C3?style=for-the-badge&logo=nixos&logoColor=white)
 ![Lix](https://img.shields.io/badge/Nix_daemon-Lix-3a3a3a?style=for-the-badge&logo=nixos&logoColor=88c0d0)
-![Hyprland](https://img.shields.io/badge/WM-Hyprland-00AAFF?style=for-the-badge&logo=hyprland&logoColor=white)
+![niri](https://img.shields.io/badge/WM-niri-7E9CD8?style=for-the-badge&logoColor=white)
 ![Wayland](https://img.shields.io/badge/Display-Wayland-FFB300?style=for-the-badge&logo=wayland&logoColor=white)
 </div>
 
@@ -26,7 +26,7 @@ A declarative, performance-tuned, **ephemeral** NixOS workstation built on Nix F
 state is mapped onto `/persist` through
 [`impermanence`](https://github.com/nix-community/impermanence). On top sits a CachyOS low-latency
 kernel, UEFI Secure Boot via Lanzaboote, `sops-nix` encrypted secrets, isolated `microvm.nix` network
-gateways, CUDA-accelerated local AI, and a bespoke Qt6/QML Hyprland desktop shell.
+gateways, CUDA-accelerated local AI, and a niri + Noctalia v5 Wayland desktop.
 
 <div class="vol-grid" markdown>
 
@@ -49,8 +49,8 @@ Isolated `cloud-hypervisor` guests: a Tor transparent proxy and a Tailscale rout
 </div>
 
 <div class="vol-card" markdown>
-### 🎨 Quickshell Desktop
-Hyprland + UWSM with a custom Qt6/QML "illogical-impulse" shell and JSON theme engine.
+### 🎨 Noctalia Desktop
+niri compositor with the Noctalia v5 native Wayland shell and a JSON theme engine.
 [Read more →](desktop/index.md)
 </div>
 

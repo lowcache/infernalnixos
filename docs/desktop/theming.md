@@ -1,6 +1,6 @@
 # Theming Engine
 
-The desktop stack uses a global, JSON-based color scheme engine. Configuration and scripts are located in `dots/illogical-impulse/`.
+The desktop stack uses a global, JSON-based color scheme engine. Configuration and scripts are located in `dots/color-engine/`.
 
 ## Themes
 
@@ -16,7 +16,7 @@ Themes are stored in the `themes/` directory as JSON files. Examples include:
 
 The theming tools map JSON palettes onto various applications live:
 
-- `scripts/apply_theme.py`: Applies a JSON theme across the system via a `TECHNICAL_MAP`. Targets include Quickshell's `Appearance.qml`, `hypr/hyprland/colors.conf`, Starship (`starship.toml`), and `kitty` (`current.conf` + `tab_bar.py`). Kitty theming is applied live through a remote control socket (`unix:@mykitty`).
+- `scripts/apply_theme.py`: Applies a JSON theme across the system via a `TECHNICAL_MAP`. Targets include Noctalia v5 (`~/.config/noctalia/palettes/volnix.json`), Starship (`starship.toml`), and `kitty` (`current.conf` + `tab_bar.py`). Kitty theming is applied live through a remote control socket (`unix:@mykitty`).
 - `scripts/check_theme.py`: Validates JSON theme structures. It hard-fails on invalid hex values or dangling mapping references, and warns if roles are missing compared to `amalgamation.json`.
 - `scripts/make_theme.py`: Generates new JSON themes from hex arguments or a color file. It derives backgrounds, accents, containers, dim variants, and a 16-color terminal set. This script also includes internal validation and an `--apply` flag for immediate deployment.
 

@@ -13,7 +13,7 @@ input {
         tap
         natural-scroll
         disabled-on-external-mouse
-        off // @tptoggle@   -- toggled by F10 / touchpad_toggle.sh (uncommented = disabled)
+        // off // @tptoggle@   -- toggled by F10 / touchpad_toggle.sh (uncommented = disabled)
     }
     mouse {
       // off
@@ -139,13 +139,13 @@ binds {
     Mod+Ctrl+Return  { spawn-sh "~/.config/niri/scripts/quake.sh orientation"; } // landscape (horizontal) / portrait (vertical)
     Mod+T            { spawn "kitty"; }                                       // Terminal
     Ctrl+Alt+T       { spawn "kitty"; }                                       // Terminal (alt)
-    Mod+E            { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh dolphin nautilus nemo thunar 'kitty -1 fish -c yazi'"; } // Files
-    Mod+W            { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh brave google-chrome-stable zen-browser firefox chromium"; } // Browser
-    Mod+C            { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh antigravity code vscodium cursor zed kate gnome-text-editor emacs"; } // Code editor
-    Mod+X            { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh kate gedit emacs"; } // Text editor
+    Mod+E            { spawn-sh "~/.config/niri/scripts/launch_first_available.sh dolphin nautilus nemo thunar 'kitty -1 fish -c yazi'"; } // Files
+    Mod+W            { spawn-sh "~/.config/niri/scripts/launch_first_available.sh brave google-chrome-stable zen-browser firefox chromium"; } // Browser
+    Mod+C            { spawn-sh "~/.config/niri/scripts/launch_first_available.sh antigravity code vscodium cursor zed kate gnome-text-editor emacs"; } // Code editor
+    Mod+X            { spawn-sh "~/.config/niri/scripts/launch_first_available.sh kate gedit emacs"; } // Text editor
     Mod+I            { spawn-sh "noctalia msg settings-open"; } // Noctalia settings
-    Ctrl+Mod+V       { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh pavucontrol-qt pavucontrol"; } // Volume mixer
-    Ctrl+Shift+Escape { spawn-sh "~/.config/hypr/hyprland/scripts/launch_first_available.sh gnome-system-monitor 'kitty -1 fish -c btop'"; } // Task manager
+    Ctrl+Mod+V       { spawn-sh "~/.config/niri/scripts/launch_first_available.sh pavucontrol-qt pavucontrol"; } // Volume mixer
+    Ctrl+Shift+Escape { spawn-sh "~/.config/niri/scripts/launch_first_available.sh gnome-system-monitor 'kitty -1 fish -c btop'"; } // Task manager
 
     // ===== Window =====
     Mod+Q            { close-window; }

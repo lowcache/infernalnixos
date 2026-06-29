@@ -11,8 +11,8 @@ imports = [ ./persist.nix ./pkgs.nix ./scripts.nix ./shell.nix ];
 
 | Module        | Responsibility                                                                |
 | :------------ | :--------------------------------------------------------------------------- |
-| `default.nix` | Session variables (Qt6/QML paths, Wayland backends, portals), GTK theme, cursor, Antigravity desktop entries |
-| `pkgs.nix`    | User packages, grouped (dev, Qt6/Quickshell, Hyprland stack, fonts, terminal, AI CLIs) |
+| `default.nix` | Session variables (Wayland backends, portals), GTK theme, cursor, Antigravity desktop entries |
+| `pkgs.nix`    | User packages, grouped (dev, niri/Noctalia stack, fonts, terminal, AI CLIs) |
 | `persist.nix` | Impermanence `/persist` mappings + out-of-store dotfile symlinks              |
 | `scripts.nix` | `memd` derivation, agent-tool `~/.local/bin` symlinks, `memd-sweep` timer     |
 | `shell.nix`   | Fish (init/aliases/functions), git (SSH signing), starship, direnv, micro, ssh-agent |
@@ -20,10 +20,8 @@ imports = [ ./persist.nix ./pkgs.nix ./scripts.nix ./shell.nix ];
 ## Session variables (`default.nix`)
 
 A single `sessionVariables` set is applied to both `home.sessionVariables` and
-`systemd.user.sessionVariables`. It composes Qt6 import/plugin paths from a curated dependency list and
-sets the Wayland session (`XDG_CURRENT_DESKTOP=Hyprland`, `QT_QPA_PLATFORM=wayland`,
-`NIXOS_OZONE_WL=1`, `GTK_USE_PORTAL=1`, …). The QML paths also append the live
-`~/.config/quickshell/ii` tree so the shell loads custom modules.
+`systemd.user.sessionVariables`. It sets the Wayland session (`XDG_CURRENT_DESKTOP=niri`, `QT_QPA_PLATFORM=wayland`,
+`NIXOS_OZONE_WL=1`, `GTK_USE_PORTAL=1`, …).
 
 ## Packages (`pkgs.nix`)
 
@@ -32,15 +30,14 @@ sets the Wayland session (`XDG_CURRENT_DESKTOP=Hyprland`, `QT_QPA_PLATFORM=wayla
 | Group        | Highlights                                                                  |
 | :----------- | :------------------------------------------------------------------------- |
 | `basedevel`  | gcc, cmake, gnumake, go, python3, nodejs, dart-sass                         |
-| `quickshell` | Quickshell + Qt6 modules + KDE Frameworks (Kirigami, Breeze) + Dolphin      |
-| `hyprland`   | hypridle, hyprlock, fuzzel, kitty, **floorp-bin**, spotify, vscodium, file-roller, grim/slurp/swappy, matugen |
+| `niri`       | niri + Noctalia v5 + xwayland-satellite + Dolphin                           |
+| `wayland`    | fuzzel, kitty, **floorp-bin**, spotify, vscodium, file-roller, grim/slurp/swappy |
 | `typography` | material-symbols + a large Nerd Fonts selection                            |
 | `terminal`   | fish, git, gh, eza, bat, ripgrep, fd, jq, sops, micro, nil, `volinit`       |
 | `nixified-ai`| claude-code, gemini-cli, rtk, MCP servers, `llm-agents` packages            |
 
-!!! note "Krita wrapper"
-    Krita is repackaged with `symlinkJoin` + `makeWrapper` to force `QT_QPA_PLATFORM=xcb`, avoiding a
-    Qt6-Wayland canvas-freeze on the hybrid GPU.
+!!! note "Krita native Wayland"
+    Krita runs as a native Wayland client under niri. Previously on Hyprland, it was wrapped to force `QT_QPA_PLATFORM=xcb` to avoid canvas freezes, but niri handles the native Wayland Qt6 client smoothly.
 
 ## Browsers
 
