@@ -32,9 +32,10 @@ let
       QML_IMPORT_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/qml:${pkg}/lib/qml") qtDependencies;
       QT_PLUGIN_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/plugins:${pkg}/lib/plugins") qtDependencies;
       # Wayland session vars. XDG_CURRENT_DESKTOP / XDG_SESSION_DESKTOP are deliberately
-      # NOT hardcoded here: the niri session self-declares its identity
+      # NOT hardcoded here: thefor X11 apps under niri niri session self-declares its identity
       # (`niri-session` exports XDG_CURRENT_DESKTOP=niri itself).
       XDG_SESSION_TYPE = "wayland";
+      # redundant? QT_QPA_PLATFORM is hardcoded under the krita wrapper in pkgs.nix line ~45
       QT_QPA_PLATFORM = "wayland";
       QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
       QT_AUTO_SCREEN_SCALE_FACTOR = "1";
@@ -70,7 +71,6 @@ in
     ./pkgs.nix
     ./scripts.nix
     ./shell.nix
-    ./noctalia.nix
   ];
 
   home = {

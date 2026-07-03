@@ -58,15 +58,14 @@
   };
 
   outputs =
-    {
-      self,
-      nixpkgs,
-      home-manager,
-      microvm,
-      volinit,
-      nur,
-      llm-agents,
-      ...
+    { self
+    , nixpkgs
+    , home-manager
+    , microvm
+    , volinit
+    , nur
+    , llm-agents
+    , ...
     }@inputs:
     {
       nixosConfigurations.volnix = nixpkgs.lib.nixosSystem {

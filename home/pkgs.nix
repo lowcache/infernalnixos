@@ -3,7 +3,7 @@
   home = {
     packages =
       let
-        basedevel = with pkgs; [
+        baseDev = with pkgs; [
           gcc
           automake
           autoconf
@@ -36,6 +36,12 @@
           gtk4
           dconf
         ];
+        # TODO
+        # FIXME
+        # Krita Wrapper was a fix under Hyprland the switch to Niri has made this redundant (see comment below) GMIC crashes are prevalent more krita research needed
+        # POC: QT_QPA_PLATFORM wayland is already set under home-Manager default.nix
+        # SOLUTION1: removal of this wrapper place krita: niriDesktop = with pkgs; [ krita ... ];
+        # SOLUTION2: keep krita wrapper and remove postBuild = '' wrapProgram $out/bin/krita --set QT_QPA_PLATFORM wayland '';
         krita-wrapped = pkgs.symlinkJoin {
           name = "krita";
           paths = [ pkgs.krita ];
@@ -48,7 +54,7 @@
               --set QT_QPA_PLATFORM wayland
           '';
         };
-        niri-desktop = with pkgs; [
+        niriDesktop = with pkgs; [
           hyprpicker # wlroots screen color picker (niri Mod+Shift+C)
           # niri utils
           nirius
@@ -56,8 +62,8 @@
           pamixer
           pavucontrol
           xwayland
-          xwayland-satellite
-          awww
+          xwayland-satellite # dependency for X11 apps under niri
+          awww # swww wrapper/replacement
           waypaper
           thunderbird
           adw-gtk3
@@ -84,7 +90,7 @@
           spotify
           floorp-bin # Firefox-fork backup browser
         ];
-        typography = with pkgs; [
+        monoTypography = with pkgs; [
           material-symbols
           nerd-fonts.symbols-only
           nerd-fonts.jetbrains-mono
@@ -108,7 +114,7 @@
           nerd-fonts.zed-mono
           nerd-fonts.atkynson-mono
         ];
-        terminal = with pkgs; [
+        termUi = with pkgs; [
           fish
           git
           gh
@@ -121,6 +127,7 @@
           tgpt
           hdrop
           bat
+          bat-extras.batgrep
           gnupg
           gpg-tui
           sops
@@ -136,7 +143,6 @@
           micro
           cryptsetup
           htop
-          bat-extras.batgrep
           psmisc
           direnv
           playerctl
@@ -154,7 +160,7 @@
           nixpkgs-fmt
           inputs.volinit.packages.${pkgs.stdenv.hostPlatform.system}.default
         ];
-        nixified-ai = with pkgs; [
+        nixAi = with pkgs; [
           mcp-nixos
           mcp-gateway
           github-mcp-server
@@ -163,24 +169,21 @@
           context7-mcp
           mcp-server-sequential-thinking
           open-websearch
-          icm
           mcp-server-fetch
           llmfit
           # mcp-server-filesystem
+          rtk
           claude-code
           claude-code-router
           gemini-cli
           github-copilot-cli
           codex
-          rtk
           pkgs.llm-agents.claude-plugins
           pkgs.llm-agents.hermes-agent
           pkgs.llm-agents.hermes-hud
           pkgs.llm-agents.hermes-desktop
-          pkgs.llm-agents.catnip
-          pkgs.llm-agents.letta-code
         ];
       in
-      nixified-ai ++ terminal ++ typography ++ niri-desktop ++ basedevel;
+      nixAi ++ termUi ++ monoTypography ++ niriDesktop ++ baseDev;
   };
 }

@@ -2,8 +2,8 @@
 
   imports = [
     ./vms.nix
-    ./niri.nix
     ./windows-vm.nix
+
   ];
 
   # Kernel & Performance
@@ -209,6 +209,7 @@
         cups
       ];
     };
+    niri.enable = true;
     appimage = {
       enable = true;
       binfmt = true;
@@ -255,7 +256,7 @@
         OLLAMA_API_BASE_URL = "http://127.0.0.1:11434";
       };
     };
-
+    upower.enable = true;
     # Ollama Service
     ollama = {
       enable = true;

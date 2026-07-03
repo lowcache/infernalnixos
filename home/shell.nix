@@ -1,6 +1,9 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 {
+  # Noctalia Shell v5.0.0
+  imports = [ inputs.noctalia.homeModules.default ];
+
   home.file.".config/micro/syntax/nix.yaml".text = ''
     filetype: nix
 
@@ -47,6 +50,11 @@
   '';
 
   programs = {
+    # home/noctalia.nix — Noctalia v5 shell (package + enable only).
+    # Config is deliberately NOT managed here: ~/.config/noctalia is an out-of-store
+    # symlink to dots/noctalia (see persist.nix), following the live-edit dotfile
+    # pattern
+    noctalia.enable = true;
     # Brave Browser (primary). programs.chromium both installs the package and
     # applies the Wayland/GPU command-line flags. Floorp (backup) is in pkgs.nix.
     chromium = {
