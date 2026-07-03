@@ -89,6 +89,10 @@
           networkmanagerapplet
           spotify
           floorp-bin # Firefox-fork backup browser
+          hifile
+          sfm
+          clex
+          far2l
         ];
         monoTypography = with pkgs; [
           material-symbols
