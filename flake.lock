@@ -358,11 +358,11 @@
     "lix": {
       "flake": false,
       "locked": {
-        "lastModified": 1783102327,
-        "narHash": "sha256-8eiLyLgBYZ5RqzHfJEHUm482sieMwYf9obkT226dni0=",
+        "lastModified": 1783176368,
+        "narHash": "sha256-B1pKWMut2w8pCTigzbNBnLL4YsscRKQS2wtIvZwt1jc=",
         "ref": "refs/heads/main",
-        "rev": "12f10fca7e1e6e7fda6cad9db9fb9237dbcc4df1",
-        "revCount": 19290,
+        "rev": "405ff2eb03806e9dd4c560869f26fc0f1d5f1e3a",
+        "revCount": 19292,
         "type": "git",
         "url": "https://git.lix.systems/lix-project/lix"
       },
@@ -564,11 +564,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1782347888,
-        "narHash": "sha256-0qKd2W8BYjwdrh4yegr+6mvCTdn/FlQoTktBv/+db2A=",
+        "lastModified": 1783185212,
+        "narHash": "sha256-+McUJ/w1LwVZn7ca9lM489RXTldj5RjLxYDRmDqjZO8=",
         "owner": "noctalia-dev",
         "repo": "noctalia",
-        "rev": "623210223c222e682ca467a914e82b805c782676",
+        "rev": "dd55eda0001c7f19296df785d6217aa8aa30efe4",
         "type": "github"
       },
       "original": {
