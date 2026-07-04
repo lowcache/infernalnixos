@@ -90,9 +90,12 @@
           spotify
           floorp-bin # Firefox-fork backup browser
           hifile
-          sfm
-          clex
-          far2l
+          fm
+          mate.caja-with-extensions
+          cosmic-files
+          xfe
+          rox-filer
+          worker
         ];
         monoTypography = with pkgs; [
           material-symbols
