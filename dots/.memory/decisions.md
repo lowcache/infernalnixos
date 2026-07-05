@@ -1,7 +1,7 @@
 ---
 type: decisions
 project: Vol NixOS — Dots
-last_updated: 2026-06-18
+last_updated: 2026-07-05
 status: active
 ---
 
@@ -99,3 +99,24 @@ decide explicitly: Hyprland → fallback (secondary, kept) or → removed entire
 **What it rules out:** Indefinite maintenance of two equally-capable, equally-maintained
 desktop environments; half-finished niri (the quake terminal and keybind architecture are
 done, but basic OS verification is incomplete).
+
+## D11 — Tab bar is engine-agnostic; reads colors dynamically from kitty options
+As of 2026-07-05, `dots/kitty/tab_bar.py` was refactored to be dynamically driven by
+kitty's live configuration instead of having hardcoded color constants. All tab bar colors
+are read from `get_options()` per-render, which pulls from `current.conf` / `current-theme.conf`.
+
+**Why:** Hardcoded colors caused drift — when a theme was applied and `apply_theme.py`
+wrote new colors to `current.conf`, the tab_bar still rendered with old hardcoded values
+until manually edited. Dynamic reads ensure tab_bar always reflects the active theme without
+extra steps or manual edits. Noctalia color mappings (when active) automatically flow through
+kitty config to tab_bar.
+
+**How it works:** Functions call `opts = get_options()` locally and extract colors via
+`opts.colorN`, `opts.background`, `opts.foreground`, etc. If a color is undefined in kitty
+config, `get_options()` falls back to kitty's built-in defaults. When `apply_theme.py`
+updates `current.conf`, kitty reloads live; tab_bar picks up new colors on the next tab
+render with zero latency.
+
+**What it rules out:** Hardcoded color constants in tab_bar; manual editing of tab_bar.py to
+change colors; color drift between themes and tab_bar; tab_bar theming being dependent on
+which color engine is active (palette-based, noctalia, or others).

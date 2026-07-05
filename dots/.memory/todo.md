@@ -1,7 +1,7 @@
 ---
 type: todo
 project: Vol NixOS — Dots
-last_updated: 2026-06-18
+last_updated: 2026-07-05
 status: active
 ---
 
@@ -31,6 +31,15 @@ Hyprland's fate (fallback or removal).
 * [ ] **Decide Hyprland's fate after niri verification 100% complete.** Options:
   (a) Fallback — keep functional but marked secondary; (b) Removal — delete `dots/hypr/`,
   clean up Home-Manager wiring and dependencies. Make the decision explicit, not implicit.
+
+## Tab Bar & Theme Integration (per [[decisions]] D11)
+
+* [ ] **Verify tab_bar.py dynamic color reads work end-to-end.** Test that colors update
+  correctly when a new theme is applied via `make theme-apply THEME=<name>`. Confirm:
+  - Tab bar colors match the active theme's `current.conf` values immediately after apply
+  - No manual restart of kitty needed
+  - Noctalia color mappings (if active) properly flow through to tab_bar
+  - Fallback behavior when a color is undefined (uses kitty defaults gracefully)
 
 ## Open (pre-niri, ongoing)
 
@@ -67,3 +76,5 @@ Hyprland's fate (fallback or removal).
   live against running panel on 1920×1200.
 * [x] `dots` registered as memd project; `memd.py transcript_files` patched for
   longest-prefix exclusion; dots sync pipeline verified (2026-06-18).
+* [x] tab_bar.py refactored to read colors dynamically from kitty options instead of
+  hardcoded values (2026-07-05). Now engine-agnostic and reflects active theme automatically.

@@ -1,7 +1,7 @@
 ---
 type: state
 project: Vol NixOS — Dots
-last_updated: 2026-06-18
+last_updated: 2026-07-05
 status: active
 ---
 
@@ -64,6 +64,26 @@ relative paths.
   `make theme-new NAME="X" [COLORS="#a #b"] [FROM=<file>] [APPLY=1] [FORCE=1]`.
 * ii's in-shell theme picker (lists `~/.config/illogical-impulse/themes/`) no longer sees
   themes after relocation; theming via setwall/apply_theme is unaffected.
+
+## Tab Bar Color Management (`dots/kitty/tab_bar.py`)
+
+**As of 2026-07-05:** tab_bar.py refactored to be engine-agnostic and dynamically read
+colors from kitty's live configuration instead of hardcoded hex values.
+
+* **Previous behavior:** Hardcoded color constants at module level (ICON_FG, ICON_BG,
+  ACTIVE_FG, etc.) set to fixed hex values. Required manual edits to tab_bar.py when
+  themes changed; kitty colors and tab_bar colors could drift.
+* **Current behavior:** All tab bar colors now read from `get_options()`, which pulls
+  directly from kitty's current config (`current.conf`, `current-theme.conf`). No manual
+  edits needed; tab_bar automatically follows the active theme applied to kitty.
+* **How it works:** Functions `_draw_tab()`, `_get_battery_info()`, `_draw_title()` each
+  call `opts = get_options()` locally and extract colors via `opts.color<N>`, `opts.background`,
+  `opts.foreground`, etc. If noctalia is active and mapping colors to kitty config, those
+  mapped values flow through automatically.
+* **Fallback:** If a color is not defined in kitty config, `get_options()` uses kitty's
+  built-in defaults (typically 256-color palette).
+* **Regeneration on theme apply:** When `apply_theme.py` rewrites `current.conf`, kitty
+  reloads live; tab_bar picks up new colors on next tab render (no restart needed).
 
 ## Active Theme & Live Reload
 
