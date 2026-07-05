@@ -54,6 +54,9 @@
               --set QT_QPA_PLATFORM wayland
           '';
         };
+        # Vanilla Discord with the moonlight client mod injected (nixpkgs override).
+        # Runs alongside GoofCord as a separate client/launcher.
+        discord-moonlight = pkgs.discord.override { withMoonlight = true; };
         niriDesktop = with pkgs; [
           hyprpicker # wlroots screen color picker (niri Mod+Shift+C)
           # niri utils
@@ -88,6 +91,8 @@
           matugen
           networkmanagerapplet
           spotify
+          goofcord # privacy-focused Discord client (Vencord/Equicord/Shelter at runtime)
+          discord-moonlight
           floorp-bin # Firefox-fork backup browser
           hifile
           fm

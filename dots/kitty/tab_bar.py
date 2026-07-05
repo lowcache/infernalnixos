@@ -17,16 +17,13 @@ from kitty.tab_bar import (
 )
 from kitty.utils import color_as_int
 
-opts = get_options()
+# --- Colors ---
+# All colors are resolved from kitty's live option state on every draw, so the
+# tab bar follows whatever theme is currently applied to kitty (noctalia,
+# color-engine, or anything else) — including runtime reloads.
 
-# --- Configuration ---
-# You can change these to match your theme
-ICON_FG = as_rgb(0xEBD39D) # cream
-ICON_BG = as_rgb(0x1F2430) # basalt_dim
-ACTIVE_FG = as_rgb(0x1F2430) # basalt
-ACTIVE_BG = as_rgb(0xAAD94C) # coral
-INACTIVE_FG = as_rgb(0xE6B450) # sage
-INACTIVE_BG = as_rgb(0x1F2430) # basalt_deep
+def _col(c) -> int:
+    return as_rgb(color_as_int(c))
 
 # Separators - WezTerm "Pill" Style
 LEFT_SEP = ""
@@ -52,13 +49,14 @@ def _draw_icon(screen: Screen, index: int) -> int:
         return 0
     
     fg, bg = screen.cursor.fg, screen.cursor.bg
-    screen.cursor.fg = as_rgb(0x4E7DA8) # slate_blue
+    screen.cursor.fg = _col(get_options().color4) # theme blue
     screen.cursor.bg = 0 # Transparent background
     screen.draw(f" {ICON_ARCH} ")
     screen.cursor.fg, screen.cursor.bg = fg, bg
     return screen.cursor.x
 
 def _get_battery_info():
+    opts = get_options()
     try:
         with open("/sys/class/power_supply/BAT0/status", "r") as f:
             status = f.read().strip()
@@ -84,6 +82,7 @@ def _draw_right_status(screen: Screen, is_last: bool) -> int:
         return 0
     
     # Get Data
+    opts = get_options()
     now = datetime.datetime.now()
     date_str = now.strftime("%d %b")
     time_str = now.strftime("%H:%M")
@@ -116,14 +115,16 @@ def _draw_right_status(screen: Screen, is_last: bool) -> int:
 
 def _draw_title(draw_data: DrawData, screen: Screen, tab: TabBarData, index: int) -> int:
     # 1. Setup Colors based on State
+    # draw_data carries the effective active/inactive_tab_* colors from
+    # whatever theme kitty currently has loaded.
     if tab.is_active:
-        tab_bg = ACTIVE_BG
-        tab_fg = ACTIVE_FG
-        sep_fg = ACTIVE_BG
+        tab_bg = _col(draw_data.active_bg)
+        tab_fg = _col(draw_data.active_fg)
+        sep_fg = tab_bg
     else:
-        tab_bg = INACTIVE_BG
-        tab_fg = INACTIVE_FG
-        sep_fg = INACTIVE_BG
+        tab_bg = _col(draw_data.inactive_bg)
+        tab_fg = _col(draw_data.inactive_fg)
+        sep_fg = tab_bg
 
     # 2. Draw Left Separator
     screen.cursor.bg = 0 # Transparent background for the curve
@@ -137,7 +138,7 @@ def _draw_title(draw_data: DrawData, screen: Screen, tab: TabBarData, index: int
     # Add indicators
     title = tab.title
     if tab.needs_attention:
-        screen.cursor.fg = as_rgb(color_as_int(opts.color1)) # Red alert
+        screen.cursor.fg = _col(get_options().color1) # Red alert
         screen.draw(f" {ICON_BELL}")
         screen.cursor.fg = tab_fg
     
