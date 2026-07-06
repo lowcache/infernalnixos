@@ -35,14 +35,9 @@
     #   url = "github:noctalia-dev/noctalia?ref=v4.7.7";
     #   inputs.nixpkgs.follows = "nixpkgs";
     # };
-    # Pinned to the release-2.93 branch: module main tracks lix main (dev tip),
-    # which churned the lock daily. The release branch locks its matching lix
-    # release and only moves for point fixes. lix input deliberately NOT
-    # overridden — the module's own locked lix is the tested pairing.
-    lix-module = {
-      url = "git+https://git.lix.systems/lix-project/nixos-module?ref=refs/heads/release-2.93";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # lix-module input removed: nixpkgs ships lix natively (lixPackageSets) and
+    # the module's release branches lag nixpkgs' supported versions (release-2.93
+    # vs nixpkgs stable 2.95). nix.package is set in nixos/configuration.nix.
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -87,7 +82,6 @@
           ./nixos/hardware-configuration.nix
           inputs.lanzaboote.nixosModules.lanzaboote
           inputs.impermanence.nixosModules.impermanence
-          inputs.lix-module.nixosModules.default
           inputs.sops-nix.nixosModules.sops
           home-manager.nixosModules.home-manager
           {

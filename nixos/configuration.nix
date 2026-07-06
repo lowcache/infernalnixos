@@ -355,6 +355,10 @@
       base-utils ++ nix-utils;
   };
   nix = {
+    # Lix from nixpkgs (binary-cached, tracks nixpkgs updates). Replaces the
+    # lix-project/nixos-module flake input, whose release branches lag behind
+    # the lixPackageSets versions nixpkgs keeps around.
+    package = pkgs.lixPackageSets.stable.lix;
     settings = {
       experimental-features = [ "nix-command" "flakes" ];
       trusted-users = [ "root" "lowcache" ];
