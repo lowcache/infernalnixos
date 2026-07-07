@@ -157,6 +157,16 @@
     };
   };
   programs = {
+    # `make switch-detached` runs nixos-rebuild as root; nix's git fetcher
+    # refuses the lowcache-owned repo without a safe.directory whitelist
+    # (fails with "getting the HEAD of the Git tree ... exit code 254").
+    git = {
+      enable = true;
+      config.safe.directory = [
+        "/persist/home/lowcache/.nix-config"
+        "/home/lowcache/.nix-config"
+      ];
+    };
     nix-ld = {
       enable = true;
       libraries = with pkgs; [
