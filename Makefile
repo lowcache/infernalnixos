@@ -27,7 +27,7 @@ DOCS_REMOTE  ?= pgs.sh
 # Ephemeral MkDocs Material env from the flake's own pinned nixpkgs (no global install).
 MKDOCS = nix shell --impure --expr 'let f = builtins.getFlake (toString ./.); pkgs = f.inputs.nixpkgs.legacyPackages.x86_64-linux; in pkgs.python313.withPackages (ps: [ ps.mkdocs-material ])' -c mkdocs
 
-.PHONY: help switch switch-detached build test dry-activate boot check fmt update update-nixpkgs gc run-netgate run-tailscale ghc \
+.PHONY: help switch switch-detached build test dry-activate boot check fmt update update-nixpkgs trash run-netgate run-tailscale git comm push\
         dots-log dots-split dots-remote dots-push dots-pull \
         theme-list theme-apply theme-check theme-new \
         docs-serve docs-build docs-deploy
@@ -53,8 +53,13 @@ help:
 	@echo "  make fmt            Auto-format all Nix expressions using nixpkgs-fmt"
 	@echo "  make update         Update all flake inputs"
 	@echo "  make update-nixpkgs Update only the nixpkgs input"
-	@echo "  make gc             Garbage collect older Nix store derivations"
-	@echo "  make ghc            Adds changes and creates commit with generic description"
+	@echo "  make trash          Garbage collect older Nix store derivations"
+	@echo "Git Repo Action(s):"
+	@echo "  make git            Robust Automated Procedures for Updating Git Repo:"
+	@echo "											 1. Pushes any already staged commits"
+	@echo "											 2. Scans for New/Changed Files"
+	@echo "											 3. Creates Commit w/ Commit Msg from user"
+	@echo "											 4. Pushes the new Commit to Remote"
 	@echo ""
 	@echo "Dotfiles Subtree (independent history for $(DOTS_PREFIX)/, single repo):"
 	@echo "  make dots-log       Show history scoped to $(DOTS_PREFIX)/ (read-only, no remote needed)"
@@ -88,9 +93,9 @@ switch:
 switch-detached:
 	sudo systemd-run --collect --unit=nixos-switch --setenv=TMPDIR=$(REBUILD_TMPDIR) --setenv=SUDO_UID=$$(id -u) nixos-rebuild switch --flake /persist/home/lowcache/.nix-config/#$(HOST)
 	@echo ""
-	@echo ">>> Switch running detached as system unit 'nixos-switch'."
-	@echo ">>> Follow:  journalctl -u nixos-switch -f"
-	@echo ">>> Status:  systemctl status nixos-switch"
+	@echo "++Switch running detached as system unit 'nixos-switch'."
+	@echo "++Follow:  journalctl -u nixos-switch -f"
+	@echo "++Status:  systemctl status nixos-switch"
 
 build:
 	TMPDIR=$(REBUILD_TMPDIR) nixos-rebuild build --flake .#$(HOST)
@@ -122,15 +127,48 @@ update:
 update-nixpkgs:
 	nix flake update nixpkgs
 
-gc:
-	@echo "Deleting system profile generations older than 7 days..."
+trash:
+	@echo "++Deleting system profile generations older than 7 days..."
 	sudo nix-env --profile /nix/var/nix/profiles/system --delete-generations 7d
-	@echo "Running Nix store garbage collection..."
+	@echo "++Running Nix store garbage collection..."
 	nix-store --gc
 
-ghc:
-	git add .
-	git commit -m "Minor Updates"
+git:
+	@run() { $(MAKE) --no-print-directory push && $(MAKE) --no-print-directory comm && $(MAKE) --no-print-directory push; }; \
+	if ssh-add -l >/dev/null 2>&1; then \
+		run; \
+	else \
+		eval "$$(ssh-agent -s)" >/dev/null 2>&1; \
+		trap 'kill "$$SSH_AGENT_PID" 2>/dev/null' EXIT; \
+		echo "++Starting ssh-agent (passphrase required once)..."; \
+		ssh-add ~/.ssh/id_ed25519 || exit 1; \
+		run; \
+	fi && echo "++Git Repo Updated."
+
+comm:
+	@echo "++Scanning Repo..."; \
+	git add .; \
+	echo "++Staging Commit..."; \
+	if read -p "++Enter Commit Message: " cm && [ -n "$$cm" ]; then \
+		echo ""; \
+		git commit -m "$$cm" || true; \
+	else \
+		echo "++ERROR: Commit Message Invalid."; \
+		echo "++Aborting..."; \
+		exit 1; \
+	fi
+
+push:
+	@echo "++Pushing to Remote..."; \
+	if ssh-add -l >/dev/null 2>&1; then \
+		git push; \
+	else \
+		echo "++No usable ssh-agent found; starting one (passphrase required)..."; \
+		eval "$$(ssh-agent -s)" >/dev/null 2>&1; \
+		ssh-add ~/.ssh/id_ed25519 && git push; rc=$$?; \
+		kill "$$SSH_AGENT_PID" 2>/dev/null; \
+		exit $$rc; \
+	fi
 
 # --- Dotfiles subtree -------------------------------------------------------
 # dots-log and dots-split work with no remote. dots-push/dots-pull need the

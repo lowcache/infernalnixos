@@ -186,6 +186,7 @@
           # mcp-server-filesystem
           rtk
           claude-code
+          pkgs.llm-agents.ccstatusline
           claude-code-router
           gemini-cli
           github-copilot-cli

@@ -70,7 +70,8 @@ let
     "ro.build.characteristics" = "nosdcard";
   };
 
-in {
+in
+{
   # Enable libvirt/QEMU (already enabled in windows-vm.nix, but ensure)
   virtualisation.libvirtd = {
     enable = true;
@@ -157,199 +158,201 @@ in {
   };
 
   # The libvirt XML for the Android VM
-  environment.etc."libvirt/qemu/android-vm.xml".text = let
-    vmName = "android-vm";
-    cpuCount = 4;
-    memoryMiB = 8192; # 8GB RAM
-    diskSize = "64G";
-    # Use the system image we fetched
-    systemImg = androidSysImg;
-  in ''
-    <domain type='kvm'>
-      <name>${vmName}</name>
-      <uuid>${lib.genUUID vmName}</uuid>
-      <metadata>
-        <libosinfo:libosinfo xmlns:libosinfo="http://libosinfo.org/xmlns/libosinfo/1.0">
-          <libosinfo:os id="org.android.android15"/>
-        </libosinfo:libosinfo>
-      </metadata>
-      <memory unit='MiB'>${memoryMiB}</memory>
-      <currentMemory unit='MiB'>${memoryMiB}</currentMemory>
-      <vcpu placement='static'>${cpuCount}</vcpu>
-      <os>
-        <type arch='x86_64' machine='pc-q35-9.0'>hvm</type>
-        <loader readonly='yes' type='pflash'>${pkgs.OVMF.fd}/OVMF_CODE.fd</loader>
-        <nvram template='/usr/share/OVMF/OVMF_VARS.fd'>/var/lib/libvirt/qemu/nvram/${vmName}_VARS.fd</nvram>
-        <boot dev='hd'/>
-        <bootmenu enable='yes' timeout='5000'/>
-      </os>
-      <features>
-        <acpi/>
-        <apic/>
-        <hyperv>
-          <relaxed state='on'/>
-          <vapic state='on'/>
-          <spinlocks state='on' retries='8191'/>
-          <vpindex state='on'/>
-          <synic state='on'/>
-          <stimer state='on'/>
-          <reset state='on'/>
-          <frequencies state='on'/>
-          <reenlightenment state='on'/>
-          <tlbflush state='on'/>
-          <ipi state='on'/>
-        </hyperv>
-        <kvm>
-          <hidden state='on'/>
-        </kvm>
-        <vmport state='off'/>
-        <ioapic driver='kvm'/>
-        <smm state='on'/>
-      </features>
-      <cpu mode='host-passthrough' check='none' migratable='on'>
-        <topology sockets='1' dies='1' cores='${cpuCount}' threads='1'/>
-        <feature policy='require' name='invtsc'/>
-        <feature policy='require' name='vmx'/>
-        <feature policy='require' name='ept'/>
-        <feature policy='require' name='spec-ctrl'/>
-        <feature policy='require' name='ssbd'/>
-        <feature policy='require' name='pdpe1gb'/>
-        <feature policy='require' name='pku'/>
-        <feature policy='require' name='ospke'/>
-        <feature policy='require' name='vaes'/>
-        <feature policy='require' name='vpclmulqdq'/>
-        <feature policy='require' name='gfni'/>
-        <feature policy='require' name='avx512-vbmi'/>
-        <feature policy='require' name='avx512-bitalg'/>
-        <feature policy='require' name='avx512-vpopcntdq'/>
-        <feature policy='require' name='avx512-vnni'/>
-        <feature policy='require' name='avx512-bf16'/>
-        <feature policy='require' name='avx512-fp16'/>
-        <feature policy='require' name='amd-ssbd'/>
-        <feature policy='require' name='virt-ssbd'/>
-      </cpu>
-      <clock offset='utc'>
-        <timer name='rtc' tickpolicy='catchup'/>
-        <timer name='pit' tickpolicy='delay'/>
-        <timer name='hpet' present='no'/>
-        <timer name='hypervclock' present='yes'/>
-        <timer name='tsc' present='yes' mode='native'/>
-      </clock>
-      <on_poweroff>destroy</on_poweroff>
-      <on_reboot>restart</on_reboot>
-      <on_crash>destroy</on_crash>
-      <pm>
-        <suspend-to-mem enabled='no'/>
-        <suspend-to-disk enabled='no'/>
-      </pm>
-      <devices>
-        <emulator>${pkgs.qemu_kvm}/bin/qemu-system-x86_64</emulator>
-        <!-- System disk (Android system image) -->
-        <disk type='file' device='disk'>
-          <driver name='qemu' type='qcow2' discard='unmap' cache='unsafe' io='native'/>
-          <source file='/var/lib/libvirt/images/android-vm/images/system.qcow2'/>
-          <target dev='vda' bus='virtio'/>
-          <address type='pci' domain='0x0000' bus='0x04' slot='0x00' function='0x0'/>
-        </disk>
-        <!-- Data disk (user data partition) -->
-        <disk type='file' device='disk'>
-          <driver name='qemu' type='qcow2' discard='unmap' cache='unsafe' io='native'/>
-          <source file='/var/lib/libvirt/images/android-vm/images/userdata.qcow2'/>
-          <target dev='vdb' bus='virtio'/>
-          <address type='pci' domain='0x0000' bus='0x05' slot='0x00' function='0x0'/>
-        </disk>
-        <!-- Cache disk -->
-        <disk type='file' device='disk'>
-          <driver name='qemu' type='qcow2' discard='unmap' cache='unsafe' io='native'/>
-          <source file='/var/lib/libvirt/images/android-vm/images/cache.qcow2'/>
-          <target dev='vdc' bus='virtio'/>
-          <address type='pci' domain='0x0000' bus='0x06' slot='0x00' function='0x0'/>
-        </disk>
-        <!-- Shared folder for host<->guest file transfer -->
-        <filesystem type='mount' accessmode='passthrough'>
-          <driver type='virtiofs'/>
-          <source dir='/home/lowcache/Storage/android-vm/shared'/>
-          <target dir='host_shared'/>
-          <address type='pci' domain='0x0000' bus='0x07' slot='0x00' function='0x0'/>
-        </filesystem>
-        <!-- GPU: virtio-gpu with virgl 3D acceleration -->
-        <video>
-          <model type='virtio' heads='1' primary='yes'>
-            <acceleration accel3d='yes'/>
-            <virgl/>
-          </model>
-          <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x0'/>
-        </video>
-        <!-- Display: SPICE with OpenGL -->
-        <graphics type='spice' autoport='yes' listen='none'>
-          <listen type='none'/>
-          <image compression='off'/>
-          <gl enable='yes' rendernode='/dev/dri/renderD128'/>
-        </graphics>
-        <audio id='1' type='spice'/>
-        <!-- Input -->
-        <input type='tablet' bus='virtio'/>
-        <input type='mouse' bus='virtio'/>
-        <input type='keyboard' bus='virtio'/>
-        <!-- Network: virtio-net with vhost -->
-        <interface type='network'>
-          <mac address='52:54:00:12:34:56'/>
-          <source network='android-vm-net'/>
-          <model type='virtio'/>
-          <driver name='vhost' queues='4'/>
-          <address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
-        </interface>
-        <!-- Serial console for debugging -->
-        <console type='pty'>
-          <target type='virtio' port='0'/>
-        </console>
-        <channel type='spicevmc'>
-          <target type='virtio' name='com.redhat.spice.0'/>
-          <address type='virtio-serial' controller='0' bus='0' port='1'/>
-        </channel>
-        <!-- VirtIO RNG -->
-        <rng model='virtio'>
-          <backend model='random'>/dev/urandom</backend>
-          <address type='pci' domain='0x0000' bus='0x02' slot='0x00' function='0x0'/>
-        </rng>
-        <!-- Memory balloon -->
-        <memballoon model='virtio'>
-          <address type='pci' domain='0x0000' bus='0x03' slot='0x00' function='0x0'/>
-        </memballoon>
-        <!-- TPM for Android Keystore/StrongBox emulation -->
-        <tpm model='tpm-tis'>
-          <backend type='emulator' version='2.0'>
-            <backendPath>${pkgs.swptm}/bin/swtpm</backendPath>
-          </backend>
-        </tpm>
-        <!-- VirtIO SCSI controller for better disk performance -->
-        <controller type='scsi' index='0' model='virtio-scsi'>
-          <address type='pci' domain='0x0000' bus='0x08' slot='0x00' function='0x0'/>
-        </controller>
-        <!-- USB controller for ADB passthrough -->
-        <controller type='usb' index='0' model='qemu-xhci' ports='15'>
-          <address type='pci' domain='0x0000' bus='0x09' slot='0x00' function='0x0'/>
-        </controller>
-        <!-- USB redirect for ADB over SPICE -->
-        <redirdev bus='usb' type='spicevmc'>
-          <address type='pci' domain='0x0000' bus='0x0a' slot='0x00' function='0x0'/>
-        </redirdev>
-        <redirdev bus='usb' type='spicevmc'>
-          <address type='pci' domain='0x0000' bus='0x0b' slot='0x00' function='0x0'/>
-        </redirdev>
-      </devices>
-      <qemu:commandline>
-        <qemu:arg value='-kernel'/>
-        <qemu:arg value='${systemImg}/kernel-ranchu'/>
-        <qemu:arg value='-append'/>
-        <qemu:arg value='console=ttyS0 androidboot.hardware=ranchu androidboot.boot_devices=pci.0000:04.00.0 androidboot.verifiedbootstate=green init=/init ro root=/dev/vda1 ro.build.fingerprint=${pixelProps."ro.build.fingerprint"} androidboot.verifiedbootstate=green'/>
-        <qemu:arg value='-initrd'/>
-        <qemu:arg value='${systemImg}/ramdisk.img'/>
-        <!-- Pixel device properties via qemu command line -->
-        ${lib.concatMapStringsSep " " (k: v: "-qemu:arg value=-prop -qemu:arg value=${k}=${v}") (builtins.attrNames pixelProps)}
-      </qemu:commandline>
-    </domain>
-  '';
+  environment.etc."libvirt/qemu/android-vm.xml".text =
+    let
+      vmName = "android-vm";
+      cpuCount = 4;
+      memoryMiB = 8192; # 8GB RAM
+      diskSize = "64G";
+      # Use the system image we fetched
+      systemImg = androidSysImg;
+    in
+    ''
+      <domain type='kvm'>
+        <name>${vmName}</name>
+        <uuid>${lib.genUUID vmName}</uuid>
+        <metadata>
+          <libosinfo:libosinfo xmlns:libosinfo="http://libosinfo.org/xmlns/libosinfo/1.0">
+            <libosinfo:os id="org.android.android15"/>
+          </libosinfo:libosinfo>
+        </metadata>
+        <memory unit='MiB'>${memoryMiB}</memory>
+        <currentMemory unit='MiB'>${memoryMiB}</currentMemory>
+        <vcpu placement='static'>${cpuCount}</vcpu>
+        <os>
+          <type arch='x86_64' machine='pc-q35-9.0'>hvm</type>
+          <loader readonly='yes' type='pflash'>${pkgs.OVMF.fd}/OVMF_CODE.fd</loader>
+          <nvram template='/usr/share/OVMF/OVMF_VARS.fd'>/var/lib/libvirt/qemu/nvram/${vmName}_VARS.fd</nvram>
+          <boot dev='hd'/>
+          <bootmenu enable='yes' timeout='5000'/>
+        </os>
+        <features>
+          <acpi/>
+          <apic/>
+          <hyperv>
+            <relaxed state='on'/>
+            <vapic state='on'/>
+            <spinlocks state='on' retries='8191'/>
+            <vpindex state='on'/>
+            <synic state='on'/>
+            <stimer state='on'/>
+            <reset state='on'/>
+            <frequencies state='on'/>
+            <reenlightenment state='on'/>
+            <tlbflush state='on'/>
+            <ipi state='on'/>
+          </hyperv>
+          <kvm>
+            <hidden state='on'/>
+          </kvm>
+          <vmport state='off'/>
+          <ioapic driver='kvm'/>
+          <smm state='on'/>
+        </features>
+        <cpu mode='host-passthrough' check='none' migratable='on'>
+          <topology sockets='1' dies='1' cores='${cpuCount}' threads='1'/>
+          <feature policy='require' name='invtsc'/>
+          <feature policy='require' name='vmx'/>
+          <feature policy='require' name='ept'/>
+          <feature policy='require' name='spec-ctrl'/>
+          <feature policy='require' name='ssbd'/>
+          <feature policy='require' name='pdpe1gb'/>
+          <feature policy='require' name='pku'/>
+          <feature policy='require' name='ospke'/>
+          <feature policy='require' name='vaes'/>
+          <feature policy='require' name='vpclmulqdq'/>
+          <feature policy='require' name='gfni'/>
+          <feature policy='require' name='avx512-vbmi'/>
+          <feature policy='require' name='avx512-bitalg'/>
+          <feature policy='require' name='avx512-vpopcntdq'/>
+          <feature policy='require' name='avx512-vnni'/>
+          <feature policy='require' name='avx512-bf16'/>
+          <feature policy='require' name='avx512-fp16'/>
+          <feature policy='require' name='amd-ssbd'/>
+          <feature policy='require' name='virt-ssbd'/>
+        </cpu>
+        <clock offset='utc'>
+          <timer name='rtc' tickpolicy='catchup'/>
+          <timer name='pit' tickpolicy='delay'/>
+          <timer name='hpet' present='no'/>
+          <timer name='hypervclock' present='yes'/>
+          <timer name='tsc' present='yes' mode='native'/>
+        </clock>
+        <on_poweroff>destroy</on_poweroff>
+        <on_reboot>restart</on_reboot>
+        <on_crash>destroy</on_crash>
+        <pm>
+          <suspend-to-mem enabled='no'/>
+          <suspend-to-disk enabled='no'/>
+        </pm>
+        <devices>
+          <emulator>${pkgs.qemu_kvm}/bin/qemu-system-x86_64</emulator>
+          <!-- System disk (Android system image) -->
+          <disk type='file' device='disk'>
+            <driver name='qemu' type='qcow2' discard='unmap' cache='unsafe' io='native'/>
+            <source file='/var/lib/libvirt/images/android-vm/images/system.qcow2'/>
+            <target dev='vda' bus='virtio'/>
+            <address type='pci' domain='0x0000' bus='0x04' slot='0x00' function='0x0'/>
+          </disk>
+          <!-- Data disk (user data partition) -->
+          <disk type='file' device='disk'>
+            <driver name='qemu' type='qcow2' discard='unmap' cache='unsafe' io='native'/>
+            <source file='/var/lib/libvirt/images/android-vm/images/userdata.qcow2'/>
+            <target dev='vdb' bus='virtio'/>
+            <address type='pci' domain='0x0000' bus='0x05' slot='0x00' function='0x0'/>
+          </disk>
+          <!-- Cache disk -->
+          <disk type='file' device='disk'>
+            <driver name='qemu' type='qcow2' discard='unmap' cache='unsafe' io='native'/>
+            <source file='/var/lib/libvirt/images/android-vm/images/cache.qcow2'/>
+            <target dev='vdc' bus='virtio'/>
+            <address type='pci' domain='0x0000' bus='0x06' slot='0x00' function='0x0'/>
+          </disk>
+          <!-- Shared folder for host<->guest file transfer -->
+          <filesystem type='mount' accessmode='passthrough'>
+            <driver type='virtiofs'/>
+            <source dir='/home/lowcache/Storage/android-vm/shared'/>
+            <target dir='host_shared'/>
+            <address type='pci' domain='0x0000' bus='0x07' slot='0x00' function='0x0'/>
+          </filesystem>
+          <!-- GPU: virtio-gpu with virgl 3D acceleration -->
+          <video>
+            <model type='virtio' heads='1' primary='yes'>
+              <acceleration accel3d='yes'/>
+              <virgl/>
+            </model>
+            <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x0'/>
+          </video>
+          <!-- Display: SPICE with OpenGL -->
+          <graphics type='spice' autoport='yes' listen='none'>
+            <listen type='none'/>
+            <image compression='off'/>
+            <gl enable='yes' rendernode='/dev/dri/renderD128'/>
+          </graphics>
+          <audio id='1' type='spice'/>
+          <!-- Input -->
+          <input type='tablet' bus='virtio'/>
+          <input type='mouse' bus='virtio'/>
+          <input type='keyboard' bus='virtio'/>
+          <!-- Network: virtio-net with vhost -->
+          <interface type='network'>
+            <mac address='52:54:00:12:34:56'/>
+            <source network='android-vm-net'/>
+            <model type='virtio'/>
+            <driver name='vhost' queues='4'/>
+            <address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
+          </interface>
+          <!-- Serial console for debugging -->
+          <console type='pty'>
+            <target type='virtio' port='0'/>
+          </console>
+          <channel type='spicevmc'>
+            <target type='virtio' name='com.redhat.spice.0'/>
+            <address type='virtio-serial' controller='0' bus='0' port='1'/>
+          </channel>
+          <!-- VirtIO RNG -->
+          <rng model='virtio'>
+            <backend model='random'>/dev/urandom</backend>
+            <address type='pci' domain='0x0000' bus='0x02' slot='0x00' function='0x0'/>
+          </rng>
+          <!-- Memory balloon -->
+          <memballoon model='virtio'>
+            <address type='pci' domain='0x0000' bus='0x03' slot='0x00' function='0x0'/>
+          </memballoon>
+          <!-- TPM for Android Keystore/StrongBox emulation -->
+          <tpm model='tpm-tis'>
+            <backend type='emulator' version='2.0'>
+              <backendPath>${pkgs.swptm}/bin/swtpm</backendPath>
+            </backend>
+          </tpm>
+          <!-- VirtIO SCSI controller for better disk performance -->
+          <controller type='scsi' index='0' model='virtio-scsi'>
+            <address type='pci' domain='0x0000' bus='0x08' slot='0x00' function='0x0'/>
+          </controller>
+          <!-- USB controller for ADB passthrough -->
+          <controller type='usb' index='0' model='qemu-xhci' ports='15'>
+            <address type='pci' domain='0x0000' bus='0x09' slot='0x00' function='0x0'/>
+          </controller>
+          <!-- USB redirect for ADB over SPICE -->
+          <redirdev bus='usb' type='spicevmc'>
+            <address type='pci' domain='0x0000' bus='0x0a' slot='0x00' function='0x0'/>
+          </redirdev>
+          <redirdev bus='usb' type='spicevmc'>
+            <address type='pci' domain='0x0000' bus='0x0b' slot='0x00' function='0x0'/>
+          </redirdev>
+        </devices>
+        <qemu:commandline>
+          <qemu:arg value='-kernel'/>
+          <qemu:arg value='${systemImg}/kernel-ranchu'/>
+          <qemu:arg value='-append'/>
+          <qemu:arg value='console=ttyS0 androidboot.hardware=ranchu androidboot.boot_devices=pci.0000:04.00.0 androidboot.verifiedbootstate=green init=/init ro root=/dev/vda1 ro.build.fingerprint=${pixelProps."ro.build.fingerprint"} androidboot.verifiedbootstate=green'/>
+          <qemu:arg value='-initrd'/>
+          <qemu:arg value='${systemImg}/ramdisk.img'/>
+          <!-- Pixel device properties via qemu command line -->
+          ${lib.concatMapStringsSep " " (k: v: "-qemu:arg value=-prop -qemu:arg value=${k}=${v}") (builtins.attrNames pixelProps)}
+        </qemu:commandline>
+      </domain>
+    '';
 
   # Network definition for the Android VM
   environment.etc."libvirt/qemu/networks/android-vm-net.xml".text = ''
