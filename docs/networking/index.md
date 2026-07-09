@@ -13,7 +13,7 @@ graph LR
         H2["vm-tailscale<br/>192.168.101.1/24"]
     end
     subgraph NG["net-gate · autostart"]
-        T["Tor transparent proxy<br/>TransPort 9040 · DNSPort 5353"]
+        T["Tor transparent proxy<br/>TransPort 9040 · SOCKS 9050 · DNSPort 5353"]
     end
     subgraph TSVM["tailscale · manual"]
         TS["tailscaled<br/>IP forwarding"]
@@ -56,3 +56,8 @@ make run-tailscale   # nix run .#tailscale-vm
 !!! info "Fast shutdown"
     Host-side overrides set `TimeoutStopSec` on the `microvm@*` and `microvm-virtiofsd@*` units
     (and force `Type = simple` on virtiofsd) so the guests tear down quickly at poweroff.
+
+!!! note "Windows 11 VM (not a MicroVM)"
+    A separate QEMU/KVM Windows 11 guest is declared in `nixos/windows-vm.nix` (imported by
+    `configuration.nix`): libvirtd + virt-manager, SPICE USB redirection, and an emulated TPM 2.0.
+    It is managed through virt-manager, independent of the `microvm.nix` stack.

@@ -23,11 +23,18 @@ Persistence is declared per-user in
 | :---------- | :----------------------------------------------------------------------- |
 | Credentials | `.ssh`, `.gnupg`, `.config/sops`, `.local/share/keyrings`                |
 | Tooling     | `.cargo`, `.rustup`, `.npm`, `.local/share/go`, `.foundry`, `.solc-select` |
-| App state   | `.config/BraveSoftware`, `.config/VSCodium`, `.ollama`, `.claude`, `.var/app`, `.config/niri`, `.config/noctalia`, `.local/state/noctalia` |
-| Caches      | `.cache/pip`, `.cache/noctalia`, `.cache/nvidia`                        |
+| App state   | `.config/BraveSoftware`, `.config/VSCodium`, `.ollama`, `.claude`, `.var/app`, `.local/share/noctalia`, `.local/state/noctalia` |
+| Caches      | `.cache/pip`, `.cache/noctalia`, `.cache/nvidia`, `.cache/llmfit`       |
 | Home dirs   | `Documents`, `Pictures`, `Downloads`, `Projects`, `CodeRepo`, `AppImage` |
 | Memory tool | `.config/memd`, `.local/state/memd`                                       |
 | Single file | `.claude.json` (Claude Code state, lives outside `~/.claude`)            |
+
+!!! note "Cache root lives off the tmpfs"
+    `xdg.cacheHome` is redirected to `~/Storage/.cache` (see `home/persist.nix` /
+    `home/default.nix`), so caches don't fill the ~4 GB tmpfs root. The `.cache/*` persistence
+    entries above remain as a safety net for apps that hardcode `~/.cache` and ignore XDG.
+    (`.config/niri` and `.config/noctalia` are **not** in this list — they are out-of-store
+    symlinks, covered below.)
 
 ## Out-of-store symlinks
 
@@ -54,5 +61,6 @@ Antigravity CLI rejects hidden paths as workspace folders, so the [agent tether]
 delegates with `~/volnix` as the working directory.
 
 !!! warning "Secrets never live in `dots/`"
-    `dots/` is published in the public repo. Secrets belong only in `nixos/secrets.yaml`
-    (sops-encrypted) or under `/persist` (never git-tracked). See [Secrets](secrets.md).
+    `dots/` is published in the public repo. Secrets belong only in `nixos/host-secrets.yaml` /
+    `nixos/vm-secrets.yaml` (sops-encrypted) or under `/persist` (never git-tracked). See
+    [Secrets](secrets.md).

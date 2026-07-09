@@ -57,15 +57,6 @@ Confirm idle power with `nvtop` / `cat /sys/bus/pci/devices/<dGPU>/power_state`.
 time, and the `decapitate-fuse-mounts` oneshot force-unmounts the xdg-document-portal FUSE at shutdown
 to release `/nix`. MicroVM units carry their own `TimeoutStopSec` overrides for fast teardown.
 
-## Lix rebuild surprises
-
-Because Lix is [built from source](architecture/index.md) (its `main` is not cached), a `make update`
-that bumps the Lix input triggers a source rebuild. Verify evaluation before switching:
-
-```bash
-nix eval --raw .#nixosConfigurations.volnix.config.system.build.toplevel.drvPath
-```
-
 ## Secure Boot won't boot
 
 If the machine fails to boot after enabling enforcing Secure Boot, confirm the generation is signed

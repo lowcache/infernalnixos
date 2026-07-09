@@ -7,16 +7,18 @@ apply live without a rebuild.
 
 ```text
 dots/
+├── .memory/             # memd project memory (state/decisions/mistakes/todo + inbox)
+├── .model/              # agent-scaffold guides (CLAUDE.md etc.)
 ├── cava/                # audio visualizer: shaders + gradient themes
 ├── fastfetch/           # system info fetch (config.jsonc)
 ├── fuzzel/              # application launcher (fuzzel.ini + theme)
 ├── gemini/              # Gemini / Antigravity agent config (credentials git-ignored)
 ├── htop/                # process viewer (htoprc)
-├── color-engine/        # JSON theme engine: apply_theme.py + palettes
+├── color-engine/        # JSON theme engine: apply_theme.py + themes/
 ├── kitty/              # terminal: kitty.conf + tab_bar.py + current.conf
 ├── kitty_colorschemes/  # extra kitty colorschemes
 ├── niri/                # niri compositor: config.kdl, scripts, quake terminal
-├── noctalia/            # Noctalia v5 shell: config.toml, plugins
+├── noctalia/            # Noctalia v5 shell: config.toml + palettes/volnix.json
 ├── starship/            # prompt (starship.toml)
 └── wlogout/             # Wayland logout menu (layout + style.css)
 ```
@@ -26,11 +28,11 @@ Most of these are detailed in the [Desktop](../desktop/index.md) section. A quic
 | Dotfile             | Notable settings                                                          |
 | :------------------ | :----------------------------------------------------------------------- |
 | `niri/`             | Keybinds, window rules, startup apps, IPC scripts, and Kitty quake terminal |
-| `noctalia/`         | Noctalia v5 shell config, Lua UI plugins, Claude MCP integration, custom bar |
-| `color-engine/`     | JSON theme engine (`apply_theme.py`); palettes mapped to Noctalia, Kitty, and Starship |
+| `noctalia/`         | Noctalia v5 shell config (`config.toml`) + color-engine palette (`palettes/volnix.json`) |
+| `color-engine/`     | JSON theme engine (`apply_theme.py`); themes mapped to Noctalia, Kitty, and Starship |
 | `kitty/`            | PunkMono Nerd Font, fish shell, custom bottom tab bar, `listen_on unix:@mykitty` for live theming |
 | `fuzzel/`           | Google Sans Flex, overlay layer, rounded borders                         |
-| `wlogout/`          | Six session actions; kills client PIDs before logout/reboot/shutdown     |
+| `wlogout/`          | Six session actions (lock, logout, suspend, hibernate, reboot, shutdown) |
 | `cava/`             | Spectrum shaders + an 8-stop `tricolor` gradient theme                    |
 | `starship/`         | Two-line powerline prompt, neon palette, `cmd_duration` notifications     |
 | `fastfetch/`        | Auto logo, full module list (os/host/kernel/cpu/gpu/memory/…)            |

@@ -14,14 +14,15 @@ imports = [ ./persist.nix ./pkgs.nix ./scripts.nix ./shell.nix ];
 | `default.nix` | Session variables (Wayland backends, portals), GTK theme, cursor, Antigravity desktop entries |
 | `pkgs.nix`    | User packages, grouped (dev, niri/Noctalia stack, fonts, terminal, AI CLIs) |
 | `persist.nix` | Impermanence `/persist` mappings + out-of-store dotfile symlinks              |
-| `scripts.nix` | `memd` derivation, agent-tool `~/.local/bin` symlinks, `memd-sweep` timer     |
+| `scripts.nix` | Tor wrappers, agent-tool `~/.local/bin` symlinks, `memd-sweep` timer          |
 | `shell.nix`   | Fish (init/aliases/functions), git (SSH signing), starship, direnv, micro, ssh-agent |
 
 ## Session variables (`default.nix`)
 
 A single `sessionVariables` set is applied to both `home.sessionVariables` and
-`systemd.user.sessionVariables`. It sets the Wayland session (`XDG_CURRENT_DESKTOP=niri`, `QT_QPA_PLATFORM=wayland`,
-`NIXOS_OZONE_WL=1`, `GTK_USE_PORTAL=1`, …).
+`systemd.user.sessionVariables`. It sets the Wayland session (`XDG_SESSION_TYPE=wayland`, `QT_QPA_PLATFORM=wayland`,
+`NIXOS_OZONE_WL=1`, `GTK_USE_PORTAL=1`, …). `XDG_CURRENT_DESKTOP` is deliberately **not** hardcoded —
+`niri-session` exports it itself.
 
 ## Packages (`pkgs.nix`)
 
@@ -30,7 +31,7 @@ A single `sessionVariables` set is applied to both `home.sessionVariables` and
 | Group        | Highlights                                                                  |
 | :----------- | :------------------------------------------------------------------------- |
 | `basedevel`  | gcc, cmake, gnumake, go, python3, nodejs, dart-sass                         |
-| `niri`       | niri + Noctalia v5 + xwayland-satellite + Dolphin                           |
+| `niri`       | niri + Noctalia v5 + xwayland-satellite + file managers (cosmic-files, caja, …) |
 | `wayland`    | fuzzel, kitty, **floorp-bin**, spotify, vscodium, file-roller, grim/slurp/swappy |
 | `typography` | material-symbols + a large Nerd Fonts selection                            |
 | `terminal`   | fish, git, gh, eza, bat, ripgrep, fd, jq, sops, micro, nil, `volinit`       |
@@ -53,6 +54,4 @@ mapping.
 
 ## Agent tooling (`scripts.nix`)
 
-Builds `memd` as a derivation, symlinks `memd` / `tether` / `agent-scaffold` into `~/.local/bin`
-(out-of-store, live-editable), and defines the `memd-sweep` user timer (~30 min). See
-[Agent Toolchain](../tooling/agents.md).
+Symlinks graduated agent tools (`memd` from `CodeRepo/memd`, `tether` from `CodeRepo/tether`, and `agent-scaffold` from `.nix-config/scripts`) into `~/.local/bin` (out-of-store, live-editable), and defines the `memd-sweep` user timer (~30 min). See [Agent Toolchain](../tooling/agents.md).

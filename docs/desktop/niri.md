@@ -1,6 +1,6 @@
 # Niri Compositor & UWSM
 
-The session is managed by the Universal Wayland Session Manager (UWSM). Login is handled via `greetd` and `tuigreet`, which launches the session. Niri is configured as the sole graphical session and is enabled via `programs.niri.enable` in `nixos/niri.nix` (referenced in `configuration.nix`).
+The session is managed by the Universal Wayland Session Manager (UWSM). Login is handled via `greetd` and `tuigreet`, which launches the session. Niri is configured as the sole graphical session and is enabled via `programs.niri.enable` directly in `nixos/configuration.nix`.
 
 !!! note
     The configuration file is a live-edit out-of-store symlink pointing to `dots/niri/config.kdl` at `~/.config/niri`. Home Manager does not write files here.
@@ -24,7 +24,7 @@ App launchers are dynamically resolved via `~/.config/niri/scripts/launch_first_
 | Volume Mixer | `Ctrl` + `Mod` + `V` |
 | Task Manager | `Ctrl` + `Shift` + `Escape` |
 | Color picker (`hyprpicker`) | `Mod` + `Shift` + `C` |
-| Session menu (`wlogout`) | Power/Logout |
+| Session menu (`wlogout`) | `Ctrl` + `Alt` + `Delete` |
 
 ### Hardware & Session Controls
 

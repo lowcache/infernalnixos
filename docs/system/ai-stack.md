@@ -49,6 +49,14 @@ virtualisation.oci-containers.containers."fooocus" = {
   autoStart = false;
   ports = [ "7865:7865" ];
   volumes = [ "/home/lowcache/Storage/ai-generation/fooocus:/content/data" ];
+  environment = {
+    CMDARGS = "--listen";
+    DATADIR = "/content/data";
+    config_path = "/content/data/config.txt";
+    path_checkpoints = "/content/data/models/checkpoints/";
+    path_loras = "/content/data/models/loras/";
+    path_outputs = "/content/data/outputs/";
+  };
   extraOptions = [ "--device" "nvidia.com/gpu=0" ];
 };
 ```

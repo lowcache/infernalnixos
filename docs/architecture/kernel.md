@@ -1,8 +1,8 @@
 # Kernel & Performance
 
 The system runs the **CachyOS** kernel with low-latency tuning, set in
-[`nixos/configuration.nix`](https://github.com/lowcache/volnixos/blob/main/nixos/configuration.nix)
-via the `nix-cachyos-kernel` overlay:
+[`nixos/hardware/asus-ryzen-nvidia/kernel.nix`](https://github.com/lowcache/volnixos/blob/main/nixos/hardware/asus-ryzen-nvidia/kernel.nix)
+via the `nix-cachyos-kernel` overlay (applied in `flake.nix`):
 
 ```nix
 boot.kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-latest;
@@ -23,13 +23,13 @@ boot.kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-latest;
 
 ## Sysctl tuning
 
-`boot.kernel.sysctl` sets memory, scheduling, and network parameters:
+`boot.kernel.sysctl` (also in `kernel.nix`) sets memory, scheduling, and network parameters:
 
 === "Memory"
 
     ```nix
     "vm.max_map_count" = 2147483642;   # very high mmap limit (large apps / games)
-    "vm.swappiness" = 180;             # aggressive swap (paired with zram-style setups)
+    "vm.swappiness" = 180;             # aggressive swap (paired with zramSwap below)
     "vm.page-cluster" = 0;
     "vm.vfs_cache_pressure" = 50;
     ```
@@ -50,8 +50,14 @@ boot.kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-latest;
     ```nix
     "kernel.panic" = 10;               # reboot 10s after panic
     "kernel.panic_on_oops" = 1;
+    "kernel.sysrq" = 502;
     "kernel.sched_cfs_bandwidth_slice_us" = 3000;
     ```
+
+## Swap
+
+`nixos/hardware-configuration.nix` pairs the aggressive swappiness with a compressed-RAM tier and a
+physical fallback: `zramSwap` (`zstd`, up to 50% of RAM) plus a 16 GB swapfile at `/persist/swapfile`.
 
 ## Service-manager timeouts
 

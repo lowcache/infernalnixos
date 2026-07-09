@@ -16,7 +16,6 @@
 | `lanzaboote`         | `nix-community/lanzaboote`               | UEFI Secure Boot                       |
 | `microvm`            | `astro/microvm.nix`                       | Isolated VM guests                     |
 | `noctalia`           | `github:noctalia-dev/noctalia`           | Noctalia v5 desktop shell              |
-| `lix-module`         | `git.lix.systems/.../nixos-module`       | Lix daemon (+ `lix` input)             |
 | `sops-nix`           | `Mic92/sops-nix`                          | Encrypted secrets                      |
 | `volinit`            | `lowcache/volinit`                        | Shell welcome banner                   |
 | `nur`                | `nix-community/NUR`                       | Community overlay                      |
@@ -50,7 +49,7 @@ graph TD
 | `packages.x86_64-linux.net-gate`        | Tor MicroVM runner (`nix run .#net-gate`)     |
 | `packages.x86_64-linux.tailscale-vm`    | Tailscale MicroVM runner                      |
 
-Both hosts wire Home Manager as a NixOS module with `useGlobalPkgs` and `useUserPackages`, passing
+The host wires Home Manager as a NixOS module with `useGlobalPkgs` and `useUserPackages`, passing
 `inputs` through `extraSpecialArgs`.
 
 ## Maintenance
@@ -61,7 +60,3 @@ make update           # nix flake update (all inputs)
 make update-nixpkgs   # nix flake update nixpkgs
 nix flake update volinit
 ```
-
-!!! warning "Lix pinning"
-    `lix-module` carries an `inputs.lix.url` override tracking Lix `main`, built from source. Do not
-    drop the override without re-verifying evaluation. See [Architecture](../architecture/index.md).

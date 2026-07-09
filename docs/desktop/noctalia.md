@@ -4,7 +4,7 @@ The desktop shell is built on Noctalia (v5), a C++/native Wayland shell that is 
 
 ## Configuration & Management
 
-Noctalia is packaged via the `noctalia` flake input and enabled in `home/noctalia.nix` (`programs.noctalia.enable`).
+Noctalia is packaged via the `noctalia` flake input and enabled in `home/shell.nix` (`programs.noctalia.enable`).
 
 !!! note
     The configuration is maintained as a live out-of-store symlink at `~/.config/noctalia` pointing to `dots/noctalia`. Home Manager explicitly does not write files here.
@@ -23,18 +23,9 @@ The panel layout uses a continuous visual frame composed of two segments meeting
 - **Top Bar:** Full width, containing a centered clock, tray, network, volume, battery, and control-center widgets.
 - **Left Bar:** Full height, housing the launcher, workspaces, and system monitors (CPU/GPU usage and temperatures).
 
-## Claude Code Companion Plugin
-
-A major component of the shell is the V1 Claude Code companion plugin, running as a pulse widget in the top bar (`~/.local/share/noctalia/plugins/claude`). 
-
-This plugin acts as Claude's desktop senses and actuators using a "perceive + act + pulse" architecture:
-- **Perceive:** An MCP shim (`noctalia-mcp.py`) allows Claude to query the system directly (`get_window`, `get_workspace`, `get_shell_state`).
-- **Act:** Claude can issue commands and trigger desktop toasts via `noctalia msg <target> <action>`.
-- **Pulse:** A top-bar widget animates based on session hooks (`turn_start`, `tool_start`, `needs_attention`), signaling Claude's state.
-- **Launcher:** A `/cc` launcher command spawns one-shot `claude` invocations in a true TUI via `runInTerminal`.
-
-!!! tip
-    The plugin also exposes a `remember` MCP tool that writes durable notes to the global `~/.memory/inbox/`.
+!!! note "Claude Code companion plugin (external)"
+    A Claude Code companion plugin for Noctalia is developed in a separate repository
+    (`~/CodeRepo/noctalia-claude-plugin`) and is not managed by this flake or tracked in `dots/`.
 
 ## Theming & Color Engine
 

@@ -59,13 +59,6 @@ niri compositor with the Noctalia v5 native Wayland shell and a JSON theme engin
 CUDA Ollama + Open WebUI, GPU-passthrough Fooocus, and a custom agent toolchain.
 [Read more →](system/ai-stack.md)
 </div>
-
-<div class="vol-card" markdown>
-### 📖 Portfolio, Not a Distro
-A personal, hardware-specific config published as proof-of-work — read it and borrow patterns; it is not a turnkey install.
-[Read more →](architecture/index.md)
-</div>
-
 </div>
 
 ---
@@ -82,6 +75,10 @@ make check          # nix flake check
 make build          # build without switching
 sudo make switch    # rebuild + switch the live system (HOST=volnix)
 ```
+!!! note "If you find this wiki helpful..."
+    If you find this wiki, repo, or nix configuration helpful it would be great if you could
+    buy me a `beer`, `coffee`, a `house`, you know just what you can spare for the help, if any, I
+    might have played on your own system. [Buy Me a Coffee](https://buymeacoffee.com/lowcache).
 
 !!! note "A portfolio, not a distro"
     The `volnix` host targets a specific machine (AMD Ryzen + hybrid AMD iGPU / NVIDIA RTX 4050,

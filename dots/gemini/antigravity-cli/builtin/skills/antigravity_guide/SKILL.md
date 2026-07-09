@@ -12,8 +12,8 @@ subdocumentation in the `references/` directory of this skill:
 ## 1. Surfaces Sitemap (Offline Subdocs)
 
 -   **Antigravity CLI (`agy`)**: [references/cli.md](references/cli.md)
-    -   Covers TUI navigation, keyboard shortcuts, CLI-only slash commands, and
-        `settings.json` configuration keys.
+    -   Pointers to the authoritative public CLI docs for slash commands,
+        features, settings, and best practices.
 -   **Antigravity IDE**: [references/ide.md](references/ide.md)
     -   Covers the standalone AI-first IDE, sidebar chat panels, and inline code
         lenses.

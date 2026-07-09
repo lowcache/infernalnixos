@@ -1,8 +1,8 @@
 # Secrets — sops-nix + age
 
 Secrets are managed with [`sops-nix`](https://github.com/Mic92/sops-nix) and **age** identities. The
-encrypted store `nixos/secrets.yaml` is safe to commit; it is decrypted at activation into
-`/run/secrets/<name>`.
+encrypted stores `nixos/host-secrets.yaml` (host) and `nixos/vm-secrets.yaml` (MicroVM guests, wired
+in `nixos/vms.nix`) are safe to commit; they are decrypted at activation into `/run/secrets/<name>`.
 
 ## Configuration
 
@@ -10,7 +10,7 @@ From [`nixos/configuration.nix`](https://github.com/lowcache/volnixos/blob/main/
 
 ```nix
 sops = {
-  defaultSopsFile = ./secrets.yaml;
+  defaultSopsFile = ./host-secrets.yaml;
   defaultSopsFormat = "yaml";
   age.sshKeyPaths = [ "/persist/etc/ssh/ssh_host_ed25519_key" ];
   secrets = {
@@ -46,17 +46,18 @@ and set -gx GEMINI_API_KEY (cat /run/secrets/gemini_api_key)
   `/persist`). `SOPS_AGE_KEY_FILE` is set in the Fish environment, so editing needs no prefix:
 
 ```bash
-sops edit nixos/secrets.yaml      # `sops <file>` alone just prints usage
+sops edit nixos/host-secrets.yaml      # `sops <file>` alone just prints usage
 ```
 
 ## The two-place rule
 
 !!! danger "Secrets live in exactly two places"
-    1. **sops-encrypted** — `nixos/secrets.yaml` (committable because encrypted).
+    1. **sops-encrypted** — `nixos/host-secrets.yaml` / `nixos/vm-secrets.yaml` (committable
+       because encrypted).
     2. **`/persist`** — never git-tracked.
 
     They are **never** placed under `dots/`, which is published publicly. As a safety net,
     `.gitignore` excludes `nixos/*.yaml` and the credential files under `dots/gemini/`.
 
-**Adding a secret:** add it to `nixos/secrets.yaml` → declare `sops.secrets.<name>` in
+**Adding a secret:** add it to `nixos/host-secrets.yaml` → declare `sops.secrets.<name>` in
 `configuration.nix` → consume it (e.g. export in `home/shell.nix`).

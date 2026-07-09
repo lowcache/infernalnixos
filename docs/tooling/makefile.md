@@ -9,6 +9,7 @@ operations interface — prefer it over ad-hoc `nixos-rebuild` invocations. `HOS
 | Target              | Action                                              |
 | :------------------ | :-------------------------------------------------- |
 | `make switch`       | Rebuild and switch the live system (needs `sudo`)   |
+| `make switch-detached`| Switch as a detached system unit (survives mid-rebuild session teardown) |
 | `make build`        | Build the configuration without switching           |
 | `make test`         | Temporarily activate (no boot entry)                |
 | `make dry-activate` | Preview service transitions                         |
@@ -29,8 +30,8 @@ operations interface — prefer it over ad-hoc `nixos-rebuild` invocations. `HOS
 | `make fmt`           | Format all `.nix` with `nixpkgs-fmt`            |
 | `make update`        | Update all flake inputs                          |
 | `make update-nixpkgs`| Update only `nixpkgs`                            |
-| `make gc`            | Delete >7d system generations + GC the store     |
-| `make ghc`           | `git add . && git commit -m "Minor Updates"`     |
+| `make trash`         | Delete >7d system generations + GC the store     |
+| `make git`           | Interactively stage, commit, and push changes  |
 
 ## Dotfiles subtree
 

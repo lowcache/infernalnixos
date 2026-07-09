@@ -1,5 +1,0 @@
-#!/usr/bin/env fish
-
-set -U ANTHROPIC_BASE_URL https://agentrouter.org/
-set -U ANTHROPIC_AUTH_TOKEN sk-zslkDIxLa4diiwZq2zjprReX7Djd6CIqCViZ3ZzN0H7IBBdh
-set -U ANTHROPIC_API_KEY sk-zslkDIxLa4diiwZq2zjprReX7Djd6CIqCViZ3ZzN0H7IBBdh
