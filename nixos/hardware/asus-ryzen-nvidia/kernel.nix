@@ -13,13 +13,19 @@
       # Ryzen CPU & Hybrid GPU Stability Parameters
       "amdgpu.dcdebugmask=0x10"
       "amdgpu.gpu_recovery=1"
+      # Disable deep C-states for lower wakeup latency (real-time audio, low-latency tasks).
+      # Remove this line on battery-sensitive or power-limited hardware.
       "processor.max_cstate=1"
       #"pcie_port_pm=off"
     ];
     kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-latest;
     kernel.sysctl = {
       # Memory Management
+      # 2147483642 ≈ INT_MAX. Effectively unlimited. Required for AI workloads
+      # (stable diffusion, llm inference) and some games. Generic safe value: 2097152.
       "vm.max_map_count" = 2147483642;
+      # 180 is a Linux extension (>100) that strongly biases toward zram over disk.
+      # Only meaningful with zramSwap.enable = true. Without zram, use ≤ 60.
       "vm.swappiness" = 180;
       "vm.page-cluster" = 0;
       "vm.vfs_cache_pressure" = 50;
