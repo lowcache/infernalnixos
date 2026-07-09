@@ -73,7 +73,7 @@
         settings = {
           TransPort = [{ addr = "0.0.0.0"; port = 9040; }];
           # SOCKS5 for per-app proxying from the host (curl/brave wrappers, etc.)
-          SocksPort = [{ addr = "0.0.0.0"; port = 9050; }];
+          SOCKSPort = [{ addr = "0.0.0.0"; port = 9050; }];
           DNSPort = [{ addr = "0.0.0.0"; port = 5353; }];
           VirtualAddrNetworkIPv4 = "172.16.0.0/12";
           AutomapHostsOnResolve = true;
