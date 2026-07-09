@@ -4,6 +4,7 @@
     inputs.nixos-hardware.nixosModules.common-cpu-amd
     inputs.nixos-hardware.nixosModules.common-gpu-nvidia
     inputs.nixos-hardware.nixosModules.common-pc-laptop-ssd
+    ./hardware/asus-ryzen-nvidia
   ];
 
   # Hardware GPU
