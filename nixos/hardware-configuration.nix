@@ -1,4 +1,4 @@
-{ config, lib, pkgs, modulesPath, inputs, ... }: {
+{ config, lib, pkgs, modulesPath, inputs, username, ... }: {
 
   imports = [
     inputs.nixos-hardware.nixosModules.common-cpu-amd
@@ -44,7 +44,7 @@
       fsType = "ext4";
       neededForBoot = true;
     };
-    "/home/lowcache/Storage" = {
+    "/home/${username}/Storage" = {
       device = "/dev/disk/by-uuid/71548923-2081-44c1-b4f1-6826cb7a6ac8";
       fsType = "ext4";
     };

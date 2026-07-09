@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, lib, ... }: {
+{ config, pkgs, inputs, lib, username, ... }: {
 
   imports = [
     ./vms.nix
@@ -34,11 +34,11 @@
   systemd = {
     oomd.enable = false;
     tmpfiles.rules = [
-      "d /home/lowcache 0700 lowcache users"
-      "d /home/lowcache/AppImage 0755 lowcache users"
-      "d /home/lowcache/Storage/ai-generation 0755 lowcache users"
-      "d /home/lowcache/Storage/ai-generation/fooocus 0755 lowcache users"
-      "d /home/lowcache/Storage/ai-generation/forge 0755 lowcache users"
+      "d /home/${username} 0700 ${username} users"
+      "d /home/${username}/AppImage 0755 ${username} users"
+      "d /home/${username}/Storage/ai-generation 0755 ${username} users"
+      "d /home/${username}/Storage/ai-generation/fooocus 0755 ${username} users"
+      "d /home/${username}/Storage/ai-generation/forge 0755 ${username} users"
       "d /persist/var/lib/tailscale-vm 0700 root root"
       # Disk-backed build temp so nix builds never exhaust the 4G tmpfs root.
       "d /nix/tmp 1777 root root -"
@@ -69,7 +69,7 @@
       };
       # Run Ollama as your user to avoid permission issues in ~/Storage
       ollama.serviceConfig = {
-        User = "lowcache";
+        User = username;
         Group = "users";
         ProtectHome = lib.mkForce false;
         Environment = [
@@ -94,7 +94,7 @@
       root = {
         hashedPasswordFile = config.sops.secrets.root_password.path;
       };
-      lowcache = {
+      ${username} = {
         isNormalUser = true;
         hashedPasswordFile = config.sops.secrets.user_password.path;
         extraGroups = [ "adbusers" "networkmanager" "wheel" "video" "docker" "uinput" ];
@@ -114,10 +114,10 @@
         neededForUsers = true;
       };
       gemini_api_key = {
-        owner = "lowcache";
+        owner = username;
       };
       github_token = {
-        owner = "lowcache";
+        owner = username;
       };
     };
   };
@@ -128,8 +128,8 @@
     git = {
       enable = true;
       config.safe.directory = [
-        "/persist/home/lowcache/.nix-config"
-        "/home/lowcache/.nix-config"
+        "/persist/home/${username}/.nix-config"
+        "/home/${username}/.nix-config"
       ];
     };
     nix-ld = {
@@ -206,7 +206,7 @@
           image = "ghcr.io/lllyasviel/fooocus:latest";
           autoStart = false;
           ports = [ "7865:7865" ];
-          volumes = [ "/home/lowcache/Storage/ai-generation/fooocus:/content/data" ];
+          volumes = [ "/home/${username}/Storage/ai-generation/fooocus:/content/data" ];
           environment = {
             CMDARGS = "--listen";
             DATADIR = "/content/data";
@@ -236,8 +236,8 @@
     ollama = {
       enable = true;
       package = pkgs.ollama-cuda;
-      home = "/home/lowcache";
-      models = "/home/lowcache/Storage/ollama/models";
+      home = "/home/${username}";
+      models = "/home/${username}/Storage/ollama/models";
     };
 
     timesyncd.enable = true;
@@ -335,7 +335,7 @@
     package = pkgs.lixPackageSets.stable.lix;
     settings = {
       experimental-features = [ "nix-command" "flakes" ];
-      trusted-users = [ "root" "lowcache" ];
+      trusted-users = [ "root" username ];
       auto-optimise-store = true;
       substituters = [
         "https://nix-community.cachix.org"

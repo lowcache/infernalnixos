@@ -56,18 +56,22 @@
   };
 
   outputs =
-    { self
-    , nixpkgs
-    , home-manager
-    , microvm
-    , volinit
-    , nur
-    , llm-agents
-    , ...
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      microvm,
+      volinit,
+      nur,
+      llm-agents,
+      ...
     }@inputs:
+    let
+      username = "lowcache";
+    in
     {
       nixosConfigurations.volnix = nixpkgs.lib.nixosSystem {
-        specialArgs = { inherit inputs; };
+        specialArgs = { inherit inputs username; };
         modules = [
           { nixpkgs.hostPlatform = "x86_64-linux"; }
           {
@@ -87,7 +91,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = { inherit inputs; };
-            home-manager.users.lowcache = import ./home;
+            home-manager.users.${username} = import ./home;
           }
         ];
       };
