@@ -8,6 +8,12 @@ dots/gemini/google_accounts.json
 dots/gemini/installation_id
 dots/gemini/state.json
 dots/gemini/antigravity-cli/antigravity-oauth-token
+dots/gemini/antigravity-ide/conversations/*.db
+dots/gemini/antigravity-ide/conversations/*.db-shm
+dots/gemini/antigravity-ide/conversations/*.db-wal
+dots/gemini/antigravity-ide/implicit/*.pb
+dots/gemini/antigravity-cli/bin/webm_encoder
+dots/gemini/antigravity-ide/plugins/
 nixos/*.yaml
 
 
