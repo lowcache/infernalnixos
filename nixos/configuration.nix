@@ -29,6 +29,20 @@
       enable = true;
       wifi.scanRandMacAddress = true;
     };
+    # Anonymous-mode egress marking. Deliberately NOT networking.nftables.enable:
+    # that disables the ip_tables module and breaks Docker + libvirt networking
+    # on this host (nixpkgs #24318). Instead we add a mangle OUTPUT rule via the
+    # existing iptables backend that marks packets owned by anon-user (UID 10000);
+    # the anon-routing service policy-routes fwmark 0x1 to the Tor VM. Only
+    # UID-10000 traffic is touched, so normal user/system traffic is unaffected.
+    firewall = {
+      extraCommands = ''
+        iptables -t mangle -A OUTPUT -m owner --uid-owner 10000 -j MARK --set-mark 0x1
+      '';
+      extraStopCommands = ''
+        iptables -t mangle -D OUTPUT -m owner --uid-owner 10000 -j MARK --set-mark 0x1 2>/dev/null || true
+      '';
+    };
   };
 
   systemd = {
@@ -82,6 +96,29 @@
       };
       # Inject ffmpeg into open-webui's PATH environment for dynamic user execution
       open-webui.path = [ pkgs.ffmpeg ];
+      # Policy routing for anonymous mode: fwmark 0x1 (set by the mangle rule in
+      # networking.firewall) -> table 100 -> default via the net-gate Tor VM.
+      # On-demand only (no wantedBy): pulled up by anonymous.target, so it never
+      # races the VM tap at boot. table 100 is non-default — only marked packets
+      # use it, so normal traffic is untouched.
+      anon-routing = {
+        description = "Policy routing for anonymous-mode egress (UID 10000 -> Tor VM)";
+        after = [ "network-online.target" "microvm@net-gate.service" ];
+        wants = [ "network-online.target" ];
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+          ExecStart = pkgs.writeShellScript "anon-routing-up" ''
+            ${pkgs.iproute2}/bin/ip rule list | grep -q "fwmark 0x1 lookup 100" || \
+              ${pkgs.iproute2}/bin/ip rule add fwmark 0x1 table 100
+            ${pkgs.iproute2}/bin/ip route replace default via 192.168.100.2 table 100
+          '';
+          ExecStop = pkgs.writeShellScript "anon-routing-down" ''
+            ${pkgs.iproute2}/bin/ip route flush table 100 2>/dev/null || true
+            ${pkgs.iproute2}/bin/ip rule del fwmark 0x1 table 100 2>/dev/null || true
+          '';
+        };
+      };
     };
     settings.Manager = {
       DefaultTimeoutStopSec = "10s";
@@ -98,6 +135,15 @@
         isNormalUser = true;
         hashedPasswordFile = config.sops.secrets.user_password.path;
         extraGroups = [ "adbusers" "networkmanager" "wheel" "video" "docker" "uinput" ];
+      };
+      # Anonymous-mode isolation UID. Processes launched as this user (via
+      # `anon-run`) have their egress marked and policy-routed through the
+      # net-gate Tor VM. Fixed UID 10000 so the firewall owner-match is stable.
+      anon-user = {
+        uid = 10000;
+        isSystemUser = true;
+        group = "nogroup";
+        description = "UID for anonymous-mode app isolation";
       };
     };
   };

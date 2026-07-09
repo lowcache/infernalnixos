@@ -21,8 +21,8 @@
         useNetworkd = true;
         firewall = {
           enable = true;
-          # Allow Tor TransPort and DNSPort from the host
-          allowedTCPPorts = [ 9040 ];
+          # Allow Tor TransPort (9040), SOCKS5 (9050) and DNSPort (5353) from the host
+          allowedTCPPorts = [ 9040 9050 ];
           allowedUDPPorts = [ 5353 ];
         };
       };
@@ -72,6 +72,8 @@
         client.enable = true;
         settings = {
           TransPort = [{ addr = "0.0.0.0"; port = 9040; }];
+          # SOCKS5 for per-app proxying from the host (curl/brave wrappers, etc.)
+          SocksPort = [{ addr = "0.0.0.0"; port = 9050; }];
           DNSPort = [{ addr = "0.0.0.0"; port = 5353; }];
           VirtualAddrNetworkIPv4 = "172.16.0.0/12";
           AutomapHostsOnResolve = true;
