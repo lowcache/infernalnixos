@@ -80,9 +80,9 @@
 
       # Sops Configuration
       sops = {
-        defaultSopsFile = ./secrets.yaml; # Relative to THIS file (nixos/vms.nix)
+        defaultSopsFile = ./vm-secrets.yaml; # Relative to THIS file (nixos/vms.nix)
         age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
-        # secrets.wg_private_key = {}; # Commented until added to secrets.yaml
+        # secrets.wg_private_key = {}; # Commented until added to vm-secrets.yaml
       };
 
       environment.systemPackages = [ pkgs.ssh-to-age ];
