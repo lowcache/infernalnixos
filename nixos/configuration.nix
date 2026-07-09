@@ -105,6 +105,7 @@
         description = "Policy routing for anonymous-mode egress (UID 10000 -> Tor VM)";
         after = [ "network-online.target" "microvm@net-gate.service" ];
         wants = [ "network-online.target" ];
+        partOf = [ "anonymous.target" ]; # torn down when anon mode is stopped
         serviceConfig = {
           Type = "oneshot";
           RemainAfterExit = true;
@@ -119,12 +120,48 @@
           '';
         };
       };
+      # Readiness gate for anonymous.target: block until the VM's Tor SOCKS5 is
+      # actually reachable (VM unit being 'active' != Tor bootstrapped), then
+      # report status. Proxy-only — deliberately no DNS override (too disruptive).
+      anon-socks-check = {
+        description = "Wait for net-gate Tor SOCKS5 reachability (anonymous mode)";
+        after = [ "microvm@net-gate.service" ];
+        partOf = [ "anonymous.target" ];
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+          ExecStart = pkgs.writeShellScript "anon-socks-wait" ''
+            for i in $(${pkgs.coreutils}/bin/seq 1 30); do
+              if ${pkgs.coreutils}/bin/timeout 2 ${pkgs.bash}/bin/bash \
+                  -c ": >/dev/tcp/192.168.100.2/9050" 2>/dev/null; then
+                echo "Tor SOCKS5 reachable at 192.168.100.2:9050 — anonymous mode armed."
+                exit 0
+              fi
+              ${pkgs.coreutils}/bin/sleep 1
+            done
+            echo "Timed out waiting for Tor SOCKS5 at 192.168.100.2:9050" >&2
+            exit 1
+          '';
+        };
+      };
     };
     settings.Manager = {
       DefaultTimeoutStopSec = "10s";
       DefaultRestartSec = "1s";
     };
     user.settings.Manager.DefaultTimeoutStopSec = "5s";
+    # One-shot arm/disarm for anonymous mode. Manual/on-demand: no wantedBy, so
+    # it never autostarts at boot. Pulls up the net-gate VM (if down), the egress
+    # policy routing, and the SOCKS readiness check. Stopping it tears down the
+    # partOf units (routing + check) but leaves the net-gate VM running, since the
+    # VM is only `wants` here — it's still useful without anon mode.
+    #   arm:    sudo systemctl start anonymous.target
+    #   disarm: sudo systemctl stop  anonymous.target
+    targets.anonymous = {
+      description = "Anonymous mode: egress via the net-gate Tor VM (manual/on-demand)";
+      wants = [ "microvm@net-gate.service" "anon-routing.service" "anon-socks-check.service" ];
+      after = [ "microvm@net-gate.service" ];
+    };
   };
   users = {
     users = {

@@ -152,6 +152,11 @@
             builtin cd "$t"
         end
       '';
+      shellAbbrs = {
+        # Anonymous mode (P5-T3): arm/disarm egress via the net-gate Tor VM.
+        anon-on = "sudo systemctl start anonymous.target && tor-check";
+        anon-off = "sudo systemctl stop anonymous.target";
+      };
       shellAliases = {
         celar = "clear";
         claer = "clear";
