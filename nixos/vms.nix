@@ -71,6 +71,10 @@
         enable = true;
         client.enable = true;
         settings = {
+          # IMPORTANT: Tor VM is an OPT-IN proxy, not a transparent traffic enforcer.
+          # Host traffic is NOT automatically routed through Tor.
+          # To use: curl --socks5 192.168.100.2:9050 
+          # Or: sudo systemctl start anonymous.target   (after Phase 5 is complete)
           TransPort = [{ addr = "0.0.0.0"; port = 9040; }];
           # SOCKS5 for per-app proxying from the host (curl/brave wrappers, etc.)
           SOCKSPort = [{ addr = "0.0.0.0"; port = 9050; }];

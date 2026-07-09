@@ -39,6 +39,9 @@
       device = "/dev/disk/by-label/NIX";
       fsType = "ext4";
     };
+    # BOOT DEPENDENCY: neededForBoot = true is required because SOPS decrypts
+    # secrets using the SSH host key at /persist/etc/ssh/ssh_host_ed25519_key.
+    # If /persist fails to mount, SOPS cannot decrypt passwords and login will fail.
     "/persist" = {
       device = "/dev/disk/by-label/PERSIST";
       fsType = "ext4";
