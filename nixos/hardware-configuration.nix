@@ -7,41 +7,10 @@
     ./hardware/asus-ryzen-nvidia
   ];
 
-  # Hardware GPU
+  # Hardware (GPU config lives in ./hardware/asus-ryzen-nvidia/gpu.nix)
   hardware = {
     enableRedistributableFirmware = true;
-    amdgpu.opencl.enable = true;
     bluetooth.enable = true;
-    graphics = {
-      enable = true;
-      enable32Bit = true;
-      extraPackages = with pkgs; [
-        nvidia-vaapi-driver
-        libva-vdpau-driver
-        libvdpau-va-gl
-      ];
-    };
-    nvidia-container-toolkit.enable = true;
-    nvidia = {
-      package = config.boot.kernelPackages.nvidiaPackages.stable;
-      modesetting.enable = true;
-      #dynamicboost.enable = true;
-      powerManagement = {
-        enable = true;
-        finegrained = true;
-      };
-      open = true;
-      prime = {
-        offload = {
-          enable = true;
-          enableOffloadCmd = true;
-        };
-        sync.enable = false;
-        reverseSync.enable = false;
-        amdgpuBusId = "PCI:102:0:0"; # 66:00.0 hex -> 102 decimal
-        nvidiaBusId = "PCI:1:0:0"; # 01:00.0 hex -> 1 decimal
-      };
-    };
   };
 
   # Swap

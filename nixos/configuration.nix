@@ -276,7 +276,6 @@
     };
 
     timesyncd.enable = true;
-    xserver.videoDrivers = [ "nvidia" "amdgpu" ];
     geoclue2.enable = true;
     scx = {
       enable = false;
