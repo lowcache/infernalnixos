@@ -45,7 +45,11 @@
       neededForBoot = true;
     };
     "/home/${username}/Storage" = {
-      device = "/dev/disk/by-uuid/71548923-2081-44c1-b4f1-6826cb7a6ac8";
+      # Label: STORAGE  (set with: sudo e2label /dev/sdXY STORAGE)
+      # Current UUID: 71548923-2081-44c1-b4f1-6826cb7a6ac8
+      # Label must exist on the disk BEFORE activating this config
+      # (verified present on nvme0n1p1 as of 2026-07-09).
+      device = "/dev/disk/by-label/STORAGE";
       fsType = "ext4";
     };
   };
