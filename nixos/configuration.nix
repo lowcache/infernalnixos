@@ -320,7 +320,7 @@
       enable = true;
       package = pkgs.ollama-cuda;
       home = "/home/${username}";
-      models = "/home/${username}/Storage/ollama/models";
+      modelsDir = "/home/${username}/Storage/ollama/models";
     };
 
     timesyncd.enable = true;
