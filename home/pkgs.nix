@@ -195,6 +195,7 @@
           pkgs.llm-agents.hermes-agent
           pkgs.llm-agents.hermes-hud
           pkgs.llm-agents.hermes-desktop
+          pkgs.llm-agents.nanocoder
         ];
       in
       nixAi ++ termUi ++ monoTypography ++ niriDesktop ++ baseDev;
