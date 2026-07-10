@@ -96,7 +96,7 @@
           floorp-bin # Firefox-fork backup browser
           hifile
           fm
-          mate.caja-with-extensions
+          pkgs.caja-with-extensions
           cosmic-files
           xfe
           rox-filer
