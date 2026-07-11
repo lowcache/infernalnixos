@@ -14,7 +14,7 @@ imports = [ ./persist.nix ./pkgs.nix ./scripts.nix ./shell.nix ];
 | `default.nix` | Session variables (Wayland backends, portals), GTK theme, cursor, Antigravity desktop entries |
 | `pkgs.nix`    | User packages, grouped (dev, niri/Noctalia stack, fonts, terminal, AI CLIs) |
 | `persist.nix` | Impermanence `/persist` mappings + out-of-store dotfile symlinks              |
-| `scripts.nix` | Tor wrappers, agent-tool `~/.local/bin` symlinks, `memd-sweep` timer          |
+| `scripts.nix` | Tor wrappers, agent-tool `~/.local/bin` symlinks (tether, agent-scaffold)      |
 | `shell.nix`   | Fish (init/aliases/functions), git (SSH signing), starship, direnv, micro, ssh-agent |
 
 ## Session variables (`default.nix`)
@@ -54,4 +54,4 @@ mapping.
 
 ## Agent tooling (`scripts.nix`)
 
-Symlinks graduated agent tools (`memd` from `CodeRepo/memd`, `tether` from `CodeRepo/tether`, and `agent-scaffold` from `.nix-config/scripts`) into `~/.local/bin` (out-of-store, live-editable), and defines the `memd-sweep` user timer (~30 min). See [Agent Toolchain](../tooling/agents.md).
+Symlinks graduated agent tools (`tether` from `CodeRepo/tether` and `agent-scaffold` from `.nix-config/scripts`) into `~/.local/bin` (out-of-store, live-editable). The `memd` tool and its `memd-sweep` timer are deployed declaratively via the `services.memd` module. See [Agent Toolchain](../tooling/agents.md).

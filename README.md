@@ -61,7 +61,7 @@ sudo make switch    # rebuild + switch (HOST=volnix)
 ├── nixos/             # system modules
 ├── home/              # Home Manager modules
 ├── dots/              # dotfiles (out-of-store symlinked to ~/.config)
-├── scripts/           # agent toolchain (memd, tether, agent-scaffold)
+├── scripts/           # agent toolchain (agent-scaffold, helpers)
 ├── docs/              # MkDocs Material documentation source
 └── assets/            # banner / branding
 ```

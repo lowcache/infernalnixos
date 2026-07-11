@@ -21,8 +21,8 @@ flowchart LR
 ## memd — project-memory curator
 
 `memd` (its own repo at `~/CodeRepo/memd`) autonomously distills AI session transcripts into a
-project's `.memory/` files. It runs from a live out-of-store symlink (`~/.local/bin/memd`) shared by
-interactive sessions and the `memd-sweep` user timer, so there is no packaged/live drift.
+project's `.memory/` files. It is deployed as a home-manager module (`services.memd`), running from
+the pinned `/nix/store` copy with automatic periodic sweep timers.
 
 | File                  | Holds                                              |
 | :-------------------- | :------------------------------------------------ |
@@ -34,8 +34,8 @@ interactive sessions and the `memd-sweep` user timer, so there is no packaged/li
 
 - **Read** the memory files at session start. **Write** only by dropping a markdown note in
   `.memory/inbox/`; the next sweep ingests and deletes it.
-- A `memd-sweep` systemd **user timer** (~30 min, `home/scripts.nix`) catches up stale projects,
-  ingests inboxes, prunes oversized files, and detects new git repos — independent of any session.
+- A `memd-sweep` systemd **user timer** (~30 min, managed by `services.memd` in `home/default.nix`)
+  catches up stale projects, ingests inboxes, prunes oversized files, and detects new git repos.
 - Session hooks (`SessionStart`, `SessionEnd`, `PreCompact`) wire memd into Claude Code.
 
 !!! danger "Never hand-edit `.memory/`"
