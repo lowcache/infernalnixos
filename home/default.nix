@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 let
   # We define the entire set of session variables once in this let block.
@@ -71,7 +71,14 @@ in
     ./pkgs.nix
     ./scripts.nix
     ./shell.nix
+    inputs.memd.homeManagerModules.default
   ];
+
+  services.memd = {
+    enable = true;
+    installClaudeHooks = true;
+    sweep.interval = "30min";
+  };
 
   home = {
     username = "lowcache";

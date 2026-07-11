@@ -347,6 +347,26 @@
         "type": "github"
       }
     },
+    "memd": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1783733004,
+        "narHash": "sha256-taf+q1njOUGqr2WX9tWw8Ya5CeqKpD1KGEB7gvF6Kos=",
+        "owner": "lowcache",
+        "repo": "memd",
+        "rev": "d30ef2869cabadf2d21a8ac5493f54a3c0f8f241",
+        "type": "github"
+      },
+      "original": {
+        "owner": "lowcache",
+        "repo": "memd",
+        "type": "github"
+      }
+    },
     "microvm": {
       "inputs": {
         "nixpkgs": [
@@ -553,6 +573,7 @@
         "impermanence": "impermanence",
         "lanzaboote": "lanzaboote",
         "llm-agents": "llm-agents",
+        "memd": "memd",
         "microvm": "microvm",
         "nix-cachyos-kernel": "nix-cachyos-kernel",
         "nixos-hardware": "nixos-hardware",

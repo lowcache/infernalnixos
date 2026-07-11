@@ -46,6 +46,7 @@
     "/home/nondeus/CodeRepo/kalinix",
     "/home/lowcache/.nix-config",
     "/home/lowcache",
-    "/home/lowcache/volnix"
+    "/home/lowcache/volnix",
+    "/home/lowcache/CodeRepo/memd"
   ]
 }

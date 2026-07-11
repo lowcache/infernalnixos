@@ -53,18 +53,21 @@
       url = "github:numtide/llm-agents.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    memd = {
+      url = "github:lowcache/memd";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
-    {
-      self,
-      nixpkgs,
-      home-manager,
-      microvm,
-      volinit,
-      nur,
-      llm-agents,
-      ...
+    { self
+    , nixpkgs
+    , home-manager
+    , microvm
+    , volinit
+    , nur
+    , llm-agents
+    , ...
     }@inputs:
     let
       username = "lowcache";
