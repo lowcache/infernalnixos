@@ -24,8 +24,8 @@ __pycache__/
 .model/.claude/
 .model/.antigravitycli/
 .model/tasks/
-.nanocoder/
-.vscode/
+.nanocoder
+.vscode
 
 # MkDocs build output
 /site/
