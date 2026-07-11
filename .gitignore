@@ -21,9 +21,11 @@ nixos/*.yaml
 __pycache__/
 
 # Per-machine agent state (not config)
-.model/.claude/settings.local.json
+.model/.claude/
 .model/.antigravitycli/
 .model/tasks/
+.nanocoder/
+.vscode/
 
 # MkDocs build output
 /site/
