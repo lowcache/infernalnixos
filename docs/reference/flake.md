@@ -20,6 +20,7 @@
 | `volinit`            | `lowcache/volinit`                        | Shell welcome banner                   |
 | `nur`                | `nix-community/NUR`                       | Community overlay                      |
 | `llm-agents`         | `numtide/llm-agents.nix`                  | AI agent tooling overlay               |
+| `memd`               | `lowcache/memd`                           | Project-memory daemon (HM module)      |
 
 ## Overlays
 
@@ -40,6 +41,8 @@ graph TD
     F["flake.nix"] --> V["nixosConfigurations.volnix"]
     F --> NG["packages.x86_64-linux.net-gate"]
     F --> TS["packages.x86_64-linux.tailscale-vm"]
+    F --> FM["formatter.x86_64-linux"]
+    F --> CK["checks.x86_64-linux.*"]
     V --> HM["home-manager.users.lowcache → ./home"]
 ```
 
@@ -48,6 +51,9 @@ graph TD
 | `nixosConfigurations.volnix`            | The host (`x86_64-linux`)                     |
 | `packages.x86_64-linux.net-gate`        | Tor MicroVM runner (`nix run .#net-gate`)     |
 | `packages.x86_64-linux.tailscale-vm`    | Tailscale MicroVM runner                      |
+| `formatter.x86_64-linux`                | `nixfmt-tree` wrapper (`nix fmt`)             |
+| `checks.x86_64-linux.formatting`        | `nixfmt --check` gate for flake source        |
+| `checks.x86_64-linux.lint`              | `statix` & `deadnix` gate for flake source    |
 
 The host wires Home Manager as a NixOS module with `useGlobalPkgs` and `useUserPackages`, passing
 `inputs` through `extraSpecialArgs`.
@@ -55,7 +61,8 @@ The host wires Home Manager as a NixOS module with `useGlobalPkgs` and `useUserP
 ## Maintenance
 
 ```bash
-make check            # nix flake check
+make check            # nix flake check (eval + build formatting/lint gates)
+make fmt              # nix fmt
 make update           # nix flake update (all inputs)
 make update-nixpkgs   # nix flake update nixpkgs
 nix flake update volinit

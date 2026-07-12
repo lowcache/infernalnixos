@@ -170,7 +170,7 @@
           git-lfs
           nil
           android-tools
-          nixpkgs-fmt
+          nixfmt
           inputs.volinit.packages.${pkgs.stdenv.hostPlatform.system}.default
         ];
         nixAi = with pkgs; [

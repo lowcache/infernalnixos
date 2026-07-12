@@ -50,7 +50,7 @@ help:
 	@echo ""
 	@echo "Flake & Code Maintenance:"
 	@echo "  make check          Check flake lock and schema validity"
-	@echo "  make fmt            Auto-format all Nix expressions using nixpkgs-fmt"
+	@echo "  make fmt            Auto-format all Nix expressions (nix fmt / nixfmt)"
 	@echo "  make update         Update all flake inputs"
 	@echo "  make update-nixpkgs Update only the nixpkgs input"
 	@echo "  make trash          Garbage collect older Nix store derivations"
@@ -120,7 +120,7 @@ check:
 	nix flake check
 
 fmt:
-	find . -name "*.nix" -exec nixpkgs-fmt {} +
+	nix fmt
 
 update:
 	nix flake update

@@ -26,8 +26,8 @@ operations interface — prefer it over ad-hoc `nixos-rebuild` invocations. `HOS
 
 | Target               | Action                                          |
 | :------------------- | :--------------------------------------------- |
-| `make check`         | `nix flake check`                               |
-| `make fmt`           | Format all `.nix` with `nixpkgs-fmt`            |
+| `make check`         | `nix flake check` (includes formatting/lint gates) |
+| `make fmt`           | Format all `.nix` with `nix fmt` (RFC 166 nixfmt) |
 | `make update`        | Update all flake inputs                          |
 | `make update-nixpkgs`| Update only `nixpkgs`                            |
 | `make trash`         | Delete >7d system generations + GC the store     |

@@ -44,4 +44,4 @@ set -gx SOPS_AGE_KEY_FILE $HOME/.config/sops/age/keys.txt
 
 !!! note "Other programs"
     `shell.nix` also configures git (SSH commit signing, LFS), starship, direnv + nix-direnv, the
-    micro editor (nil LSP, `nixpkgs-fmt` on save), and the ssh-agent service.
+    micro editor (nil LSP, `nixfmt` on save), and the ssh-agent service.

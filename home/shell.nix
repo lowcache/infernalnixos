@@ -474,7 +474,7 @@
         scrollbarchar = "[]";
         formatonsave = true;
         mkparents = true;
-        "nix.formatter" = "nixpkgs-fmt";
+        "nix.formatter" = "nixfmt";
         cursorline = true;
         incsearch = true;
         ignorecase = true;
