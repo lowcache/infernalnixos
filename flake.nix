@@ -60,17 +60,16 @@
   };
 
   outputs =
-    { self
-    , nixpkgs
-    , home-manager
-    , microvm
-    , volinit
-    , nur
-    , llm-agents
-    , ...
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      ...
     }@inputs:
     let
       username = "lowcache";
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
     in
     {
       nixosConfigurations.volnix = nixpkgs.lib.nixosSystem {
@@ -91,18 +90,49 @@
           inputs.sops-nix.nixosModules.sops
           home-manager.nixosModules.home-manager
           {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = { inherit inputs; };
-            home-manager.users.${username} = import ./home;
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              extraSpecialArgs = { inherit inputs; };
+              users.${username} = import ./home;
+            };
           }
         ];
       };
 
       # Add this to allow building/running the VM packages
-      packages.x86_64-linux.net-gate =
-        self.nixosConfigurations.volnix.config.microvm.vms.net-gate.config.config.microvm.declaredRunner;
-      packages.x86_64-linux.tailscale-vm =
-        self.nixosConfigurations.volnix.config.microvm.vms.tailscale.config.config.microvm.declaredRunner;
+      packages.${system} = {
+        net-gate =
+          self.nixosConfigurations.volnix.config.microvm.vms.net-gate.config.config.microvm.declaredRunner;
+        tailscale-vm =
+          self.nixosConfigurations.volnix.config.microvm.vms.tailscale.config.config.microvm.declaredRunner;
+      };
+
+      # `nix fmt` — nixfmt (RFC 166, the official formatter), treefmt-wrapped so
+      # it formats the whole tree and respects the git index (untracked files
+      # like dots/gemini worktrees are skipped).
+      formatter.${system} = pkgs.nixfmt-tree;
+
+      # `nix flake check` gates: formatting + lint. ${self} is the git-tracked
+      # source only, so generated/untracked .nix files are out of scope.
+      checks.${system} = {
+        formatting = pkgs.runCommand "check-formatting" { nativeBuildInputs = [ pkgs.nixfmt ]; } ''
+          find ${self} -name '*.nix' -exec nixfmt --check {} +
+          touch $out
+        '';
+        lint =
+          pkgs.runCommand "check-lint"
+            {
+              nativeBuildInputs = [
+                pkgs.statix
+                pkgs.deadnix
+              ];
+            }
+            ''
+              statix check ${self}
+              deadnix --fail ${self}
+              touch $out
+            '';
+      };
     };
 }

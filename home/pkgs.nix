@@ -1,4 +1,4 @@
-{ config, pkgs, lib, inputs, ... }: {
+{ pkgs, inputs, ... }: {
 
   home = {
     packages =
@@ -101,6 +101,7 @@
           xfe
           rox-filer
           worker
+          ayugram-desktop
         ];
         monoTypography = with pkgs; [
           material-symbols

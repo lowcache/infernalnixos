@@ -1,4 +1,10 @@
-{ config, pkgs, inputs, lib, ... }: {
+{
+  pkgs,
+  inputs,
+  lib,
+  ...
+}:
+{
 
   # MicroVM Host Configuration
   imports = [
@@ -22,7 +28,10 @@
         firewall = {
           enable = true;
           # Allow Tor TransPort (9040), SOCKS5 (9050) and DNSPort (5353) from the host
-          allowedTCPPorts = [ 9040 9050 ];
+          allowedTCPPorts = [
+            9040
+            9050
+          ];
           allowedUDPPorts = [ 5353 ];
         };
       };
@@ -50,17 +59,21 @@
         vcpu = 1;
         #cloud-hypervisor supports systemd-notify via vsock, but `microvm.vsock.cid` must be set to enable this.
         vsock.cid = 10;
-        interfaces = [{
-          type = "tap";
-          id = "vm-netgate";
-          mac = "02:00:00:00:00:01";
-        }];
-        shares = [{
-          source = "/persist/etc/ssh";
-          mountPoint = "/etc/ssh";
-          tag = "ssh-keys";
-          proto = "virtiofs";
-        }];
+        interfaces = [
+          {
+            type = "tap";
+            id = "vm-netgate";
+            mac = "02:00:00:00:00:01";
+          }
+        ];
+        shares = [
+          {
+            source = "/persist/etc/ssh";
+            mountPoint = "/etc/ssh";
+            tag = "ssh-keys";
+            proto = "virtiofs";
+          }
+        ];
       };
 
       # Fix Entropy and VSOCK early load
@@ -73,12 +86,27 @@
         settings = {
           # IMPORTANT: Tor VM is an OPT-IN proxy, not a transparent traffic enforcer.
           # Host traffic is NOT automatically routed through Tor.
-          # To use: curl --socks5 192.168.100.2:9050 
+          # To use: curl --socks5 192.168.100.2:9050
           # Or: sudo systemctl start anonymous.target   (after Phase 5 is complete)
-          TransPort = [{ addr = "0.0.0.0"; port = 9040; }];
+          TransPort = [
+            {
+              addr = "0.0.0.0";
+              port = 9040;
+            }
+          ];
           # SOCKS5 for per-app proxying from the host (curl/brave wrappers, etc.)
-          SOCKSPort = [{ addr = "0.0.0.0"; port = 9050; }];
-          DNSPort = [{ addr = "0.0.0.0"; port = 5353; }];
+          SOCKSPort = [
+            {
+              addr = "0.0.0.0";
+              port = 9050;
+            }
+          ];
+          DNSPort = [
+            {
+              addr = "0.0.0.0";
+              port = 5353;
+            }
+          ];
           VirtualAddrNetworkIPv4 = "172.16.0.0/12";
           AutomapHostsOnResolve = true;
         };
@@ -147,17 +175,21 @@
         mem = 256;
         vcpu = 1;
         vsock.cid = 11;
-        interfaces = [{
-          type = "tap";
-          id = "vm-tailscale";
-          mac = "02:00:00:00:00:02";
-        }];
-        shares = [{
-          source = "/persist/var/lib/tailscale-vm";
-          mountPoint = "/var/lib/tailscale";
-          tag = "tailscale-state";
-          proto = "virtiofs";
-        }];
+        interfaces = [
+          {
+            type = "tap";
+            id = "vm-tailscale";
+            mac = "02:00:00:00:00:02";
+          }
+        ];
+        shares = [
+          {
+            source = "/persist/var/lib/tailscale-vm";
+            mountPoint = "/var/lib/tailscale";
+            tag = "tailscale-state";
+            proto = "virtiofs";
+          }
+        ];
       };
 
       boot.kernelParams = [ "random.trust_cpu=on" ];

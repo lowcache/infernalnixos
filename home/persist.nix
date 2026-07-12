@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }: {
+{ config, ... }: {
 
   xdg = {
     enable = true;
@@ -8,16 +8,24 @@
     cacheHome = "${config.home.homeDirectory}/Storage/.cache";
     configFile = {
       # Color engine (apply_theme.py + themes/) for the niri/Noctalia session.
-      "color-engine".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/color-engine";
+      "color-engine".source =
+        config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/color-engine";
       # niri + Noctalia v5. Live-edit symlinks; Home Manager writes no files here
       # (see home/noctalia.nix), so no collision.
-      "niri".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/niri";
-      "noctalia".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/noctalia";
-      "kitty".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/kitty";
-      "fastfetch".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/fastfetch";
-      "cava".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/cava";
-      "fuzzel".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/fuzzel";
-      "wlogout".source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/wlogout";
+      "niri".source =
+        config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/niri";
+      "noctalia".source =
+        config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/noctalia";
+      "kitty".source =
+        config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/kitty";
+      "fastfetch".source =
+        config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/fastfetch";
+      "cava".source =
+        config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/cava";
+      "fuzzel".source =
+        config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/fuzzel";
+      "wlogout".source =
+        config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/wlogout";
       # force: Noctalia natively themes starship and replaces this symlink with a
       # real file (its [palettes.noctalia] block), which made HM refuse to clobber
       # and failed the switch. force lets HM reclaim the symlink each activation.
@@ -25,19 +33,23 @@
         source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/starship/starship.toml";
         force = true;
       };
-      "kritarc".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/krita-master/kritarc";
-      "kritadisplayrc".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/krita-master/kritadisplayrc";
+      "kritarc".source =
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/krita-master/kritarc";
+      "kritadisplayrc".source =
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/krita-master/kritadisplayrc";
     };
   };
 
   home = {
     file = {
-      ".local/share/krita".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/krita-master/krita";
+      ".local/share/krita".source =
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/krita-master/krita";
       ".gemini" = {
         source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/gemini";
         force = true;
       };
-      "Pictures/fromAi/outputs".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/ai-generation/fooocus/outputs";
+      "Pictures/fromAi/outputs".source =
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/ai-generation/fooocus/outputs";
       # Non-hidden alias of the repo: antigravity (agy) rejects hidden paths as
       # workspace folders but does not resolve symlinks, so the agent tether
       # delegates with workdir ~/volnix to get full workspace registration.

@@ -1,4 +1,11 @@
-{ config, pkgs, inputs, lib, username, ... }: {
+{
+  config,
+  pkgs,
+  lib,
+  username,
+  ...
+}:
+{
 
   imports = [
     ./vms.nix
@@ -73,7 +80,11 @@
       decapitate-fuse-mounts = {
         description = "Force lazy unmount of xdg-document-portal FUSE to release /nix";
         before = [ "local-fs.target" ];
-        wantedBy = [ "shutdown.target" "reboot.target" "halt.target" ];
+        wantedBy = [
+          "shutdown.target"
+          "reboot.target"
+          "halt.target"
+        ];
         serviceConfig = {
           Type = "oneshot";
           DefaultDependencies = false;
@@ -103,7 +114,10 @@
       # use it, so normal traffic is untouched.
       anon-routing = {
         description = "Policy routing for anonymous-mode egress (UID 10000 -> Tor VM)";
-        after = [ "network-online.target" "microvm@net-gate.service" ];
+        after = [
+          "network-online.target"
+          "microvm@net-gate.service"
+        ];
         wants = [ "network-online.target" ];
         partOf = [ "anonymous.target" ]; # torn down when anon mode is stopped
         serviceConfig = {
@@ -159,7 +173,11 @@
     #   disarm: sudo systemctl stop  anonymous.target
     targets.anonymous = {
       description = "Anonymous mode: egress via the net-gate Tor VM (manual/on-demand)";
-      wants = [ "microvm@net-gate.service" "anon-routing.service" "anon-socks-check.service" ];
+      wants = [
+        "microvm@net-gate.service"
+        "anon-routing.service"
+        "anon-socks-check.service"
+      ];
       after = [ "microvm@net-gate.service" ];
     };
   };
@@ -171,7 +189,14 @@
       ${username} = {
         isNormalUser = true;
         hashedPasswordFile = config.sops.secrets.user_password.path;
-        extraGroups = [ "adbusers" "networkmanager" "wheel" "video" "docker" "uinput" ];
+        extraGroups = [
+          "adbusers"
+          "networkmanager"
+          "wheel"
+          "video"
+          "docker"
+          "uinput"
+        ];
       };
       # Anonymous-mode isolation UID. Processes launched as this user (via
       # `anon-run`) have their egress marked and policy-routed through the
@@ -298,7 +323,10 @@
             path_loras = "/content/data/models/loras/";
             path_outputs = "/content/data/outputs/";
           };
-          extraOptions = [ "--device" "nvidia.com/gpu=0" ];
+          extraOptions = [
+            "--device"
+            "nvidia.com/gpu=0"
+          ];
         };
       };
     };
@@ -375,7 +403,6 @@
           appimage-run
           vulkan-tools
           libva-utils
-          nvd
           gnupg
           nvtopPackages.nvidia
           nvidia-vaapi-driver
@@ -417,9 +444,14 @@
     # the lixPackageSets versions nixpkgs keeps around.
     package = pkgs.lixPackageSets.stable.lix;
     settings = {
-      experimental-features = [ "nix-command" "flakes" ];
-      trusted-users = [ "root" username ];
-      auto-optimise-store = true;
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
+      trusted-users = [
+        "root"
+        username
+      ];
       substituters = [
         "https://nix-community.cachix.org"
         "https://cache.lix.systems"

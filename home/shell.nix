@@ -1,4 +1,9 @@
-{ config, pkgs, lib, inputs, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  ...
+}:
 
 {
   # Noctalia Shell v5.0.0
@@ -212,13 +217,13 @@
           body = ''
                 python3 -c '
             import sys, re, os
-          
+
             def hex_to_rgb(hex_str):
                 hex_str = hex_str.lstrip("#")
                 if len(hex_str) == 3:
                     hex_str = "".join([c*2 for c in hex_str])
                 return int(hex_str[0:2], 16), int(hex_str[2:4], 16), int(hex_str[4:6], 16)
-          
+
             def colorize(match):
                 hex_code = match.group(0)
                 try:
@@ -228,9 +233,9 @@
                     return f"\x1b[48;2;{r};{g};{b}m\x1b[38;5;{fg_color}m {hex_code} \x1b[0m"
                 except Exception:
                     return hex_code
-          
+
             pattern = re.compile(r"#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}")
-          
+
             if len(sys.argv) > 1:
                 for arg in sys.argv[1:]:
                     if arg == "-":
@@ -480,5 +485,3 @@
   };
   services.ssh-agent.enable = true;
 }
-
-

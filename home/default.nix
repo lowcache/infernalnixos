@@ -1,4 +1,10 @@
-{ config, pkgs, lib, inputs, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  inputs,
+  ...
+}:
 
 let
   # We define the entire set of session variables once in this let block.
@@ -28,9 +34,15 @@ let
       ];
     in
     {
-      QML2_IMPORT_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/qml:${pkg}/lib/qml") qtDependencies;
-      QML_IMPORT_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/qml:${pkg}/lib/qml") qtDependencies;
-      QT_PLUGIN_PATH = pkgs.lib.concatMapStringsSep ":" (pkg: "${pkg}/lib/qt-6/plugins:${pkg}/lib/plugins") qtDependencies;
+      QML2_IMPORT_PATH = pkgs.lib.concatMapStringsSep ":" (
+        pkg: "${pkg}/lib/qt-6/qml:${pkg}/lib/qml"
+      ) qtDependencies;
+      QML_IMPORT_PATH = pkgs.lib.concatMapStringsSep ":" (
+        pkg: "${pkg}/lib/qt-6/qml:${pkg}/lib/qml"
+      ) qtDependencies;
+      QT_PLUGIN_PATH = pkgs.lib.concatMapStringsSep ":" (
+        pkg: "${pkg}/lib/qt-6/plugins:${pkg}/lib/plugins"
+      ) qtDependencies;
       # Wayland session vars. XDG_CURRENT_DESKTOP / XDG_SESSION_DESKTOP are deliberately
       # NOT hardcoded here: thefor X11 apps under niri niri session self-declares its identity
       # (`niri-session` exports XDG_CURRENT_DESKTOP=niri itself).
@@ -85,7 +97,7 @@ in
     homeDirectory = "/home/lowcache";
     stateVersion = "24.11";
     enableNixpkgsReleaseCheck = false;
-    sessionVariables = sessionVariables;
+    inherit sessionVariables;
     # Ensure the redirected scratch/cache roots exist before anything writes to them.
     activation.ensureScratchDirs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       run mkdir -p "$HOME/Storage/tmp/claude" "$HOME/Storage/.cache/pip"
@@ -112,55 +124,64 @@ in
 
   systemd = {
     user = {
-      sessionVariables = sessionVariables;
+      inherit sessionVariables;
     };
   };
 
-  # ~/.local/bin holds user scripts (memd, agent-scaffold, tether, claude shims).
-  # The graphical session's PATH comes from the systemd --user manager — niri runs
-  # under systemd --user (launched via uwsm) — which reads
-  # ~/.config/environment.d/. Unlike systemd.user.sessionVariables (no var
-  # expansion → would clobber PATH), environment.d expands ${PATH}, so we PREPEND.
-  # This makes ~/.local/bin reachable session-wide, compositor-agnostic: e.g. the
-  # memd / agent-scaffold Claude Code hooks resolve in GUI-launched sessions (a
-  # /cc launch) the same as in a terminal. Takes effect on next login.
-  xdg.configFile."environment.d/10-local-bin.conf".text =
-    "PATH=\${HOME}/.local/bin:\${PATH}\n";
+  xdg = {
+    configFile = {
+      # ~/.local/bin holds user scripts (memd, agent-scaffold, tether, claude shims).
+      # The graphical session's PATH comes from the systemd --user manager — niri runs
+      # under systemd --user (launched via uwsm) — which reads
+      # ~/.config/environment.d/. Unlike systemd.user.sessionVariables (no var
+      # expansion → would clobber PATH), environment.d expands ${PATH}, so we PREPEND.
+      # This makes ~/.local/bin reachable session-wide, compositor-agnostic: e.g. the
+      # memd / agent-scaffold Claude Code hooks resolve in GUI-launched sessions (a
+      # /cc launch) the same as in a terminal. Takes effect on next login.
+      "environment.d/10-local-bin.conf".text = "PATH=\${HOME}/.local/bin:\${PATH}\n";
 
-  xdg.desktopEntries = {
-    antigravity = {
-      name = "Antigravity";
-      comment = "Antigravity Gemini Desktop Application";
-      exec = "${config.home.homeDirectory}/.local/bin/antigravity";
-      icon = "system-run";
-      type = "Application";
-      categories = [ "Utility" "Development" ];
-      mimeType = [ "x-scheme-handler/Antigravity" ];
+      # niri portal routing override. The niri-shipped niri-portals.conf routes the
+      # FileChooser interface to "default=gnome;gtk" (gnome first), but
+      # xdg-desktop-portal-gnome 50.x advertises FileChooser in its .portal metadata
+      # yet does NOT export org.freedesktop.impl.portal.FileChooser at runtime, so
+      # every file dialog (Brave downloads, virt-manager ISO picker, GTK Save-As)
+      # silently failed with "No such interface ... FileChooser". A user-scoped
+      # config takes precedence over /etc and pins FileChooser to the gtk backend,
+      # which actually implements it. The other routes mirror the niri defaults.
+      "xdg-desktop-portal/niri-portals.conf".text = ''
+        [preferred]
+        default=gnome;gtk
+        org.freedesktop.impl.portal.Access=gtk
+        org.freedesktop.impl.portal.Notification=gtk
+        org.freedesktop.impl.portal.Secret=gnome-keyring
+        org.freedesktop.impl.portal.FileChooser=gtk
+      '';
     };
-    antigravity-ide = {
-      name = "Antigravity-IDE";
-      comment = "Antigravity Desktop Integrated Development Environment";
-      exec = "${config.home.homeDirectory}/.local/bin/antigravity-ide";
-      icon = "${config.home.homeDirectory}/.local/share/Antigravity IDE/resources/app/resources/linux/code.png";
-      type = "Application";
-      categories = [ "Development" "IDE" ];
+
+    desktopEntries = {
+      antigravity = {
+        name = "Antigravity";
+        comment = "Antigravity Gemini Desktop Application";
+        exec = "${config.home.homeDirectory}/.local/bin/antigravity";
+        icon = "system-run";
+        type = "Application";
+        categories = [
+          "Utility"
+          "Development"
+        ];
+        mimeType = [ "x-scheme-handler/Antigravity" ];
+      };
+      antigravity-ide = {
+        name = "Antigravity-IDE";
+        comment = "Antigravity Desktop Integrated Development Environment";
+        exec = "${config.home.homeDirectory}/.local/bin/antigravity-ide";
+        icon = "${config.home.homeDirectory}/.local/share/Antigravity IDE/resources/app/resources/linux/code.png";
+        type = "Application";
+        categories = [
+          "Development"
+          "IDE"
+        ];
+      };
     };
   };
-
-  # niri portal routing override. The niri-shipped niri-portals.conf routes the
-  # FileChooser interface to "default=gnome;gtk" (gnome first), but
-  # xdg-desktop-portal-gnome 50.x advertises FileChooser in its .portal metadata
-  # yet does NOT export org.freedesktop.impl.portal.FileChooser at runtime, so
-  # every file dialog (Brave downloads, virt-manager ISO picker, GTK Save-As)
-  # silently failed with "No such interface ... FileChooser". A user-scoped
-  # config takes precedence over /etc and pins FileChooser to the gtk backend,
-  # which actually implements it. The other routes mirror the niri defaults.
-  xdg.configFile."xdg-desktop-portal/niri-portals.conf".text = ''
-    [preferred]
-    default=gnome;gtk
-    org.freedesktop.impl.portal.Access=gtk
-    org.freedesktop.impl.portal.Notification=gtk
-    org.freedesktop.impl.portal.Secret=gnome-keyring
-    org.freedesktop.impl.portal.FileChooser=gtk
-  '';
 }

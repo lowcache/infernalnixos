@@ -1,4 +1,10 @@
-{ config, lib, pkgs, modulesPath, inputs, username, ... }: {
+{
+  lib,
+  inputs,
+  username,
+  ...
+}:
+{
 
   imports = [
     inputs.nixos-hardware.nixosModules.common-cpu-amd
@@ -29,7 +35,11 @@
     "/" = {
       device = "none";
       fsType = "tmpfs";
-      options = [ "defaults" "size=4G" "mode=755" ];
+      options = [
+        "defaults"
+        "size=4G"
+        "mode=755"
+      ];
     };
     "/boot" = {
       device = "/dev/disk/by-label/BOOT";

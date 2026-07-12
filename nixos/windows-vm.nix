@@ -39,7 +39,10 @@
   # SPICE USB redirection (handy if the assessment needs a USB device/webcam).
   virtualisation.spiceUSBRedirection.enable = true;
 
-  users.users.lowcache.extraGroups = [ "libvirtd" "kvm" ];
+  users.users.lowcache.extraGroups = [
+    "libvirtd"
+    "kvm"
+  ];
 
   environment.systemPackages = with pkgs; [
     virt-manager

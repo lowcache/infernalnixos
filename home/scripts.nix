@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, ... }:
 let
   # Single source of truth for the net-gate Tor VM address. Change here only.
   torVmIp = "192.168.100.2";

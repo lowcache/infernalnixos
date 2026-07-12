@@ -1,8 +1,14 @@
-{ config, pkgs, lib, inputs, ... }: {
+{ pkgs, ... }: {
 
   # Kernel & Performance
   boot = {
-    kernelModules = [ "amdgpu" "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
+    kernelModules = [
+      "amdgpu"
+      "nvidia"
+      "nvidia_modeset"
+      "nvidia_uvm"
+      "nvidia_drm"
+    ];
     kernelParams = [
       "nvidia-drm.modeset=1"
       "nvidia.NVreg_EnableGpuFirmware=1"
