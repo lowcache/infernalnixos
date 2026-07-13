@@ -700,11 +700,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1783887076,
-        "narHash": "sha256-UQaw3TJzQNIkDCXRP1i2sTOZvakYXfTfQOxkz2Zw6mQ=",
+        "lastModified": 1783905044,
+        "narHash": "sha256-XWnbwaGXNksYdGB/vgzcU2cmxh9jCnPezB1xduySvMg=",
         "owner": "lowcache",
         "repo": "volinit",
-        "rev": "52cf9790d6896b0c7bffd2b694a576e74b15c84a",
+        "rev": "d161b2d416f78a2c11e65705d7c154b961b3033f",
         "type": "github"
       },
       "original": {
