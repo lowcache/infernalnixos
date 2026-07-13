@@ -93,15 +93,18 @@
           spotify
           goofcord # privacy-focused Discord client (Vencord/Equicord/Shelter at runtime)
           discord-moonlight
-          floorp-bin # Firefox-fork backup browser
-          hifile
-          fm
+          floorp-bin # Firefox-fork backup browser       
           pkgs.caja-with-extensions
-          cosmic-files
-          xfe
-          rox-filer
-          worker
           ayugram-desktop
+          vial
+          nemo-with-extensions
+          thunar
+          thunar-archive-plugin
+          thunar-volman
+          thunar-vcs-plugin
+          thunar-media-tags-plugin
+          thunar-shares-plugin
+          thunar-dropbox-plugin
         ];
         monoTypography = with pkgs; [
           material-symbols
@@ -130,6 +133,7 @@
         termUi = with pkgs; [
           fish
           git
+          gvfs
           gh
           gh-s
           ghdorker

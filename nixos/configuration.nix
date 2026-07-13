@@ -334,6 +334,11 @@
 
   # Application Support
   services = {
+    # Vial keyboard configurator: unprivileged hidraw access for Vial-enabled
+    # keyboards (matched by the vial:f64c2b3c magic in the USB serial).
+    udev.extraRules = ''
+      KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{serial}=="*vial:f64c2b3c*", MODE="0660", GROUP="users", TAG+="uaccess", TAG+="udev-acl"
+    '';
     # Open WebUI Service
     open-webui = {
       enable = true;
