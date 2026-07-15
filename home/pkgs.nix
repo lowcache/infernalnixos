@@ -42,9 +42,21 @@
         # POC: QT_QPA_PLATFORM wayland is already set under home-Manager default.nix
         # SOLUTION1: removal of this wrapper place krita: niriDesktop = with pkgs; [ krita ... ];
         # SOLUTION2: keep krita wrapper and remove postBuild = '' wrapProgram $out/bin/krita --set QT_QPA_PLATFORM wayland '';
+        # G'MIC plugin crashes krita with SIGSEGV on first right-click/stylus-press in the
+        # filter tree: FiltersView::onCustomContextMenu calls deleteLater() on a context-menu
+        # pointer that is still nullptr (bug present upstream through gmic-qt master, 2026-07).
+        # Null-guard patch until fixed upstream; drop when nixpkgs ships a fixed version.
+        krita-plugin-gmic-patched = pkgs.krita-plugin-gmic.overrideAttrs (old: {
+          patches = (old.patches or [ ]) ++ [ ../overrides/gmic-qt-filtersview-nullptr-contextmenu.patch ];
+        });
         krita-wrapped = pkgs.symlinkJoin {
           name = "krita";
-          paths = [ pkgs.krita ];
+          # pkgs.krita is itself a symlinkJoin of krita-unwrapped + binaryPlugins
+          # (default [ krita-plugin-gmic ]); override that input so the *patched* gmic
+          # is the single copy bundled inside the wrapper. Listing a standalone
+          # krita-plugin-gmic alongside would put a second, conflicting krita_gmic_qt.so
+          # in the home-manager profile and break buildEnv.
+          paths = [ (pkgs.krita.override { krita-plugin-gmic = krita-plugin-gmic-patched; }) ];
           nativeBuildInputs = [ pkgs.makeWrapper ];
           # Krita runs native Wayland under niri (better stylus/tablet support).
           # The former xcb (XWayland) fallback existed only for Hyprland + hybrid-GPU
@@ -54,13 +66,6 @@
               --set QT_QPA_PLATFORM wayland
           '';
         };
-        # G'MIC plugin crashes krita with SIGSEGV on first right-click/stylus-press in the
-        # filter tree: FiltersView::onCustomContextMenu calls deleteLater() on a context-menu
-        # pointer that is still nullptr (bug present upstream through gmic-qt master, 2026-07).
-        # Null-guard patch until fixed upstream; drop when nixpkgs ships a fixed version.
-        krita-plugin-gmic-patched = pkgs.krita-plugin-gmic.overrideAttrs (old: {
-          patches = (old.patches or [ ]) ++ [ ../overrides/gmic-qt-filtersview-nullptr-contextmenu.patch ];
-        });
         # Vanilla Discord with the moonlight client mod injected (nixpkgs override).
         # Runs alongside GoofCord as a separate client/launcher.
         discord-moonlight = pkgs.discord.override { withMoonlight = true; };
@@ -81,7 +86,6 @@
           libnotify
           fuzzel
           kitty
-          krita-plugin-gmic-patched
           krita-wrapped
           gimp-with-plugins
           imagemagick
