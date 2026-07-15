@@ -54,6 +54,13 @@
               --set QT_QPA_PLATFORM wayland
           '';
         };
+        # G'MIC plugin crashes krita with SIGSEGV on first right-click/stylus-press in the
+        # filter tree: FiltersView::onCustomContextMenu calls deleteLater() on a context-menu
+        # pointer that is still nullptr (bug present upstream through gmic-qt master, 2026-07).
+        # Null-guard patch until fixed upstream; drop when nixpkgs ships a fixed version.
+        krita-plugin-gmic-patched = pkgs.krita-plugin-gmic.overrideAttrs (old: {
+          patches = (old.patches or [ ]) ++ [ ../overrides/gmic-qt-filtersview-nullptr-contextmenu.patch ];
+        });
         # Vanilla Discord with the moonlight client mod injected (nixpkgs override).
         # Runs alongside GoofCord as a separate client/launcher.
         discord-moonlight = pkgs.discord.override { withMoonlight = true; };
@@ -74,7 +81,7 @@
           libnotify
           fuzzel
           kitty
-          krita-plugin-gmic
+          krita-plugin-gmic-patched
           krita-wrapped
           gimp-with-plugins
           imagemagick
