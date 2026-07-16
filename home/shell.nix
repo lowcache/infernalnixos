@@ -442,6 +442,11 @@
           email = "drawpdeadredd@gmail.com";
         };
         init.defaultBranch = "main";
+        # gh supplies the credential for github.com pushes. The generated
+        # ~/.config/git/config is a read-only Nix-store symlink, so
+        # `gh auth setup-git` can't write it at runtime — declare the helper
+        # here instead. Scoped to github.com so it never intercepts other hosts.
+        credential."https://github.com".helper = "!gh auth git-credential";
       };
       signing = {
         signByDefault = false;

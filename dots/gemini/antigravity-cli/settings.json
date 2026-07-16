@@ -47,6 +47,8 @@
     "/home/lowcache/.nix-config",
     "/home/lowcache",
     "/home/lowcache/volnix",
-    "/home/lowcache/CodeRepo/memd"
+    "/home/lowcache/CodeRepo/memd",
+    "/home/lowcache/CodeRepo/noctalia-claude-plugin",
+    "/home/lowcache/CodeRepo/community-plugins/claude-companion"
   ]
 }

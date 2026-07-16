@@ -1,6 +1,16 @@
 {
   "userSettings": {
     "remoteControlHostname": "volnix-dark-aurora",
-    "useAiCredits": true
+    "useAiCredits": true,
+    "customThemeSeedsDark": {
+      "background": "#1c1e1e",
+      "foregroundOverride": "#fffcf8",
+      "primary": "#51afef"
+    },
+    "customThemeSeedsLight": {
+      "background": "#f0f0f0",
+      "foregroundOverride": "#383a42",
+      "primary": "#4078f2"
+    }
   }
 }

@@ -1,7 +1,11 @@
-post_onboarding: {
-  completed_steps: POST_ONBOARDING_STEP_TYPE_MANAGER_WELCOME
-  completed_steps: POST_ONBOARDING_STEP_TYPE_USAGE_MODE
-  completed_steps: POST_ONBOARDING_STEP_TYPE_AGENT_CONFIGURATION
-  completed_steps: POST_ONBOARDING_STEP_TYPE_ADD_WORKSPACE
+post_onboarding:  {
+  completed_steps:  POST_ONBOARDING_STEP_TYPE_MANAGER_WELCOME
+  completed_steps:  POST_ONBOARDING_STEP_TYPE_USAGE_MODE
+  completed_steps:  POST_ONBOARDING_STEP_TYPE_AGENT_CONFIGURATION
+  completed_steps:  POST_ONBOARDING_STEP_TYPE_ADD_WORKSPACE
 }
-installation_uuid: "a16d9319-a8aa-4f96-8968-fb9c738184cf"
+installation_uuid:  "a16d9319-a8aa-4f96-8968-fb9c738184cf"
+migrations:  {
+  key:  3
+  value:  MIGRATION_STATUS_COMPLETED
+}

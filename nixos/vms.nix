@@ -197,11 +197,30 @@
       services.tailscale = {
         enable = true;
         useRoutingFeatures = "both";
+        # Auto-join the tailnet on boot from a key placed in the persisted
+        # state share (host path: /persist/var/lib/tailscale-vm/authkey → guest
+        # /var/lib/tailscale/authkey). No guest console needed for first auth.
+        authKeyFile = "/var/lib/tailscale/authkey";
+        # Advertise as an exit node so tailscaled installs the forward/accept
+        # rules that let the guest route non-tailscale traffic (from the host
+        # tap) out over tailscale0. Admin approval not required for the local
+        # rules to be installed.
+        extraUpFlags = [ "--advertise-exit-node" ];
       };
 
       boot.kernel.sysctl = {
         "net.ipv4.ip_forward" = 1;
         "net.ipv6.conf.all.forwarding" = 1;
+      };
+
+      # SNAT host-originated traffic (192.168.101.0/24, arriving on the host
+      # tap) onto this node's tailnet IP so tailnet peers route replies back
+      # to the VM. Lets the volnix host reach 100.x peers via a host route
+      # through 192.168.101.2 without itself being a tailnet node.
+      networking.nat = {
+        enable = true;
+        externalInterface = "tailscale0";
+        internalIPs = [ "192.168.101.0/24" ];
       };
 
       system.stateVersion = "24.11";
@@ -243,6 +262,11 @@
         networkConfig = {
           Address = [ "192.168.101.1/24" ];
           IPv4Forwarding = true;
+          # SNAT the guest's traffic out the host WAN so tailscaled can reach
+          # the coordination server (and DERP) to authenticate. Without this
+          # the guest forwards but leaves with src 192.168.101.2 and gets no
+          # return path — same idiom the android VM tap uses.
+          IPMasquerade = "both";
         };
         # Ensure this network doesn't become the default route for the host
         linkConfig.RequiredForOnline = "no";
