@@ -243,6 +243,6 @@
           frida-tools          
         ];
       in
-      nixAi ++ termUi ++ monoTypography ++ niriDesktop ++ baseDev;
+      andronix ++ nixAi ++ termUi ++ monoTypography ++ niriDesktop ++ baseDev;
   };
 }
