@@ -138,7 +138,7 @@
   };
 
   microvm.vms.tailscale = {
-    autostart = false;
+    autostart = true;
     config = {
       _module.args.inputs = inputs;
 
@@ -268,6 +268,14 @@
           # return path — same idiom the android VM tap uses.
           IPMasquerade = "both";
         };
+        # Host route to the tailnet CIDR via the guest; pairs with the
+        # guest-side SNAT onto tailscale0 (see networking.nat in the VM).
+        routes = [
+          {
+            Destination = "100.64.0.0/10";
+            Gateway = "192.168.101.2";
+          }
+        ];
         # Ensure this network doesn't become the default route for the host
         linkConfig.RequiredForOnline = "no";
       };
