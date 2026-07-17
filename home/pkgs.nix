@@ -213,6 +213,35 @@
           pkgs.llm-agents.hermes-desktop
           pkgs.llm-agents.nanocoder
         ];
+        andronix = with pkgs; [
+          scrcpy
+          qtscrcpy
+          dumpyara
+          dcnnt
+          better-adb-sync
+          apktool
+          apksigner
+          flying-carpet
+          genymotion
+          waydroid
+          waydroid-nftables
+          apksigcopier
+          apkeditor
+          avbroot
+          bytecode-viewer
+          fastlane
+          imgpatchtools
+          jnitrace
+          mvt
+          otadump
+          payload-dumper-go
+          payload_dumper
+          snapdragon-profiler
+          trueseeing
+          universal-android-debloater
+          objection
+          frida-tools          
+        ];
       in
       nixAi ++ termUi ++ monoTypography ++ niriDesktop ++ baseDev;
   };
