@@ -212,6 +212,8 @@
           pkgs.llm-agents.hermes-hud
           pkgs.llm-agents.hermes-desktop
           pkgs.llm-agents.nanocoder
+          pkgs.llm-agents.opencode
+          pkgs.llm-agents.zaly
         ];
         andronix = with pkgs; [
           scrcpy

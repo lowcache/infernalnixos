@@ -13,7 +13,7 @@ input {
         tap
         natural-scroll
         disabled-on-external-mouse
-        // off // @tptoggle@   -- toggled by F10 / touchpad_toggle.sh (uncommented = disabled)
+        off // @tptoggle@   -- toggled by F10 / touchpad_toggle.sh (uncommented = disabled)
     }
     mouse {
       // off
@@ -102,7 +102,7 @@ screenshot-path "~/Storage/screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 // occupy idx 2+. The Mod+1..9 binds therefore target indices 2..10 (see below).
 // **C**this is superfluous due to the quake terminal being spawn totally through kitty and wlr-layer-shell bypassing the compositor (niri) in this case
 // workspace "scratch"
-
+workspace "mopho"
 // Quake terminal: floating kitty (app-id "quake"), toggled by the niri-port script.
 // **C**This functionality is performed by kitty's kitten+quick-access-terminal syntax seen below
 // window-rule {
@@ -202,7 +202,8 @@ binds {
     Mod+Shift+Page_Up    { move-column-to-workspace-up; }
     Ctrl+Mod+Shift+Right { move-column-to-workspace-down; }
     Ctrl+Mod+Shift+Left  { move-column-to-workspace-up; }
-
+    Mod+Shift+V          { spawn-sh "$HOME/.local/bin/mopho-view"; }
+    
     // ===== Media / Volume / Brightness (function keys) =====
     XF86AudioRaiseVolume  allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%+ -l 1.5"; }
     XF86AudioLowerVolume  allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-"; }

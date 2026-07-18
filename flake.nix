@@ -80,7 +80,7 @@
             nixpkgs.overlays = [
               inputs.nix-cachyos-kernel.overlays.pinned
               inputs.nur.overlays.default
-              inputs.llm-agents.overlays.default
+              inputs.llm-agents.overlays.shared-nixpkgs
             ];
           }
           ./nixos/configuration.nix
