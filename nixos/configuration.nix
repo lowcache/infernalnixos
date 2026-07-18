@@ -35,6 +35,12 @@
     networkmanager = {
       enable = true;
       wifi.scanRandMacAddress = true;
+      settings = {
+        "connection-tether-lowprio" = {
+          match-device = "driver:rndis_host,driver:cdc_ether,driver:cdc_ncm";
+          "ipv4.route-metric" = 700;
+        };
+      };
     };
     # Anonymous-mode egress marking. Deliberately NOT networking.nftables.enable:
     # that disables the ip_tables module and breaks Docker + libvirt networking
@@ -485,8 +491,8 @@
   nixpkgs = {
     config = {
       allowUnfree = true;
+      android_sdk.accept_license = true;
     };
-    android_sdk.accept_license = true;
   };
 
   system.stateVersion = "24.11";

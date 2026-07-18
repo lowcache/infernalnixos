@@ -104,7 +104,7 @@
           spotify
           goofcord # privacy-focused Discord client (Vencord/Equicord/Shelter at runtime)
           discord-moonlight
-          floorp-bin # Firefox-fork backup browser       
+          floorp-bin # Firefox-fork backup browser
           pkgs.caja-with-extensions
           ayugram-desktop
           vial
@@ -223,7 +223,7 @@
           apksigner
           flying-carpet
           genymotion
-          waydroid
+          #waydroid
           waydroid-nftables
           apksigcopier
           apkeditor
@@ -236,11 +236,11 @@
           otadump
           payload-dumper-go
           payload_dumper
-          snapdragon-profiler
+          #1snapdragon-profiler #requires tarball from qualcomm
           trueseeing
           universal-android-debloater
           objection
-          frida-tools          
+          frida-tools
         ];
       in
       andronix ++ nixAi ++ termUi ++ monoTypography ++ niriDesktop ++ baseDev;
