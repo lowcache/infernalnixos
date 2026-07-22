@@ -233,6 +233,15 @@
       github_token = {
         owner = username;
       };
+      # Phone-agent bearer token (laptop -> phone MCP auth, scripts/verify.sh).
+      # Placed at the exact path the client reads; sops re-materializes it at
+      # activation every boot, so it survives the impermanence rollback of
+      # ~/.config (which is not a persisted path — see home/persist.nix).
+      phone_agent_token = {
+        owner = username;
+        path = "/home/${username}/.config/phone-agent/token";
+        mode = "0400";
+      };
     };
   };
   programs = {
