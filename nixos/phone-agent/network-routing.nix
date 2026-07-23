@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   cfg = config.phone-agent;
   script = pkgs.writeShellScriptBin "phone-network-routing" ''
@@ -17,11 +22,15 @@ let
     # [CEILING]: profile file + optional hook only; net-gate microvm wiring TBD.
     systemctl --user start "phone-network-profile@$PROFILE.service" 2>/dev/null || true
   '';
-in {
+in
+{
   config = lib.mkIf (cfg.enable && cfg.enableNetworkRouting) {
     systemd.user.services.phone-network-routing = {
       description = "Derive network routing profile from phone modem state";
-      serviceConfig = { Type = "oneshot"; ExecStart = "${script}/bin/phone-network-routing"; };
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "${script}/bin/phone-network-routing";
+      };
     };
   };
 }

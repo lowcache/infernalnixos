@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   cfg = config.phone-agent;
   daemon = pkgs.writeShellScriptBin "phone-proximity-daemon" ''
@@ -28,18 +33,27 @@ let
       PREV="$STATE"; sleep ${toString cfg.proximityIntervalSec}
     done
   '';
-in {
+in
+{
   options.phone-agent = {
-    proximityIntervalSec = lib.mkOption { type = lib.types.int; default = 5; };
+    proximityIntervalSec = lib.mkOption {
+      type = lib.types.int;
+      default = 5;
+    };
     allowUnlock = lib.mkOption {
-      type = lib.types.bool; default = false;
+      type = lib.types.bool;
+      default = false;
       description = "EXPERIMENTAL: no safe programmatic unlock exists; leaving this on only logs intent.";
     };
   };
   config = lib.mkIf (cfg.enable && cfg.enableProximityLock) {
     systemd.user.services.phone-proximity-daemon = {
       description = "Phone proximity-based laptop lock (lock only)";
-      serviceConfig = { ExecStart = "${daemon}/bin/phone-proximity-daemon"; Restart = "on-failure"; RestartSec = 10; };
+      serviceConfig = {
+        ExecStart = "${daemon}/bin/phone-proximity-daemon";
+        Restart = "on-failure";
+        RestartSec = 10;
+      };
       wantedBy = [ "default.target" ];
     };
   };

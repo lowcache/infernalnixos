@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   cfg = config.phone-agent;
   syncScript = pkgs.writeShellScript "phone-ingest-sync" ''
@@ -23,16 +28,23 @@ let
       else rm -f "$dest/.tmp.$name"; echo "sha mismatch for $name" >&2; fi
     done
   '';
-in {
+in
+{
   config = lib.mkIf (cfg.enable && cfg.enableIngestSync) {
     systemd.user.services.phone-ingest-sync = {
       description = "Pull staged files from the phone agent (MCP ingest.list/fetch)";
-      serviceConfig = { Type = "oneshot"; ExecStart = "${syncScript}"; };
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "${syncScript}";
+      };
     };
     systemd.user.timers.phone-ingest-sync = {
       description = "Periodic phone ingest sync";
       wantedBy = [ "timers.target" ];
-      timerConfig = { OnBootSec = "2min"; OnUnitActiveSec = "2min"; };
+      timerConfig = {
+        OnBootSec = "2min";
+        OnUnitActiveSec = "2min";
+      };
     };
   };
 }

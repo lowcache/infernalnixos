@@ -1,6 +1,8 @@
 { config, lib, ... }:
-let cfg = config.phone-agent;
-in {
+let
+  cfg = config.phone-agent;
+in
+{
   config = lib.mkIf cfg.enable {
     # gateway.yaml is hand-managed; surface the required values for the operator.
     environment.etc."phone-agent/gateway-peer.example.yaml".text = ''
@@ -11,7 +13,6 @@ in {
           # Authorization header value = "Bearer $(cat ${toString cfg.tokenFile})"
           namespace: phone
     '';
-    warnings = lib.optional true
-      "phone-agent: add the phone-agent backend to ~/.config/mcp-gateway/gateway.yaml (see /etc/phone-agent/gateway-peer.example.yaml).";
+    warnings = lib.optional true "phone-agent: add the phone-agent backend to ~/.config/mcp-gateway/gateway.yaml (see /etc/phone-agent/gateway-peer.example.yaml).";
   };
 }

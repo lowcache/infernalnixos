@@ -1,6 +1,13 @@
-{ config, lib, pkgs, ... }:
-let cfg = config.phone-agent;
-in {
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+let
+  cfg = config.phone-agent;
+in
+{
   config = lib.mkIf (cfg.enable && cfg.enableIngestWatcher) {
     systemd.user.services.phone-ingest-watcher = {
       description = "Process staged phone-agent files";
@@ -11,7 +18,10 @@ in {
     };
     systemd.user.paths.phone-ingest-watcher = {
       description = "Watch phone-agent staged dir";
-      pathConfig = { PathExistsGlob = "${cfg.ingestDir}/staged/*.json"; Unit = "phone-ingest-watcher.service"; };
+      pathConfig = {
+        PathExistsGlob = "${cfg.ingestDir}/staged/*.json";
+        Unit = "phone-ingest-watcher.service";
+      };
       wantedBy = [ "default.target" ];
     };
   };

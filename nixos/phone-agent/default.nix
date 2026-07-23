@@ -1,6 +1,13 @@
-{ config, lib, pkgs, ... }:
-let cfg = config.phone-agent;
-in {
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+let
+  cfg = config.phone-agent;
+in
+{
   imports = [
     ./mcp-gateway.nix
     ./ingest-sync.nix
@@ -17,7 +24,10 @@ in {
       default = "100.101.229.9";
       description = "Tailscale IP of the phone MCP server (from the Tailscale Android app).";
     };
-    port = lib.mkOption { type = lib.types.port; default = 8462; };
+    port = lib.mkOption {
+      type = lib.types.port;
+      default = 8462;
+    };
     tokenFile = lib.mkOption {
       # str, not path: a sops runtime secret path must NOT be copied into the
       # world-readable nix store (types.path would coerce a path literal in).
@@ -36,39 +46,53 @@ in {
       description = "Laptop-side ingest directory that mirrors staged phone output.";
     };
 
-    enableIngestSync   = lib.mkOption { type = lib.types.bool; default = true; };
-    enableIngestWatcher = lib.mkOption { type = lib.types.bool; default = true; };
+    enableIngestSync = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+    };
+    enableIngestWatcher = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+    };
     enableProximityLock = lib.mkOption {
-      type = lib.types.bool; default = true;
+      type = lib.types.bool;
+      default = true;
       description = "Lock the laptop when the phone leaves the desk (lock only — no auto-unlock).";
     };
-    enableNetworkRouting = lib.mkOption { type = lib.types.bool; default = false; };
+    enableNetworkRouting = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+    };
   };
 
   config = lib.mkIf cfg.enable {
-    assertions = [{
-      assertion = cfg.tokenFile != null;
-      message = "phone-agent.tokenFile must be set (sops-nix secret path).";
-    }];
-
-    environment.systemPackages = let
-      rawScript = pkgs.writeShellScriptBin "phone-agent-raw" ''
-        if [ $# -lt 1 ]; then
-          echo "Usage: phone-agent <tool-name> [arguments-json]"
-          echo "  phone-agent phone.system.ping"
-          echo "  phone-agent phone.npu.transcribe '{\"audio_path\":\"/tmp/test.wav\"}'"
-          exit 1
-        fi
-        ${./scripts/phone-mcp-call.sh} "$@" | ${pkgs.jq}/bin/jq 'if (.result.isError // false) then {error: .result.content[0].text} elif .result then (.result.content[0].text | fromjson) else . end'
-      '';
-    in [
-      (pkgs.runCommand "phone-agent" { nativeBuildInputs = [ pkgs.makeWrapper ]; } ''
-        mkdir -p $out/bin
-        makeWrapper ${rawScript}/bin/phone-agent-raw $out/bin/phone-agent \
-          --set PHONE_IP "${cfg.phoneTailscaleIP}" \
-          --set PHONE_PORT "${toString cfg.port}" \
-          --set PHONE_TOKEN_FILE "${toString cfg.tokenFile}"
-      '')
+    assertions = [
+      {
+        assertion = cfg.tokenFile != null;
+        message = "phone-agent.tokenFile must be set (sops-nix secret path).";
+      }
     ];
+
+    environment.systemPackages =
+      let
+        rawScript = pkgs.writeShellScriptBin "phone-agent-raw" ''
+          if [ $# -lt 1 ]; then
+            echo "Usage: phone-agent <tool-name> [arguments-json]"
+            echo "  phone-agent phone.system.ping"
+            echo "  phone-agent phone.npu.transcribe '{\"audio_path\":\"/tmp/test.wav\"}'"
+            exit 1
+          fi
+          ${./scripts/phone-mcp-call.sh} "$@" | ${pkgs.jq}/bin/jq 'if (.result.isError // false) then {error: .result.content[0].text} elif .result then (.result.content[0].text | fromjson) else . end'
+        '';
+      in
+      [
+        (pkgs.runCommand "phone-agent" { nativeBuildInputs = [ pkgs.makeWrapper ]; } ''
+          mkdir -p $out/bin
+          makeWrapper ${rawScript}/bin/phone-agent-raw $out/bin/phone-agent \
+            --set PHONE_IP "${cfg.phoneTailscaleIP}" \
+            --set PHONE_PORT "${toString cfg.port}" \
+            --set PHONE_TOKEN_FILE "${toString cfg.tokenFile}"
+        '')
+      ];
   };
 }
