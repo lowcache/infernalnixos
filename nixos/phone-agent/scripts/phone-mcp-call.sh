@@ -2,7 +2,10 @@
 # phone-mcp-call.sh TOOL [ARGS_JSON]
 # Env: PHONE_IP (Tailscale IP), PHONE_PORT (default 8462), PHONE_TOKEN_FILE
 set -euo pipefail
-TOOL="$1"; ARGS="${2:-{}}"
+# NB: do NOT write ${2:-{}} — bash closes the expansion on the first '}',
+# yielding default '{' plus a literal '}', which doubles the brace on any
+# call that passes args. Set the default explicitly instead.
+TOOL="$1"; ARGS="${2:-}"; [ -n "$ARGS" ] || ARGS='{}'
 PORT="${PHONE_PORT:-8462}"
 TOKEN="$(cat "${PHONE_TOKEN_FILE:?set PHONE_TOKEN_FILE}")"
 

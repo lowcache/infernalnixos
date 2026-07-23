@@ -7,6 +7,7 @@
 let
   cfg = config.phone-agent;
   script = pkgs.writeShellScriptBin "phone-network-routing" ''
+    export PATH=${lib.makeBinPath [ pkgs.curl pkgs.coreutils pkgs.bash ]}:$PATH
     export PHONE_IP=${cfg.phoneTailscaleIP} PHONE_PORT=${toString cfg.port}
     export PHONE_TOKEN_FILE=${toString cfg.tokenFile}
     call=${./scripts/phone-mcp-call.sh}

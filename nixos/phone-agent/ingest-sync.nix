@@ -8,6 +8,7 @@ let
   cfg = config.phone-agent;
   syncScript = pkgs.writeShellScript "phone-ingest-sync" ''
     set -euo pipefail
+    export PATH=${lib.makeBinPath [ pkgs.curl pkgs.coreutils pkgs.bash ]}:$PATH
     export PHONE_IP=${cfg.phoneTailscaleIP} PHONE_PORT=${toString cfg.port}
     export PHONE_TOKEN_FILE=${toString cfg.tokenFile}
     call=${./scripts/phone-mcp-call.sh}

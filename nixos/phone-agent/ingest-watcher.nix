@@ -11,6 +11,7 @@ in
   config = lib.mkIf (cfg.enable && cfg.enableIngestWatcher) {
     systemd.user.services.phone-ingest-watcher = {
       description = "Process staged phone-agent files";
+      path = [ pkgs.jq pkgs.coreutils ];
       serviceConfig = {
         Type = "oneshot";
         ExecStart = "${pkgs.bash}/bin/bash ${./scripts/ingest-watcher.sh} ${cfg.ingestDir}";

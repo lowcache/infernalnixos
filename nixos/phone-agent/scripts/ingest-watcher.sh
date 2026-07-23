@@ -3,6 +3,8 @@ set -euo pipefail
 INGEST_DIR="${1:?}"
 WATCH_DIR="$INGEST_DIR/staged"
 PROCESSED_DIR="$INGEST_DIR/processed"
+LOG_DIR="$HOME/.local/share/phone-agent"
+mkdir -p "$LOG_DIR"
 for staged_file in "$WATCH_DIR"/*.json; do
     [ -f "$staged_file" ] || continue
     TYPE=$(jq -r '.pipeline // "unknown"' "$staged_file")
@@ -14,5 +16,5 @@ for staged_file in "$WATCH_DIR"/*.json; do
     esac
     mkdir -p "$TARGET"; mv "$staged_file" "$TARGET/"
     echo "$(date -Iseconds) new $TYPE: $(basename "$staged_file")" \
-        >> "$HOME/.local/share/phone-agent/new_ingest.log"
+        >> "$LOG_DIR/new_ingest.log"
 done
