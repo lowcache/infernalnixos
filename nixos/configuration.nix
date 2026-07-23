@@ -49,6 +49,10 @@
     # the anon-routing service policy-routes fwmark 0x1 to the Tor VM. Only
     # UID-10000 traffic is touched, so normal user/system traffic is unaffected.
     firewall = {
+      # Reach Ollama (bound 0.0.0.0:11434) only from the tailscale MicroVM
+      # guest, which DNATs tailnet :11434 → 192.168.101.1:11434 for the phone
+      # agent. Interface-scoped: WAN stays closed, loopback is exempt.
+      interfaces."vm-tailscale".allowedTCPPorts = [ 11434 ];
       extraCommands = ''
         iptables -t mangle -A OUTPUT -m owner --uid-owner 10000 -j MARK --set-mark 0x1
       '';
@@ -369,6 +373,11 @@
       package = pkgs.ollama-cuda;
       home = "/home/${username}";
       modelsDir = "/home/${username}/Storage/ollama/models";
+      # Bind all interfaces so the tailscale MicroVM guest (192.168.101.2) can
+      # reach it on 192.168.101.1:11434; loopback consumers (open-webui) keep
+      # working. WAN exposure is prevented by the interface-scoped firewall
+      # rule below — 11434 is opened ONLY on vm-tailscale, not globally.
+      host = "0.0.0.0";
     };
 
     timesyncd.enable = true;

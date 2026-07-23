@@ -221,6 +221,18 @@
         enable = true;
         externalInterface = "tailscale0";
         internalIPs = [ "192.168.101.0/24" ];
+        # Publish the volnix host's Ollama to the tailnet: DNAT inbound
+        # tailscale0 :11434 (100.66.249.117) → the host at 192.168.101.1:11434.
+        # Return path reuses the host's existing 100.64.0.0/10 route via this
+        # guest, so conntrack un-DNATs the replies. Unblocks phone voice.ask
+        # source=laptop and the Phase-7 laptop_required scheduler tasks.
+        forwardPorts = [
+          {
+            proto = "tcp";
+            sourcePort = 11434;
+            destination = "192.168.101.1:11434";
+          }
+        ];
       };
 
       system.stateVersion = "24.11";
