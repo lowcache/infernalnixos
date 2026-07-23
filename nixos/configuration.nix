@@ -10,8 +10,18 @@
   imports = [
     ./vms.nix
     ./windows-vm.nix
+    ./phone-agent
 
   ];
+
+  # Phone agent (S26 Ultra MCP integration, Phase 8). Bearer token is the
+  # laptop's sops-materialized copy of the phone's token (matches the phone's
+  # ~/.config/phone-agent/token). phoneTailscaleIP is stable per node key.
+  phone-agent = {
+    enable = true;
+    phoneTailscaleIP = "100.101.229.9";
+    tokenFile = config.sops.secrets.phone_agent_token.path;
+  };
 
   # Boot loader & secure boot (kernel/perf config lives in
   # ./hardware/asus-ryzen-nvidia/kernel.nix)

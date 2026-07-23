@@ -197,6 +197,19 @@ Use to gate, block, or audit tool executions.
     *   **`reason`** (string, optional): Explanation shown to the user/agent.
     *   **`permissionOverrides`** (array of strings, optional): Temporary
         permission grants.
+    *   **`overwrite`** (object, optional): Key-value pairs merged into the tool
+        call's arguments before it runs. This is a **shallow, top-level** merge:
+        each key replaces the value at that key in the tool call's arguments
+        (nested objects are replaced wholesale, not deep-merged). The modified
+        tool call is what actually executes and is recorded. Example:
+
+        ```json
+        {
+          "overwrite": {
+            "CommandLine": "ls -la"
+          }
+        }
+        ```
 
 --------------------------------------------------------------------------------
 
@@ -310,4 +323,3 @@ Use to prevent the agent from stopping if goals are not met.
 
 *   Only `type: "command"` is supported (no HTTP or prompt hooks yet).
 *   Hooks run synchronously and block the agent loop (no async execution).
-*   `overwrite` in `PreToolUse` is not yet implemented.
