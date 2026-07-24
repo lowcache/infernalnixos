@@ -1,14 +1,14 @@
 {
     "userSettings": {
     "customThemeSeedsDark": {
-        "background": "#1c1e1e",
-        "foregroundOverride": "#fffcf8",
-        "primary": "#51afef"
+        "background": "#242424",
+        "foregroundOverride": "#ffffff",
+        "primary": "#3584e4"
     },
     "customThemeSeedsLight": {
-        "background": "#f0f0f0",
-        "foregroundOverride": "#383a42",
-        "primary": "#4078f2"
+        "background": "#fafafa",
+        "foregroundOverride": "#2e3436",
+        "primary": "#3584e4"
     },
     "themeMode": "THEME_MODE_INHERIT"
     }
