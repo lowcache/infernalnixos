@@ -1,14 +1,14 @@
-site_name: Vol[atile] NixOS
+site_name: Volatile NixOS Configuration
 site_description: >-
   A stateless, flake-driven NixOS workstation — ephemeral tmpfs root, CachyOS
   kernel, Lanzaboote Secure Boot, sops-nix secrets, microvm.nix gateways, and a
   niri + Noctalia v5 Wayland desktop.
-site_author: lowcache
+site_author: automated indigency / lowcache
 site_url: https://volnixos-wiki.pgs.sh/
 repo_url: https://github.com/lowcache/volnixos
 repo_name: lowcache/volnixos
 edit_uri: edit/main/docs/
-copyright: Vol[atile] NixOS · dev lowcache
+copyright: Volatile NixOS · 2026 · dev LowCache
 
 theme:
   name: material

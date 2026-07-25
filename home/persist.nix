@@ -44,10 +44,6 @@
     file = {
       ".local/share/krita".source =
         config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/krita-master/krita";
-      ".gemini" = {
-        source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/dots/gemini";
-        force = true;
-      };
       "Pictures/fromAi/outputs".source =
         config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/ai-generation/fooocus/outputs";
       # Non-hidden alias of the repo: antigravity (agy) rejects hidden paths as
@@ -70,6 +66,9 @@
             ".gnupg"
             ".claude"
             ".codex"
+            # Antigravity/gemini agent state. Real dir on /persist (not a repo
+            # symlink) — it holds ~400M of runtime brain/cache, out of scope for git.
+            ".gemini"
             ".nix-config"
             ".vscode-oss"
             ".antigravity"
