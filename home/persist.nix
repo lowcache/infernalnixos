@@ -47,10 +47,19 @@
       "Pictures/fromAi/outputs".source =
         config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/ai-generation/fooocus/outputs";
       # Non-hidden alias of the repo: antigravity (agy) rejects hidden paths as
-      # workspace folders but does not resolve symlinks, mitigatef with workdir 
+      # workspace folders but does not resolve symlinks, mitigatef with workdir
       # ~/volnix to get full workspace registration.
       "volnix" = {
         source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config";
+        force = true;
+      };
+      # Compat symlink for the imperative user profile. nix normally creates this
+      # lazily; on tmpfs root it vanishes each boot, so pin it declaratively at the
+      # persisted generation store (see ".local/state/nix/profiles" below). Stable
+      # target `profiles/profile` always resolves to the current generation, so
+      # `nix-env -iA nixos.<pkg>` binaries land on PATH via ~/.nix-profile/bin.
+      ".nix-profile" = {
+        source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.local/state/nix/profiles/profile";
         force = true;
       };
     };
@@ -74,7 +83,6 @@
             ".solc-select"
             ".foundry"
             ".ZAP"
-            ".nix-profile"
           ];
           config = [
             ".config/dconf"
@@ -117,6 +125,11 @@
             ".local/state/noctalia"
             ".local/state/wireplumber"
             ".local/state/memd"
+            # Canonical imperative-profile generations. `nix-env -iA nixos.<pkg>`
+            # writes profile-N-link + manifest here (XDG state profile). Persisting
+            # this dir — NOT the ~/.nix-profile symlink (which is non-canonical and
+            # recreated below) — is what makes ad-hoc installs survive the tmpfs wipe.
+            ".local/state/nix/profiles"
           ];
           flatpak-var = [
             ".var/app"
