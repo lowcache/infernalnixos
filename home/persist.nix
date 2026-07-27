@@ -47,8 +47,8 @@
       "Pictures/fromAi/outputs".source =
         config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/ai-generation/fooocus/outputs";
       # Non-hidden alias of the repo: antigravity (agy) rejects hidden paths as
-      # workspace folders but does not resolve symlinks, so the agent tether
-      # delegates with workdir ~/volnix to get full workspace registration.
+      # workspace folders but does not resolve symlinks, mitigatef with workdir 
+      # ~/volnix to get full workspace registration.
       "volnix" = {
         source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config";
         force = true;
@@ -66,8 +66,6 @@
             ".gnupg"
             ".claude"
             ".codex"
-            # Antigravity/gemini agent state. Real dir on /persist (not a repo
-            # symlink) — it holds ~400M of runtime brain/cache, out of scope for git.
             ".gemini"
             ".nix-config"
             ".vscode-oss"
@@ -76,6 +74,7 @@
             ".solc-select"
             ".foundry"
             ".ZAP"
+            ".nix-profile"
           ];
           config = [
             ".config/dconf"

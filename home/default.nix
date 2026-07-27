@@ -110,7 +110,7 @@ in
       x11.enable = true;
     };
   };
-
+  manual.json.enable = true;
   gtk = {
     enable = true;
     theme = {
