@@ -1,4 +1,4 @@
-# Documentation build dependencies (Read the Docs / Netlify / Cloudflare Pages).
+# Documentation build dependencies for the MkDocs site.
 # Local Nix builds can instead use:
 #   nix shell nixpkgs#python313Packages.mkdocs-material -c mkdocs serve
 mkdocs-material>=9.7

@@ -49,8 +49,7 @@ provides the package (`package = pkgs.brave`) and applies Wayland/GPU command-li
 ## Persistence & symlinks (`persist.nix`)
 
 See [Impermanence](../architecture/impermanence.md). This module declares the `/persist` directory and
-file lists, the `mkOutOfStoreSymlink` dotfile mappings, the `~/volnix` alias, and the `~/.gemini`
-mapping.
+file lists, the `mkOutOfStoreSymlink` dotfile mappings, and the `~/volnix` alias.
 
 ## Agent tooling (`scripts.nix`)
 

@@ -7,7 +7,14 @@
 let
   cfg = config.phone-agent;
   daemon = pkgs.writeShellScriptBin "phone-proximity-daemon" ''
-    export PATH=${lib.makeBinPath [ pkgs.curl pkgs.coreutils pkgs.bash pkgs.niri ]}:$PATH
+    export PATH=${
+      lib.makeBinPath [
+        pkgs.curl
+        pkgs.coreutils
+        pkgs.bash
+        pkgs.niri
+      ]
+    }:$PATH
     export PHONE_IP=${cfg.phoneTailscaleIP} PHONE_PORT=${toString cfg.port}
     export PHONE_TOKEN_FILE=${toString cfg.tokenFile}
     call=${./scripts/phone-mcp-call.sh}

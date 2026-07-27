@@ -1,6 +1,6 @@
 <div align="center">
 
-<img alt="Vol[atile] NixOS banner" src="./assets/ms6pkfms6pkfms6p.png" width="100%">
+<img alt="Volatile NixOS banner" src="./assets/ms6pkfms6pkfms6p.png" width="100%">
 
 <p>
   <img alt="NixOS unstable" src="https://img.shields.io/badge/NixOS-unstable-5277C3?style=for-the-badge&logo=nixos&logoColor=white">

@@ -6,7 +6,7 @@ hide:
 
 <div class="vol-hero" markdown>
 
-<img class="vol-banner" src="assets/banner.png" alt="Vol[atile] NixOS">
+<img class="vol-banner" src="assets/banner.png" alt="Volatile NixOS">
 
 <div class="vol-badges" markdown>
 ![NixOS unstable](https://img.shields.io/badge/NixOS-unstable-5277C3?style=for-the-badge&logo=nixos&logoColor=white)
@@ -19,7 +19,7 @@ hide:
 
 </div>
 
-# Vol[atile] NixOS
+# Volatile NixOS
 
 A declarative, performance-tuned, **ephemeral** NixOS workstation built on Nix Flakes and the
 [Lix](https://lix.systems) daemon. The root filesystem is a `tmpfs` wiped on every boot; all durable

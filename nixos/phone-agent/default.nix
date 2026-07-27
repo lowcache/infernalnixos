@@ -89,7 +89,13 @@ in
         (pkgs.runCommand "phone-agent" { nativeBuildInputs = [ pkgs.makeWrapper ]; } ''
           mkdir -p $out/bin
           makeWrapper ${rawScript}/bin/phone-agent-raw $out/bin/phone-agent \
-            --prefix PATH : ${lib.makeBinPath [ pkgs.curl pkgs.coreutils pkgs.bash ]} \
+            --prefix PATH : ${
+              lib.makeBinPath [
+                pkgs.curl
+                pkgs.coreutils
+                pkgs.bash
+              ]
+            } \
             --set PHONE_IP "${cfg.phoneTailscaleIP}" \
             --set PHONE_PORT "${toString cfg.port}" \
             --set PHONE_TOKEN_FILE "${toString cfg.tokenFile}"

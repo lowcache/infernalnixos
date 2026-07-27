@@ -1,6 +1,6 @@
 # 🧬 Architecture
 
-Vol[atile] NixOS is a single flake (`flake.nix`) that builds one host (`volnix`) and two MicroVM runners. The
+Volatile NixOS is a single flake (`flake.nix`) that builds one host (`volnix`) and two MicroVM runners. The
 defining property is **statelessness**: the root filesystem is a `tmpfs` rebuilt clean on every boot,
 with all durable data mapped onto `/persist` via `impermanence`.
 

@@ -12,7 +12,6 @@ dots/
 ├── cava/                # audio visualizer: shaders + gradient themes
 ├── fastfetch/           # system info fetch (config.jsonc)
 ├── fuzzel/              # application launcher (fuzzel.ini + theme)
-├── gemini/              # Gemini / Antigravity agent config (credentials git-ignored)
 ├── htop/                # process viewer (htoprc)
 ├── color-engine/        # JSON theme engine: apply_theme.py + themes/
 ├── kitty/              # terminal: kitty.conf + tab_bar.py + current.conf
@@ -51,6 +50,5 @@ make dots-pull                      # merge changes back into dots/
 ```
 
 !!! warning "No secrets in `dots/`"
-    `dots/` is public. The `dots/gemini/` runtime credential files (`oauth_creds.json`,
-    `google_accounts.json`, tokens, history/tmp/state) are git-ignored. Only declarative config is
-    tracked.
+    `dots/` is public — only declarative config is tracked. Runtime credentials and agent state (for
+    example `~/.gemini`) live outside the repo as persisted `$HOME` directories, never in `dots/`.

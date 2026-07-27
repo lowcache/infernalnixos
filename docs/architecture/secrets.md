@@ -57,7 +57,8 @@ sops edit nixos/host-secrets.yaml      # `sops <file>` alone just prints usage
     2. **`/persist`** — never git-tracked.
 
     They are **never** placed under `dots/`, which is published publicly. As a safety net,
-    `.gitignore` excludes `nixos/*.yaml` and the credential files under `dots/gemini/`.
+    `.gitignore` excludes `nixos/*.yaml`. Agent credentials (e.g. `~/.gemini`) live in persisted
+    `$HOME` directories outside the repo, not under `dots/`.
 
 **Adding a secret:** add it to `nixos/host-secrets.yaml` → declare `sops.secrets.<name>` in
 `configuration.nix` → consume it (e.g. export in `home/shell.nix`).

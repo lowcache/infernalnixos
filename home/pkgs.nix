@@ -179,6 +179,7 @@
           gawk
           acpi
           tree
+          lazygit
           upower
           ddcutil
           clinfo

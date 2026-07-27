@@ -70,7 +70,7 @@ extra:
       name: lowcache on GitHub
     - icon: fontawesome/solid/snowflake
       link: https://github.com/lowcache/volnixos
-      name: Vol[atile] NixOS
+      name: Volatile NixOS
   generator: false
 
 markdown_extensions:
@@ -108,6 +108,10 @@ markdown_extensions:
 
 plugins:
   - search
+  - blog:
+      blog_toc: true
+      post_excerpt: optional
+      post_url_format: "{slug}"
 
 nav:
   - Home: index.md
@@ -124,6 +128,7 @@ nav:
   - System:
       - Hybrid GPU: system/gpu.md
       - AI Stack: system/ai-stack.md
+      - Phone Agent: phone-agent.md
   - Desktop:
       - desktop/index.md
       - niri Compositor: desktop/niri.md
@@ -138,3 +143,6 @@ nav:
       - Fish Functions: tooling/fish.md
       - Agent Toolchain: tooling/agents.md
   - Troubleshooting: troubleshooting.md
+  # Blog is a separate entity from the wiki; CSS pushes it to the far right of
+  # the tab bar and gives it the gold accent (see stylesheets/extra.css).
+  - Blog: blog/index.md
