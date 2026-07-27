@@ -1,7 +1,7 @@
 ---
 type: state
 project: Vol NixOS
-last_updated: 2026-07-24
+last_updated: 2026-07-27
 status: active
 ---
 
@@ -33,6 +33,8 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 **Krita:** Native `~/.config/kritarc`, `~/.config/kritadisplayrc`, `~/.local/share/krita` → `~/Storage/krita-master/`. Pykrita plugins live at `~/Storage/krita-master/krita/pykrita/`.
 
 **AI outputs:** `~/Pictures/fromAi/outputs` → `~/Storage/ai-generation/fooocus/outputs`.
+
+**Imperative nix-env profiles (2026-07-27):** `~/.local/state/nix/profiles` persisted to `persist.nix` (canonical store where `nix-env -iA nixos.<pkg>` writes `profile-N-link` + `channels` generation + manifest). This allows session-scoped binary installs to survive the tmpfs wipe. The compat symlink `~/.nix-profile → ~/.local/state/nix/profiles/profile` is recreated declaratively via `home.file` with `force = true` at each activation, ensuring `~/.nix-profile/bin` hits PATH immediately after boot without needing a prior nix command. Caveat: `nix-env -iA nixos.*` requires the `nixos` channel; since `channels` generation is persisted alongside profiles, it should carry over — confirm `nix-channel --list` post-boot if installs can't resolve the channel.
 
 **Cache enforcement (active 2026-06-17):** `xdg.cacheHome = "$HOME/Storage/.cache"`; `TMPDIR`, `PIP_CACHE_DIR`, `CLAUDE_CODE_TMPDIR` → `~/Storage/tmp`. `.cache/llmfit`, `.cache/noctalia` persisted.
 

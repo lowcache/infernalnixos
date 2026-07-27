@@ -1,7 +1,7 @@
 ---
 type: decisions
 project: Vol NixOS
-last_updated: 2026-07-14
+last_updated: 2026-07-27
 status: active
 ---
 
@@ -350,3 +350,23 @@ This file catalogs the active, canonical design decisions and system configurati
 * **Rules out:** Powerline-style arrows (too visual hierarchy for status line); bright/saturated colors on surface (reduces signal); multi-line status (incompatible with status-line UI).
 
 * **Version caveat:** Rate limit percentages require Claude Code version that emits `rate_limits` in the statusline JSON payload. Earlier versions show only time/model/branch/dir/tokens.
+
+---
+
+## 30. Imperative nix-env Profile Persistence — Persist Generation Store, Not Compat Symlink (2026-07-27)
+
+* **Decision (2026-07-27):** When persisting imperative `nix-env -iA` installs across tmpfs-root wipe, persist the canonical **generation store** `~/.local/state/nix/profiles/`, not the non-canonical compat symlink `~/.nix-profile`.
+
+* **Why:** `~/.nix-profile` is a symlink (`~/.nix-profile → ~/.local/state/nix/profiles/profile`) created and owned by nix. It is not canonical. Listing it under home-manager impermanence `directories` (a) treats the symlink as a directory and (b) tries to own a resource already owned by nix, causing activation conflicts. The real data (the `profile-N-link` generations, `channels` generation, manifest) live in `~/.local/state/nix/profiles/`, which existed on tmpfs and was wiped on boot.
+
+* **Implementation:** 
+  - Remove `.nix-profile` from impermanence `directories` — you don't persist the symlink.
+  - Add `.local/state/nix/profiles` to impermanence `local` directories — the canonical store where `nix-env -iA` writes generations and channels.
+  - Recreate the compat symlink `~/.nix-profile → ~/.local/state/nix/profiles/profile` declaratively via `home.file` with `force = true` at each activation. This ensures `~/.nix-profile/bin` hits PATH immediately after boot without needing a prior nix command.
+  - **Pre-switch:** Seed `/persist/…/.local/state/nix/profiles` with current generations (via `cp -a` preserving symlinks) so the first activation doesn't orphan existing profile.
+
+* **Caveat:** `nix-env -iA nixos.*` requires the `nixos` channel to be present. Since the `channels` generation is now persisted alongside profiles, it should carry over post-boot — but verify `nix-channel --list` after reboot if an install ever can't resolve the channel.
+
+* **Prevention rule (mistakes.md #11 analog):** Non-canonical symlinks cannot be persisted by impermanence as directories. Identify the canonical data (where the tool writes the actual state), persist that. Recreate compat symlinks declaratively if needed.
+
+---
