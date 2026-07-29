@@ -1,7 +1,7 @@
 ---
 type: state
 project: Vol NixOS
-last_updated: 2026-07-27
+last_updated: 2026-07-28
 status: active
 ---
 
@@ -14,6 +14,7 @@ This file is the single source of truth for the active configuration, mapping, a
 ## 1. System & Hardware Profile
 
 * **Hostname:** `volnix` | **OS:** NixOS 26.11 (Zokor) | **Shell:** Fish (HM)
+* **Current generation:** system-221 (`/nix/store/a18ffz3c…-nixos-system-volnix-26.11.20260726.624af66`)
 * **Desktop:** niri (Wayland, sole WM, default session) + Noctalia v5 (C++ shell)
 * **Display:** Wayland native; XWayland via `xwayland-satellite` (`:0`, for xcb-only AppImages and Flatpak Qt5 apps; permanent startup pending).
 * **GPU:** Hybrid AMD HawkPoint2 iGPU + NVIDIA RTX 4050 Mobile dGPU.
@@ -54,15 +55,30 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 
 ## 4. Active Workarounds
 
+* **`make switch-detached` PATH Fix (2026-07-28 — FIXED):** Transient systemd units inherit minimal DefaultEnvironment PATH (dosfstools/mtools/e2fsprogs/util-linux/systemd only; no `git`). When lix's flake fetcher tried to exec `git` for input fetch, it failed silently with "exit code 254" (spawn error). Fix: Makefile target now passes `--setenv=PATH=/run/current-system/sw/bin:/run/wrappers/bin` to `systemd-run`, providing git and system binaries to the unit. Verified end-to-end 2026-07-28.
+
 * **Krita 6.0.1 G'MIC Plugin Null-Pointer Crash (2026-07-14 — VERIFIED WORKING):** G'MIC-Qt filter tree was segfaulting on first right-click or stylus long-press in the filter list. Root cause: `GmicQt::FiltersView::onCustomContextMenu` calls `QObject::deleteLater()` on context-menu pointers the constructor left as `nullptr` — any context-menu event triggered the crash. Bug present in vanyossi/gmic v3.7.4.1 (upstream still has it as of 2026-07-14). **Fix applied and verified 2026-07-14:** `overrides/gmic-qt-filtersview-nullptr-contextmenu.patch` (null guards around both `deleteLater()` calls); `home/pkgs.nix` defines `krita-plugin-gmic-patched` with the patch applied, and `krita-wrapped` overrides `pkgs.krita` to bundle the patched gmic (override inside wrapper to avoid buildEnv conflicts). Build completed successfully; user tested right-click context menu — opens without crash. Patch verified working.
+
+* **Ollama Pinned to 0.31.1 (2026-07-28):** `nixos/overlays/ollama.nix` pins `ollama-cuda` to pre-update nixpkgs rev `d407951` (evaluates to exact `/nix/store/yglxp77…-ollama-0.31.1` currently running) via `builtins.fetchTarball`. Upstream 0.32.3 fails to build on current nixpkgs: setup-cuda-hook exports `CUDAToolkit_ROOT` as semicolon-joined lib list (cudart/cublas/cccl), omitting nvcc; 0.32.3's new llama.cpp configure step trusts that env var, finds no nvcc, aborts with "CUDA Toolkit not found" at ggml-cuda/CMakeLists.txt:268 (~40 min into compile). Overlay avoids 40-minute rebuilds with zero behavior change. Revert condition: retry 0.32.x+ on next flake update.
+
+* **Flake-Update Regression: pandas-stubs & niri (2026-07-28 — OVERLAYS IN PLACE):** `nix flake update` exposed two independent build failures. (1) `python3.14-pandas-stubs` 3.0.3 fails check phase: pytest >= 9.1.1 promotes `PytestRemovedIn10Warning` to hard error at collection; package sets `filterwarnings=error` in pyproject.toml, so all 8 collection errors abort the build. Transitive dep of `markitdown`/`pdfplumber` in HM path. Fix: `nixos/overlays/pandas-stubs.nix` downgrades warning via `PYTEST_ADDOPTS="-W ignore::pytest.PytestRemovedIn10Warning"` override; suite now passes (3151 passed, 5 skipped). (2) `niri 26.04` fails to build: vendor crate `libdisplay-info-sys 0.3.0` caps C library at `< 0.4.0`; this nixpkgs commit bumped `libdisplay-info` to 0.4.0, causing CMake to reject it ("Requested 'libdisplay-info < 0.4.0' but version of libdisplay-info is 0.4.0"). Fix: `nixos/overlays/niri.nix` pins `libdisplay-info 0.3.0` for niri (cache hit from cache.nixos.org, no rebuild). Both overlays verified working 2026-07-28. Revert conditions in overlay headers for each future flake update.
+
 * **Krita 6.0.1 (2026-06-22):** Font Gallery pykrita plugin uses Qt rasterization (SVG text crashed err=84). With user-text input, multi-line rendering validated standalone; layer insertion proven. Pending: restart Nix Krita, type text, double-click font, verify no crash and raster layer appears.
+
 * **Krita dual installation (2026-06-22):** Nix Krita only; Flatpak uninstalled (crashed SIGABRT on launch, created confusion).
+
 * **XWayland (2026-06-23):** `xwayland-satellite :0` running for **both** Flatpak Qt5 apps (xcb plugin) **and** xcb-only AppImages (e.g., FireAlpaca 2.16.0). Manual test successful 2026-06-23 (FireAlpaca launches cleanly with `DISPLAY=:0 QT_QPA_PLATFORM=xcb`). Requires permanent startup: `spawn-at-startup "xwayland-satellite" ":0"` in `dots/niri/config.kdl` (pending implementation).
+
 * **Portal AccessDenied (2026-06-10, fixed 2026-06-17):** `services.dbus.implementation = lib.mkForce "dbus"` (xdg-portal 1.20.4 pidfd bug, flatpak#1953). File pickers work.
+
 * **XDG FileChooser Portal Routing (2026-06-19):** Gnome backend advertises `FileChooser` but doesn't implement it. Fix: `xdg.configFile` routes `org.freedesktop.impl.portal.FileChooser=gtk` (durable). Runtime file removed before switch.
+
 * **Ollama VRAM/RTD3 (2026-06-17):** `OLLAMA_KEEP_ALIVE=5m`, `OLLAMA_KV_CACHE_TYPE=q8_0`, `OLLAMA_MAX_LOADED_MODELS=1`.
+
 * **Playwright MCP (2026-06-15):** `scripts/playwright-mcp-nix` pins nix chromium. Pending gateway restart (kill+revive).
+
 * **TMPDIR split (2026-06-17):** User → `~/Storage/tmp`; daemon → `/nix/tmp`; Makefile `REBUILD_TMPDIR := $(HOME)/Storage/tmp`.
+
 * **Build fallback (2026-06-24):** Makefile `switch` carries `--option fallback true` to work around expired TLS cert on lantian cachy-kernel substituter. Substituter `https://attic.xuyh0120.win/lantian` serves `nix-cache-info` directly (valid cert), but 307-redirects NAR fetches to `us-central-1.telnyxstorage.com` with expired cert. Default behavior (fallback=false) halts build; fallback enables source compilation for affected packages instead. **Revert condition:** Once cert is renewed upstream, remove Makefile flag or migrate to permanent `nix.settings.fallback = true` in `nixos/configuration.nix` (superior home for resilience default). **Verification (2026-06-24):** Local clock, CA bundles (nss-cacert-3.123), and source hosts verified clean — pure upstream server-side issue. Optional: report cert expiry to github.com/xddxdd/nix-cachyos-kernel.
 
 ---
@@ -156,33 +172,20 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
 
 **Plugin Memory (2026-06-26):** `~/CodeRepo/noctalia-claude-plugin/.memory/` scaffolded and registered via `memd init`. Contains clean state/decisions/mistakes/todo/inbox. Memd auto-discovers new projects; index lists it with live status.
 
-**2026-06-26 Review & Hardening:** Independent (tether/Gemini, flash-high, 52s) review of MCP shim and launcher code found 6 issues; fixes applied and verified:
-- **HIGH:** MCP server crash vectors — non-string tool args (`AttributeError` on `.strip()`) and non-dict JSON input (`req.get` on list) both killed the server mid-session, silently stripping Claude's tools. Fixed: `str()` coercion in `_remember`, try/except in `_dispatch` → JSON-RPC `-32603`, dict validation + parse-error handling in `main` → `-32600/-32700`. Server now survives all malformed input, returns proper error objects.
-- **MED:** Invalid `required` key leaked into property schemas (JSON Schema violation). Fixed: `_tool_list` strips it.
-- **ENHANCEMENT — cc.luau:** `parse()` extracts and accumulates assistant text across chunks (makes `/cc ?` answers reliable); bare `/cc ?` shows hint instead of launching task "?"; `user` messages reset pulse off tool icon.
-- **VERIFICATION:** Adversarial MCP sequence (garbage, non-dict JSON, non-string args, unknown tool) — server survived all, returned proper error objects (rc=0). Launcher loads cleanly on plugin reload (no luau errors).
-
-**Phase 2 Roadmap (2026-06-26, documented):** See todo.md for prioritized items. Goal: close perceive/act/pulse loop via context injection in `/cc` + MCP-integrated spawned sessions. Recommended next: Phase 2 #1 (context injection) + Phase 4 #7 (token telemetry).
-
-**Deferred (v1.1+):** Presence orb (frame-tick animation); publish decision; bidirectional MCP (Claude calling shell tools mid-session).
+**2026-06-26 Review & Hardening:** Independent (tether/Gemini, flash-high, 52s) review of MCP shim and launcher code found 6 issues; fixes applied and verified.
 
 ### Claude Code Plugins — Token Optimization (2026-06-25)
 
-**Cleanup (2026-06-25):** Disabled 14 of 18 installed plugins to reduce per-turn token overhead (unused skills were injected into system prompt every message, competing for context). Disabled groups: crypto/Web3 (6 — alchemy, nansen, zerion, blockchain-web3, smart-contract-audit, solidity), redundant Nix (5 — jylhis-nix, nix-skills, nix-search, nix-lsp, init-nix-shell), frontend design (2), rust-skills (1). Remaining enabled (4): `nix-dev`, `devenv`, `feature-dev`, `impeccable`.
+**Cleanup (2026-06-25):** Disabled 14 of 18 installed plugins to reduce per-turn token overhead (unused skills were injected into system prompt every message, competing for context). Disabled groups: crypto/Web3 (6), redundant Nix (5), frontend design (2), rust-skills (1). Remaining enabled (4): `nix-dev`, `devenv`, `feature-dev`, `impeccable`.
 
 **Impact:** Savings visible on next session (hooks/settings take effect at session start). Fully reversible: `claude plugin enable <name>@<marketplace>` restores any disabled plugin. Also removed `rtk hook claude` from `PreToolUse` hooks in settings.json (simplification).
 
 ### Noctalia Scratchpad Plugin (2026-06-24 — Active)
 
 - **Status:** Desktop widget + launcher provider for note-taking. Live-installed at `~/.local/share/noctalia/plugins/scratchpad/`.
-- **Capabilities:**
-  - Add notes: `/note <text>` (launcher command)
-  - Delete: `/note rm <n>` (1-based index)
-  - Clear all: `/note clear`
-  - Desktop widget: note list (scrollable), input field (visible, value-synced)
+- **Capabilities:** Add notes, delete, clear all, desktop widget with input field.
 - **Architecture:** Shares state via `noctalia.state` + `notes.json`; launcher provider and desktop widget synchronized.
-- **UI controls used:** `ui.input` (text field), `ui.scroll` (scrollable list) — both newly exposed to plugins (Layer 1 of plugin model expansion complete 2026-06-24).
-- **Note (2026-06-24):** Widget renders and scrolls fully. Text input via `/note` launcher works immediately. Direct typing into the widget field is pending keyboard routing (Layer 2 work; infrastructure identified, awaiting maintainer UX policy decision on keyboard grab/release semantics).
+- **UI controls:** `ui.input`, `ui.scroll` — both newly exposed to plugins (Layer 1 complete 2026-06-24).
 
 ---
 
@@ -192,31 +195,18 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
 
 - **Status:** Font Gallery pykrita plugin at `~/Storage/krita-master/krita/pykrita/font_gallery/` uses **Qt rasterization** (SVG text-shape insertion crashed Krita 6.0.1 err=84; Qt path bypasses this entirely). **Enhanced (2026-06-22):** Plugin now supports **user-typed text input** (QLineEdit + size spinbox, 8–600 pt, default 96). Implementation syntax-validated; multi-line rendering validated standalone (819×346 ARGB32, 37328 opaque pixels); layer calls proven working via prior sample-text test on canvas.
 - **Files:** `font_gallery.desktop` + `font_gallery/{__init__.py,font_gallery.py}`. Targets PyQt6 (Krita 6 is Qt6); uses scoped `DockWidgetFactoryBase.DockPosition.DockRight` enum.
-- **Plugin UI & Capabilities:** 
-  - Text input box ("Text to render onto canvas…") + size spinbox (8–600 pt, default 96)
-  - Single-click font → copies family name to clipboard ✓
-  - Double-click font → Qt rasterizes **user-typed text** (multi-line aware; falls back to sample string if empty), blits to new "Font: <family>" paint layer ✓
-  - Status line reports success/failure diagnostics
-- **Implementation (2026-06-22):** Qt `QFont(family, size_pt)` renders text by splitting `user_text` on `\n` and drawing each line via `QPainter.drawText(margin, baseline, line)`, advancing baseline by `QFontMetrics.height()` per line. Result is a transparent `QImage` with proper text metrics (ascent/descent/line spacing). Extract ARGB32 pixels via `setPixelData` → new paint layer. **Validated:** standalone PyQt6 6.11.0 multi-line render (819×346 ARGB32, 37328 opaque pixels); prior sample-text version already rendered to canvas (proved layer calls work on this host). Pending: full restart test with user-text input. `__pycache__` cleared.
-- **Krita Installation (2026-06-22):** 
-  - **Nix** `/nix/store/...-krita-unwrapped-6.0.1` — loads cleanly, Font Gallery plugin active.
-  - **Flatpak** — uninstalled (was crashing SIGABRT on launch; removed to avoid PATH conflicts). Plugin only available in Nix build.
-- **Benign warnings:** Nix Krita emits `QDomDocument called with unopened QIODevice` and `is not a canvas observer` at startup — harmless, not fatal.
+- **Krita Installation (2026-06-22):** **Nix** `/nix/store/...-krita-unwrapped-6.0.1` — loads cleanly, Font Gallery plugin active. **Flatpak** — uninstalled (was crashing SIGABRT on launch; removed to avoid PATH conflicts). Plugin only available in Nix build.
 - **Limitation (honest):** Output is a **raster image**, not editable vector text. To change wording, retype and double-click again for a fresh layer.
-- **Fallback options (if ever needed):** GIMP 3.2.4 (Flatpak) / 3.0.8 native (Pango/fontconfig).
 
 ### GIMP (fallback)
 
 - **Status:** `org.gimp.GIMP` 3.2.4 (Flatpak, stable) installed as fallback for text-on-raster work.
-- **Native nixpkgs variant:** 3.2.4 in commit 9eac87a is broken (icon-theme abort, missing GI typelibs). Can pin to 3.0.8 commit e9a7635a if native GIMP is ever required.
 
 ### Color Scheme — Ayu Green Unified (2026-06-22)
 
 - **Status:** Live and synced across Noctalia bar, kitty terminal, starship prompt.
 - **Theme file:** `dots/color-engine/themes/ayu_green.json` — validated (35 tokens, 77 roles). Palette: lime `#AAD94C`, gold `#E6B450`, cyan `#39BAE6`, navy base `#1F2430`.
-- **Distinction:** Ayu Green (lime-forward, selection `#AAD94C`) vs. builtin Ayu Mirage (blue-leaning, selection `#409FFF`). Both use `#1F2430` balanced background.
-- **Uncommitted:** `themes/ayu_green.json`, regenerated `dots/kitty/{current.conf,current-theme.conf,tab_bar.py,themes/noctalia.conf}`, `dots/starship/starship.toml`.
 
 ---
 
-(Sections 7–20 remain unchanged from current state.md)
+(Remaining sections 7–20 unchanged from prior state.md)
