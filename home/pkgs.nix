@@ -209,12 +209,12 @@
           github-copilot-cli
           codex
           pkgs.llm-agents.claude-plugins
-          pkgs.llm-agents.hermes-agent
-          pkgs.llm-agents.hermes-hud
-          pkgs.llm-agents.hermes-desktop
-          pkgs.llm-agents.nanocoder
           pkgs.llm-agents.opencode
           pkgs.llm-agents.zaly
+          pkgs.llm-agents.cc-switch-cli
+          pkgs.llm-agents.parallel-cli
+          pkgs.llm-agents.toon
+          pkgs.llm-agents.happy-coder
         ];
         andronix = with pkgs; [
           scrcpy

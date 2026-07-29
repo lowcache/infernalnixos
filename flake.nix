@@ -81,6 +81,10 @@
               inputs.nix-cachyos-kernel.overlays.pinned
               inputs.nur.overlays.default
               inputs.llm-agents.overlays.shared-nixpkgs
+              (import ./nixos/overlays/brave.nix)
+              (import ./nixos/overlays/pandas-stubs.nix)
+              (import ./nixos/overlays/niri.nix)
+              (import ./nixos/overlays/ollama.nix)
             ];
           }
           ./nixos/configuration.nix
