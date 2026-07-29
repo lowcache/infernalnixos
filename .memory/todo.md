@@ -1,7 +1,7 @@
 ---
 type: todo
 project: Vol NixOS
-last_updated: 2026-07-28
+last_updated: 2026-07-29
 status: active
 ---
 
@@ -10,17 +10,6 @@ status: active
 ---
 
 ## IN PROGRESS / AWAITING USER ACTION
-
-### Flake-Update Full Closure Build — Third Failure Investigation (2026-07-28)
-
-**Status:** First two regressions fixed (pandas-stubs pytest override, niri libdisplay-info 0.3.0 pin); full `.#volnix` toplevel closure build in progress. Grep `grep -E "builder for|error: builder" $(build output file)` to isolate third leaf failure.
-
-**Steps:**
-- [ ] Await full build completion; identify third failing derivation
-- [ ] Diagnose root cause (inspect build log if not obvious from name)
-- [ ] Apply overlay fix (if nixpkgs skew) or other workaround
-- [ ] Verify closure builds cleanly
-- [ ] Commit overlays: `flake update: overlays for brave .override shim, niri libdisplay-info pin, pandas-stubs pytest9, [third fix]`
 
 ### Noctalia Bar — Dual Wrap-Around Layout (2026-06-22 — LIVE, CAPTURE PENDING)
 
