@@ -1,7 +1,7 @@
 ---
 type: mistakes
 project: Vol NixOS
-last_updated: 2026-07-14
+last_updated: 2026-07-28
 status: append-only
 ---
 
@@ -114,16 +114,6 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 * **Prevention Rule:** If GTK/Electron file pickers or portal Settings fail with `AccessDenied` / `Unable to open /proc/<pid>/root`, do NOT chase portal backends, icons, or `GTK_USE_PORTAL`. Reproduce with `gdbus call --session --dest org.freedesktop.portal.Desktop --object-path /org/freedesktop/portal/desktop --method org.freedesktop.portal.Settings.ReadAll '[]'`; if it errors, the app-id step is broken. Compare against `dbus-run-session -- <same call>`. If the daemon works and the live broker bus does not, set `services.dbus.implementation = "dbus"`.
 * **Rebuild caution:** Switching the dbus implementation restarts the message bus on `switch` and will tear down the running Wayland session (see Mistake #1). Apply via reboot, or run the rebuild detached (tmux / `systemd-run`).
 
-### 2026-07-06 — Git Dubious Ownership Guard Blocks Privileged Rebuilds
-
-**Symptom:** `make switch-detached` fails with `error: getting the HEAD of the Git tree '/home/lowcache/.nix-config' ... exit code 254` (shown in `journalctl -u nixos-switch`). The systemd unit runs nixos-rebuild as root.
-
-**Root cause:** nix's git fetcher shells out to `git` to fetch the flake input `git+file:///home/lowcache/.nix-config`. The repo is owned by `lowcache:lowcache` (uid 1001). Since git 2.35+, the `dubious-ownership` guard rejects access from a different uid (root) unless the repo is whitelisted. nixos-rebuild-ng never reads `SUDO_UID` or `SUDO_USER` environment variables, so the Makefile's `--setenv=SUDO_UID` hack does nothing.
-
-**Prevention rule:** For locally-owned git repos that will be fetched by root-running nix, whitelist them in system-level git config via `programs.git.config.safe.directory` in `nixos/configuration.nix`. The setting lands in `/etc/gitconfig` (declaratively, survives tmpfs root) and applies to all git invocations by root. Example: `safe.directory = [ "/persist/home/lowcache/.nix-config" "/home/lowcache/.nix-config" ];` (both symlink variants, in case). After applying (via plain `make switch` as user), `make switch-detached` works permanently.
-
-**Verification (2026-07-06):** `nix eval .#nixosConfigurations.volnix.config.environment.etc."gitconfig".text` confirms entries land in generated config. Build verification pending (kicked off background, may have been interrupted).
-
 ### 2026-07-09 — Phase 5 Tor Option Casing (SocksPort vs SOCKSPort)
 
 **Symptom:** `nix flake check` failed with reference to unknown/wrong Tor settings key.
@@ -149,3 +139,11 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 **Root cause:** The nixpkgs `krita` package is a `symlinkJoin` of `krita-unwrapped` + `binaryPlugins` (default `[ krita-plugin-gmic ]`). The G'MIC plugin is already bundled inside. Adding a second standalone `krita-plugin-gmic-patched` to home.packages created a duplicate — buildEnv deduped them silently when both resolved to the same store path (unpatched), but failed when the standalone one was a different derivation (patched). The fix was NOT to add a second plugin, but to override **which** gmic the krita wrapper bundles: `krita-wrapped` overrides `pkgs.krita.override { binaryPlugins = [ krita-plugin-gmic-patched ]; }`, so there's exactly one (patched) copy.
 
 **Prevention rule:** When patching a plugin bundled inside a larger package via `symlinkJoin`, do NOT add the patched plugin as a standalone entry to home.packages. Instead, override the parent package to use the patched version internally, so there's no duplication. Check the parent's derivation (look for `symlinkJoin`, `binaryPlugins`, or similar collection logic) to find the right override point. `nix-diff` or `nix flake show --impure` can help identify what's already bundled.
+
+### 2026-07-28 — Home-Manager Chromium Module .override Regression
+
+**Symptom:** `nixos-rebuild switch` fails with `error: attribute 'override' missing` at `programs/chromium.nix:314`. Build exits with code 1 when chromium-family browser config includes `commandLineArgs` or Plasma support.
+
+**Root Cause:** Home-manager version bump introduced logic that calls `.override()` on the configured browser package without checking if the package supports that operation. The module assumes all packages have `.override` (typical for `pkgs.somePackage` from nixpkgs), but custom overlay packages, pre-wrapped builds, or packages from alternate sources may lack the attribute.
+
+**Prevention Rule:** Before updating home-manager, verify browser package compatibility: (1) check home-manager changelog for breaking changes to `programs/chromium.nix` and related modules; (2) if using a custom or overlay package, test with `nix eval .#... -A <package>.override` to confirm the attribute exists; (3) if the package lacks `.override`, either switch to vanilla nixpkgs package or hold the home-manager upgrade. Root cause of this specific failure was not identified (grep attempts interrupted by API errors); next session must locate which browser config is misconfigured by grepping for `programs.chromium`, `programs.google-chrome`, `programs.brave`, etc. in `home/` subtree.
