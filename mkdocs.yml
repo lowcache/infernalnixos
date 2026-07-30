@@ -4,7 +4,7 @@ site_description: >-
   kernel, Lanzaboote Secure Boot, sops-nix secrets, microvm.nix gateways, and a
   niri + Noctalia v5 Wayland desktop.
 site_author: automated indigency / lowcache
-site_url: https://volnixos-wiki.pgs.sh/
+site_url: https://wiki.infernalcode.com/
 repo_url: https://github.com/lowcache/volnixos
 repo_name: lowcache/volnixos
 edit_uri: edit/main/docs/
@@ -108,10 +108,6 @@ markdown_extensions:
 
 plugins:
   - search
-  - blog:
-      blog_toc: true
-      post_excerpt: optional
-      post_url_format: "{slug}"
 
 nav:
   - Home: index.md
@@ -143,6 +139,9 @@ nav:
       - Fish Functions: tooling/fish.md
       - Agent Toolchain: tooling/agents.md
   - Troubleshooting: troubleshooting.md
-  # Blog is a separate entity from the wiki; CSS pushes it to the far right of
-  # the tab bar and gives it the gold accent (see stylesheets/extra.css).
-  - Blog: blog/index.md
+  # Blog is a separate property, not a wiki section. The tab now links out to the
+  # real blog at infernalcode.com; the in-wiki blog/ directory was the first
+  # implementation and was removed once the Hugo blog superseded it (its two posts
+  # were near-verbatim duplicates of published posts). CSS pushes this to the far
+  # right of the tab bar and gives it the gold accent (see stylesheets/extra.css).
+  - Blog: https://infernalcode.com/

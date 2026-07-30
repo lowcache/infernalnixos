@@ -1,0 +1,17 @@
+# pgs.sh _redirects (Netlify syntax). First match wins, so specific rules precede
+# the catch-all.
+#
+# The in-wiki blog/ section was the first implementation and was removed once the
+# Hugo blog superseded it; its two posts were near-verbatim duplicates of published
+# posts. These 301s send the old URLs to the canonical copies instead of 404ing.
+#
+# NOTE: deliberately no `/*` catch-all here. wiki.infernalcode.com and
+# volnixos-wiki.pgs.sh serve the SAME pgs project, so a blanket redirect to the
+# custom domain would fire on the custom domain too and loop forever. The old
+# hostname is handled by rel=canonical instead, which every page already emits.
+
+/blog/why-mcp-servers-need-isolation/        https://infernalcode.com/posts/why-mcp-servers-need-isolation/          301
+/blog/the-impermanence-bind-mount-symlink-trap/  https://infernalcode.com/posts/the-impermanence-bind-mount-symlink-trap/  301
+
+# Blog index, archive, category and tag pages the plugin used to generate.
+/blog/*                                      https://infernalcode.com/                                                301

@@ -458,6 +458,12 @@
         ignorecase = true;
         smartcase = true;
         "lsp.server" = "nix=nil";
+        # Third-party plugin channel for `preview` (pandoc-backed markdown
+        # preview split). Plugins themselves install imperatively into
+        # ~/.config/micro/plug, which persist.nix already keeps.
+        pluginrepos = [
+          "https://raw.githubusercontent.com/weebi/micro-preview/master/repo.json"
+        ];
       };
     };
   };

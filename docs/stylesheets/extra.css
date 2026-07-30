@@ -302,21 +302,22 @@
 ::-webkit-scrollbar-thumb:hover { background: var(--vol-green); }
 
 /* ---- Blog tab: a separate entity, set apart from the wiki sections -- */
-/* Blog is the last nav item; margin-left:auto floats it to the far right of
+/* Blog is the last nav item and now links out to infernalcode.com; margin-left:auto
+   floats it to the far right of
    the tab bar so it doesn't read as another wiki section. The gold accent
    (vs. the green wiki chrome) and the divider reinforce the separation.
    :has() degrades gracefully — the link keeps its gold colour either way. */
-.md-tabs__item:has(.md-tabs__link[href$="/blog/"]) {
+.md-tabs__item:has(.md-tabs__link[href^="https://infernalcode.com"]) {
   margin-left: auto;
   border-left: 1px solid rgba(199, 170, 51, 0.30);
   padding-left: 0.2rem;
 }
-.md-tabs__link[href$="/blog/"] {
+.md-tabs__link[href^="https://infernalcode.com"] {
   color: var(--vol-gold);
   opacity: 1;
   font-weight: 700;
 }
-.md-tabs__link[href$="/blog/"]:hover {
+.md-tabs__link[href^="https://infernalcode.com"]:hover {
   color: var(--vol-gold-2);
   text-shadow: 0 0 8px rgba(199, 170, 51, 0.45);
 }

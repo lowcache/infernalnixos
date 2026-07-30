@@ -1,6 +1,0 @@
-authors:
-  lowcache:
-    name: lowcache
-    description: Builder of Volatile NixOS, mcp-box, and memd
-    avatar: https://github.com/lowcache.png
-    url: https://github.com/lowcache

@@ -103,6 +103,7 @@ in
       run mkdir -p "$HOME/Storage/tmp/claude" "$HOME/Storage/.cache/pip"
     '';
     pointerCursor = {
+      enable = true;
       package = pkgs.bibata-cursors-translucent;
       name = "Bibata-Modern-Translucent";
       size = 24;

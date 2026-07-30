@@ -169,6 +169,7 @@
           bc
           tor
           micro
+          pandoc # backend for micro's `preview` plugin (see home/shell.nix)
           cryptsetup
           htop
           psmisc
