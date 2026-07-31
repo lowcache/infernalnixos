@@ -1,7 +1,7 @@
 ---
 type: mistakes
 project: Vol NixOS
-last_updated: 2026-07-28
+last_updated: 2026-07-31
 status: append-only
 ---
 
@@ -114,26 +114,6 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 * **Prevention Rule:** If GTK/Electron file pickers or portal Settings fail with `AccessDenied` / `Unable to open /proc/<pid>/root`, do NOT chase portal backends, icons, or `GTK_USE_PORTAL`. Reproduce with `gdbus call --session --dest org.freedesktop.portal.Desktop --object-path /org/freedesktop/portal/desktop --method org.freedesktop.portal.Settings.ReadAll '[]'`; if it errors, the app-id step is broken. Compare against `dbus-run-session -- <same call>`. If the daemon works and the live broker bus does not, set `services.dbus.implementation = "dbus"`.
 * **Rebuild caution:** Switching the dbus implementation restarts the message bus on `switch` and will tear down the running Wayland session (see Mistake #1). Apply via reboot, or run the rebuild detached (tmux / `systemd-run`).
 
-### 2026-07-28 — systemd-run Transient Units: Minimal DefaultEnvironment PATH
-
-**Symptom:** `make switch-detached` (run via `sudo systemd-run …`) failed with `error: getting the HEAD of the Git tree '/persist/home/lowcache/.nix-config' failed with exit code 254:` followed by empty stderr.
-
-**Root cause:** Transient systemd units inherit the systemd manager's DefaultEnvironment `PATH`, which on this system is only `dosfstools/mtools/e2fsprogs/util-linux/systemd` — no `git`, no `/run/current-system/sw/bin`. Lix's flake fetcher (`nix flake metadata git+file://…`) needs to invoke `git` for input fetches; when git is not on PATH, lix cannot spawn the subprocess and surfaces the spawn failure as "exit code 254" with empty output (not a git error — a system call failure). Plain `sudo make switch` works because sudo passes the user's full PATH through.
-
-**Prevention rule:** Any `systemd-run` or `systemd-run --scope` invocation that ends up calling nix/lix flake operations (which internally invoke `git`) must have an explicit PATH containing `/run/current-system/sw/bin` and `/run/wrappers/bin`. Pass `--setenv=PATH=/run/current-system/sw/bin:/run/wrappers/bin` to `systemd-run`. Symptom if missing: "exit code 254" with empty stderr from a lix subprocess.
-
-**Also beware:** Plain errors like "git not found" from nix/lix are surfaced as exit code 254 with no error message — this is a lix quirk for spawn failures. If you see that exit code, the culprit is almost always a missing binary on PATH inside the transient unit's environment.
-
-### 2026-07-28 — pytest >= 9.1: PytestRemovedIn10Warning Escalated to Hard Error
-
-**Symptom:** `python3.14-pandas-stubs` 3.0.3 check phase failed during test collection with 8 errors; all errors were `PytestRemovedIn10Warning` re-raised as exceptions.
-
-**Root cause:** pytest >= 9.1.1 promotes `PytestRemovedIn10Warning` (a deprecation notice in pytest < 9.1) to a hard error at collection time. The package `python3.14-pandas-stubs` sets `filterwarnings = error` in `pyproject.toml`, which turns all warnings (including the promoted one) into exceptions. The package's test suite passes generators to `pytest.parametrize` (which pytest now warns about), so all 8 collection errors abort the build before any tests run. Transitive dependency of `markitdown`/`pdfplumber` in home-manager path, causing full system build failures.
-
-**Prevention rule:** When a Python package build breaks at check collection (not at test execution) in pytest >= 9.1, inspect the error for `PytestRemovedIn10Warning`. If present, apply an overlay to downgrade that specific warning via `PYTEST_ADDOPTS="-W ignore::pytest.PytestRemovedIn10Warning"`, piped into the build environment as `preCheck` or in nixpkgs' `pytestCheckHook`. Do not disable `doCheck` (that strips check inputs and breaks unconditional import checks). Verify the fix by confirming pytest runs full suite and reports pass count (e.g., "3151 passed, 5 skipped").
-
-**Upstream tracking:** Once pytest ships a new major or the warnings are promoted to errors in future releases, update the overlay's warning filter accordingly. Revert the overlay when nixpkgs ships a patch to the package that handles the new warning.
-
 ### 2026-07-28 — niri 26.04 / libdisplay-info-sys 0.3.0: C-library Version Cap Skew
 
 **Symptom:** `niri 26.04` build failed with `error: Requested 'libdisplay-info < 0.4.0' but version of libdisplay-info is 0.4.0`.
@@ -143,3 +123,19 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 **Prevention rule:** When Rust crate-based builds fail with version constraints on C libraries (e.g., "Requested 'libdisplay-info < 0.4.0' but version is 0.4.0"), the crate is likely vendored or pinned to an older version. Check the crate's `Cargo.toml` version constraint (not the package's Cargo.lock, which is stale at build time — nixpkgs *regenerates* it at eval/build). If the crate is truly pinned and won't accept the C lib version, pin the C lib to match the crate's constraint via an overlay for that package only. Verify by confirming the build cache-hits (Hydra already cached the niri build with the matching C lib), proving the pairing is correct and stable upstream.
 
 **Revert condition:** Once nixpkgs upgrades niri to a version whose vendored crates accept `libdisplay-info >= 0.4.0`, or once the C lib is downgraded, remove the overlay and retry the build.
+
+### 2026-07-31 — Stale OPENSSL_DIR Fish Variable Broke openssl-sys Cargo Builds
+
+**Symptom:** Cargo install of lonkero failed during compilation: `error: 'libdir … does not contain the required files'` during the openssl-sys build phase.
+
+**Root cause:** Fish universal variable `OPENSSL_DIR=/nix/store/…-openssl-3.6.3-dev/` was set (likely by hand at some point, not in Nix config — `grep -rn OPENSSL_DIR` across flake.nix and home/*.nix found nothing). The `openssl-sys` Rust crate checks `OPENSSL_DIR` first during build; if set, it bypasses pkg-config entirely and looks for shared libraries directly in that directory. The `.dev` output contains headers and `openssl.pc` but NO shared libraries (`.so` files). When openssl-sys found the libdir lacked the required shared libs, it panicked with exactly that error.
+
+**Secondary issue:** Even after removing the stale env var and rebuilding, the binary's RPATH was `/nix/store/…-shell/lib` (from the throwaway `nix-shell` environment), so it failed at runtime: `libssl.so.3: cannot open shared object file: No such file or directory`. The linked binary had a transient RPATH pointing into a garbage-collected directory.
+
+**Prevention rules:**
+1. Never set `OPENSSL_DIR` environment variable, especially not to `.dev` outputs. The pkg-config mechanism resolves openssl correctly on its own (`nix-shell -p pkg-config openssl` auto-exposes it via pkg-config's setup hook).
+2. For cargo installs of crates needing openssl at build time, always stamp a persistent RPATH via: `RUSTFLAGS="-C link-arg=-Wl,-rpath,/run/current-system/sw/share/nix-ld/lib" nix-shell -p pkg-config openssl --run 'cargo install <crate>'`. The `/run/current-system/sw/share/nix-ld/lib` directory is stable across boots and GC because it is populated by `programs.nix-ld.libraries` in `nixos/configuration.nix`. As long as the libraries list contains `openssl.out` (it does at line 288), that directory will contain `libssl.so.3` and `libcrypto.so.3`.
+3. If `OPENSSL_DIR` or similar persistent environment-variable pins exist in `~/.config/fish/fish_variables`, `.bashrc`, `.zshrc`, or similar shell state files, inspect them regularly. Stale store paths will break builds and prevent Nix garbage collection of their targets. Use `set -Ue VARNAME` in fish or `unset VARNAME` in bash/zsh to clear them permanently.
+4. The pattern `nix-shell` (not `nix shell`) is mandatory — only the former runs pkg-config's setup hook to expose the dev output. `nix shell` (flake-based, newer) does not.
+
+**Applied fix (2026-07-31):** (1) Cleared the fish universal variable: `set -Ue OPENSSL_DIR`. (2) Rebuilt lonkero with the RUSTFLAGS + nix-shell pattern. (3) Verified the binary now links cleanly to the stable nix-ld lib directory: `ldd ~/.cargo/bin/lonkero | grep libssl` → `libssl.so.3 => /run/current-system/sw/share/nix-ld/lib/libssl.so.3`. (4) Confirmed runtime: `lonkero --version` prints `3.5.0`. The binary now persists across tmpfs wipes because the RPATH points to a durable location.

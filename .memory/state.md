@@ -1,7 +1,7 @@
 ---
 type: state
 project: Vol NixOS
-last_updated: 2026-07-28
+last_updated: 2026-07-31
 status: active
 ---
 
@@ -189,7 +189,7 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
 
 ---
 
-## 6. Application Status (2026-07-14)
+## 6. Application Status (2026-07-14, Updated 2026-07-31)
 
 ### Krita 6.0.1 native + Font Gallery pykrita Plugin (2026-06-22 — User-Text Input, Implementation Validated)
 
@@ -206,6 +206,10 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
 
 - **Status:** Live and synced across Noctalia bar, kitty terminal, starship prompt.
 - **Theme file:** `dots/color-engine/themes/ayu_green.json` — validated (35 tokens, 77 roles). Palette: lime `#AAD94C`, gold `#E6B450`, cyan `#39BAE6`, navy base `#1F2430`.
+
+### Cargo-Installed Tools (2026-07-31)
+
+- **lonkero 3.5.0 (2026-07-31):** CLI tool. Installed via `RUSTFLAGS="-C link-arg=-Wl,-rpath,/run/current-system/sw/share/nix-ld/lib" nix-shell -p pkg-config openssl --run 'cargo install lonkero'`. Uses persistent RPATH to `/run/current-system/sw/share/nix-ld/lib` for openssl linkage (supported by `programs.nix-ld.libraries` containing `openssl.out` at `nixos/configuration.nix:288`). Required clearing stale fish universal variable `OPENSSL_DIR` that had been set to `openssl-3.6.3-dev` (see mistakes.md #12). Runtime linking verified: `libssl.so.3 => /run/current-system/sw/share/nix-ld/lib/libssl.so.3`, `libcrypto.so.3 => /run/current-system/sw/share/nix-ld/lib/libcrypto.so.3`. Binary executes cleanly (`lonkero --version` confirms).
 
 ---
 
