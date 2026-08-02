@@ -1,7 +1,7 @@
 ---
 type: mistakes
 project: Vol NixOS
-last_updated: 2026-07-31
+last_updated: 2026-08-02
 status: append-only
 ---
 
@@ -114,28 +114,46 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 * **Prevention Rule:** If GTK/Electron file pickers or portal Settings fail with `AccessDenied` / `Unable to open /proc/<pid>/root`, do NOT chase portal backends, icons, or `GTK_USE_PORTAL`. Reproduce with `gdbus call --session --dest org.freedesktop.portal.Desktop --object-path /org/freedesktop/portal/desktop --method org.freedesktop.portal.Settings.ReadAll '[]'`; if it errors, the app-id step is broken. Compare against `dbus-run-session -- <same call>`. If the daemon works and the live broker bus does not, set `services.dbus.implementation = "dbus"`.
 * **Rebuild caution:** Switching the dbus implementation restarts the message bus on `switch` and will tear down the running Wayland session (see Mistake #1). Apply via reboot, or run the rebuild detached (tmux / `systemd-run`).
 
-### 2026-07-28 — niri 26.04 / libdisplay-info-sys 0.3.0: C-library Version Cap Skew
+### 2026-08-02 — Nix-on-Droid First Switch: Four On-Device Failures, Three Resolved
 
-**Symptom:** `niri 26.04` build failed with `error: Requested 'libdisplay-info < 0.4.0' but version of libdisplay-info is 0.4.0`.
+**Incident:** Phone's first `nix-on-droid switch` from GitHub encountered four blocking failures in sequence during and after flake evaluation.
 
-**Root cause:** niri 26.04 vendors the Rust crate `libdisplay-info-sys v0.3.0`, which hard-caps the C library at `< 0.4.0` (crate version is pinned, C lib is vendored through it). This nixpkgs commit bumped `libdisplay-info` from 0.3.x to 0.4.0 in the nixpkgs channel, but niri's vendored crate had not been updated to match. The build was invoked with `libdisplay-info 0.4.0` on the PATH (via `buildInputs`), and the crate's `build.rs` CMake configure step checked the `libdisplay-info.pc` version, found 0.4.0 (rejected by `< 0.4.0`), and aborted. Pure nixpkgs/flake-update skew — the C-lib bump outran its crate consumers.
+**Failure 1: Numtide cache key untrusted**
+- **Symptom:** Packages ignored from cache.numtide.com; phone recompiled llm-agents packages from source.
+- **Root cause:** `nix.conf` changes only land AFTER successful activation. The first switch evaluates with the old config, which has no trusted numtide key.
+- **Prevention:** Use `adb push droid/nix.conf /data/data/com.termux.nix/files/home/.config/nix/nix.conf` BEFORE the first switch. The app sandbox (`/data/data/com.termux.nix/files`) is readable from failsafe session. Persist `nix.conf` there across app shutdowns.
 
-**Prevention rule:** When Rust crate-based builds fail with version constraints on C libraries (e.g., "Requested 'libdisplay-info < 0.4.0' but version is 0.4.0"), the crate is likely vendored or pinned to an older version. Check the crate's `Cargo.toml` version constraint (not the package's Cargo.lock, which is stale at build time — nixpkgs *regenerates* it at eval/build). If the crate is truly pinned and won't accept the C lib version, pin the C lib to match the crate's constraint via an overlay for that package only. Verify by confirming the build cache-hits (Hydra already cached the niri build with the matching C lib), proving the pairing is correct and stable upstream.
+**Failure 2: `termux-am` unbuildable under proot**
+- **Symptom:** `android-integration` options enabled by default pulled nix-on-droid's `termux-am` package. Phone attempted to build it; failed with `cp: setting permissions for 'source': No such file or directory`.
+- **Root cause:** nix-on-droid's own packages are prebuilt on nix-on-droid.cachix.org only against nix-on-droid's UPSTREAM nixpkgs pin. When this flake pins nix-on-droid to OUR nixpkgs, derivation hashes diverge, cache miss, phone must compile. proot sandbox breaks unpack phases (no real UID/GID mapping), so tar/chmod operations fail.
+- **Prevention:** Comment out all `android-integration.*` options in `droid/default.nix`. These enable intent broadcasts to Termux; not needed (phone-agent MCP stays in Termux regardless). Revisit only if future nix-on-droid releases add features critical to the workflow.
 
-**Revert condition:** Once nixpkgs upgrades niri to a version whose vendored crates accept `libdisplay-info >= 0.4.0`, or once the C lib is downgraded, remove the overlay and retry the build.
+**Failure 3: Flake tarball cache expires between retries**
+- **Symptom:** Second `nix-on-droid switch` from `github:lowcache/volnixos` re-evaluated and reported "unable to download … HTTP error 404" / "not a commit hash".
+- **Root cause:** `--flake github:owner/repo` fetches tarballs; nix caches them for 3600s default. Two runs within TTL reuse the old tarball; past TTL each fetch new. Short git hashes (7–12 chars) are rejected as ambiguous; nix requires full 40-char SHA for `github:` flake URIs.
+- **Prevention:** Use full commit SHA in flakeref (`github:owner/repo/40charSHA`) OR pass `--option tarball-ttl 0` to force fresh fetch. Better long-term: Clone flake on-device and use path flakeref (`--flake ~/.nix-config`), which has no TTL.
 
-### 2026-07-31 — Stale OPENSSL_DIR Fish Variable Broke openssl-sys Cargo Builds
+**Failure 4: Login shell broken after partial activation**
+- **Symptom:** Activation replaced `/bin/login` and `login-inner` (transitioning to `user.shell = fish`) but crashed in `installPackages`. Fish became the live login shell without full system initialization. Consequence: Fish echoed every keystroke but executed nothing; no prompt appeared.
+- **Root cause:** `login-inner` terminated before `installPackages` completed. New shell was live but system was half-initialized.
+- **Prevention & Escape:** Failsafe session (long-press app icon → "New session (failsafe)") runs OUTSIDE proot. Use `$PREFIX/bin/login bash` to re-enter proot with bash instead of configured fish. This is the escape hatch for any future broken-login: `$PREFIX/bin/login <command>` execs the command inside proot (see `modules/environment/login/login-inner.nix:142-144`). Cleaner than failsafe, which lands without `/nix` and unwritable `TMPDIR`.
 
-**Symptom:** Cargo install of lonkero failed during compilation: `error: 'libdir … does not contain the required files'` during the openssl-sys build phase.
+### 2026-08-02 — Nix-on-Droid Activation: PTY Failure in `installPackages` / User-Environment Build — ROOT CAUSE UNRESOLVED
 
-**Root cause:** Fish universal variable `OPENSSL_DIR=/nix/store/…-openssl-3.6.3-dev/` was set (likely by hand at some point, not in Nix config — `grep -rn OPENSSL_DIR` across flake.nix and home/*.nix found nothing). The `openssl-sys` Rust crate checks `OPENSSL_DIR` first during build; if set, it bypasses pkg-config entirely and looks for shared libraries directly in that directory. The `.dev` output contains headers and `openssl.pc` but NO shared libraries (`.so` files). When openssl-sys found the libdir lacked the required shared libs, it panicked with exactly that error.
+**Incident:** After resolving the four issues above, activation dies during `installPackages` when building a user-environment derivation for the ~500-package nix-on-droid-path closure.
 
-**Secondary issue:** Even after removing the stale env var and rebuilding, the binary's RPATH was `/nix/store/…-shell/lib` (from the throwaway `nix-shell` environment), so it failed at runtime: `libssl.so.3: cannot open shared object file: No such file or directory`. The linked binary had a transient RPATH pointing into a garbage-collected directory.
+**Symptom:** `error: getting pseudoterminal attributes: Permission denied` / `error: … while waiting for the build environment for '/nix/store/…-user-environment.drv' to initialize; unexpected EOF reading a line`.
 
-**Prevention rules:**
-1. Never set `OPENSSL_DIR` environment variable, especially not to `.dev` outputs. The pkg-config mechanism resolves openssl correctly on its own (`nix-shell -p pkg-config openssl` auto-exposes it via pkg-config's setup hook).
-2. For cargo installs of crates needing openssl at build time, always stamp a persistent RPATH via: `RUSTFLAGS="-C link-arg=-Wl,-rpath,/run/current-system/sw/share/nix-ld/lib" nix-shell -p pkg-config openssl --run 'cargo install <crate>'`. The `/run/current-system/sw/share/nix-ld/lib` directory is stable across boots and GC because it is populated by `programs.nix-ld.libraries` in `nixos/configuration.nix`. As long as the libraries list contains `openssl.out` (it does at line 288), that directory will contain `libssl.so.3` and `libcrypto.so.3`.
-3. If `OPENSSL_DIR` or similar persistent environment-variable pins exist in `~/.config/fish/fish_variables`, `.bashrc`, `.zshrc`, or similar shell state files, inspect them regularly. Stale store paths will break builds and prevent Nix garbage collection of their targets. Use `set -Ue VARNAME` in fish or `unset VARNAME` in bash/zsh to clear them permanently.
-4. The pattern `nix-shell` (not `nix shell`) is mandatory — only the former runs pkg-config's setup hook to expose the dev output. `nix shell` (flake-based, newer) does not.
+**What is ruled out** (verified by direct on-device test in a clean proot environment with `TMPDIR=/tmp`):
+- NOT general pty unavailability under proot. `nix-build` and `nix build` both execute trivial derivations ("echo $out > hi") cleanly to completion.
+- NOT nix version. Generation 1 ships nix 2.18.8, which completes builds without error.
+- NOT TMPDIR or disk space. Setting `TMPDIR=/tmp` and confirming 322 GB free does not eliminate the error.
+- NOT stdout piping or closed stdin (which affect pty initialization). `nix build` with redirected I/O on the same trivial derivations handles ptys correctly.
+- NOT a fundamental user-environment build limitation. `nix profile install tree-2.3.2-man` (a single pre-cached package) builds its user-environment.drv cleanly with no errors.
+- **Specific to the real nix-on-droid-path closure**, which pulls ~500 packages (home/common + agents.nix).
 
-**Applied fix (2026-07-31):** (1) Cleared the fish universal variable: `set -Ue OPENSSL_DIR`. (2) Rebuilt lonkero with the RUSTFLAGS + nix-shell pattern. (3) Verified the binary now links cleanly to the stable nix-ld lib directory: `ldd ~/.cargo/bin/lonkero | grep libssl` → `libssl.so.3 => /run/current-system/sw/share/nix-ld/lib/libssl.so.3`. (4) Confirmed runtime: `lonkero --version` prints `3.5.0`. The binary now persists across tmpfs wipes because the RPATH points to a durable location.
+**Current hypothesis:** Bisecting by closure size. Dropped `droid/agents.nix` (commit `fa3276aa…`) to test activation with `home/common` only. If activation succeeds, the agent closure is the trigger; re-add packages in halves. If activation fails identically, closure size isn't the cause and the defect is in `home/common` options or nix-on-droid system layer.
+
+**Prevention rule (once root cause confirmed):** Document the trigger and add appropriate workaround or flake change.
+
+**Status:** Bisect test (agents.nix dropped) in progress on device 2026-08-02.

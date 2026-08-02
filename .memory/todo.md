@@ -65,9 +65,28 @@ Implement path-prefix routing for `.memory/` inbox ingestion. See Decision #17.
 - [ ] Register hook in `~/.claude/settings.json` as SessionEnd event
 - [ ] Test with dummy work note: edit a dots file, create test note, verify routing on next sync
 
-### Nix-on-Droid Blog Series (2026-08-02 — DEFERRED)
+### Nix-on-Droid Activation — PTY Failure Bisect (2026-08-02 — BLOCKING)
 
-**Status:** V1 implementation complete and verified. Next phase is documentation.
+**Status:** First switch on phone fails during `installPackages` phase with "getting pseudoterminal attributes: Permission denied". Three prior on-device issues resolved; this one remains. Root cause narrowed but not identified.
+
+**What's ruled out** (verified by direct on-device test):
+- NOT general pty unavailability (trivial derivations build, small user-environment builds succeed)
+- NOT nix version (2.18.8 is fine)
+- NOT TMPDIR or disk space issues
+- Specific to building user-environment from ~500-package nix-on-droid-path closure
+
+**In progress:**
+- Bisect by dropping `droid/agents.nix` to test if closure size is the trigger (commit `fa3276aa…` on origin/main)
+- If activation succeeds: re-add packages in halves until failure point
+- If activation fails identically: cause is in `home/common` or nix-on-droid system layer
+
+**Next step:** User runs `nix-on-droid switch --flake github:lowcache/volnixos/fa3276aa01cd07dd9f09ac24e129182cf63b4401` on phone (currently downloading cached paths). See `mistakes.md #13–14` for full diagnostic sequence.
+
+**Blocker on:** Achieving working phone shell. Desktop side is complete and verified.
+
+### Nix-on-Droid Blog Series (2026-08-02 — DEFERRED, BLOCKS ON ACTIVATION FIX)
+
+**Status:** V1 implementation complete and verified (laptop side). Awaits working phone to validate end-to-end. Blog series deferred until activation PTY issue is resolved.
 
 **Planned blog series (3-5 posts):**
 - [ ] Architecture & portable layer strategy
@@ -76,4 +95,8 @@ Implement path-prefix routing for `.memory/` inbox ingestion. See Decision #17.
 - [ ] (Optional) Performance profiling on aarch64
 - [ ] (Optional) Troubleshooting & runtime gotchas
 
-**Lower priority than other work.**
+**Lower priority than fixing activation.
+
+---
+
+## BACKLOG / DEFERRED
