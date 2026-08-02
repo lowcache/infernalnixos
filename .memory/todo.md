@@ -1,7 +1,7 @@
 ---
 type: todo
 project: Vol NixOS
-last_updated: 2026-07-29
+last_updated: 2026-08-02
 status: active
 ---
 
@@ -10,6 +10,25 @@ status: active
 ---
 
 ## IN PROGRESS / AWAITING USER ACTION
+
+### nix-on-droid Port & Blog Series (2026-08-02 — PROPOSED)
+
+**Scope:** Create nix-on-droid support for Vol NixOS, port parts of volnixos to Android via nix-on-droid app, write blog post series documenting the process, explore morphoAgent MCP server cross-platform integration.
+
+**Reference:** `nixos/phone-agent/` directory contains existing Termux + Shizuku setup documentation.
+
+**Architectural choice (PENDING DECISION):** Separate flake (independent versioning, cleaner publishing, easier to showcase as standalone project) vs. integrated output in current flake (simpler repo structure, shared dependencies). **Once decided, add to decisions.md as Decision #31.**
+
+**Investigation steps:**
+- [ ] Decide architectural approach (separate flake vs. output) — consider blog audience expectations, versioning story, reusability
+- [ ] Review `nixos/phone-agent/README.md` and existing Termux/Shizuku infrastructure
+- [ ] Define MVP scope for v1 (minimal viable nix-on-droid config; what's the blog post's focus?)
+- [ ] Assess morphoAgent MCP server porting requirements (already running on S26 Ultra?)
+- [ ] Sketch blog post outline (audience, scope, technical depth, narrative arc)
+- [ ] Implement chosen architecture (flake structure, module organization, CI/build)
+- [ ] Test on real nix-on-droid install
+
+---
 
 ### Noctalia Bar — Dual Wrap-Around Layout (2026-06-22 — LIVE, CAPTURE PENDING)
 
