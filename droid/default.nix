@@ -33,18 +33,29 @@
 
   time.timeZone = "America/New_York";
 
-  # Termux-compat shims. These work by broadcasting Android intents at
-  # nix-on-droid's OWN package, so they are independent of the Termux app.
-  android-integration = {
-    am.enable = true;
-    termux-open.enable = true;
-    termux-open-url.enable = true;
-    termux-setup-storage.enable = true;
-    termux-reload-settings.enable = true;
-    termux-wake-lock.enable = true;
-    termux-wake-unlock.enable = true;
-    xdg-open.enable = true;
-  };
+  # Termux-compat shims (termux-open, termux-setup-storage, termux-wake-lock,
+  # xdg-open, am). All default to false and are DELIBERATELY LEFT OFF.
+  #
+  # Enabling any of them pulls `termux-am`, which is one of nix-on-droid's own
+  # packages — built from source with cmake, not a nixpkgs package. Upstream
+  # publishes it prebuilt on nix-on-droid.cachix.org, but only against
+  # UPSTREAM'S pinned nixpkgs. Because this flake points nix-on-droid at our
+  # nixpkgs (the whole point: one package set for phone and laptop), the derivation
+  # hashes differ, the cachix build no longer matches, and the phone has to
+  # compile it locally. That fails under proot:
+  #
+  #   Running phase: unpackPhase
+  #   cp: setting permissions for 'source': No such file or directory
+  #   do not know how to unpack source archive /nix/store/...-source
+  #
+  # Same class of failure as tar's "Cannot change mode ..." — proot cannot set
+  # permissions on freshly created files during unpack. It is not fixable from
+  # here, and it is the cost of sharing one nixpkgs.
+  #
+  # To get these back, either accept a second nixpkgs for nix-on-droid (drop the
+  # `nixpkgs.follows`, so its cachix builds match again), or wait for an
+  # upstream aarch64 build against a newer nixpkgs.
+  # android-integration = { ... };
 
   nix = {
     extraOptions = ''
