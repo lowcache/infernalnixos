@@ -227,6 +227,22 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
 - Phone dry-build: 362.52 MiB download / 4788.43 MiB unpacked, zero source builds.
 - `make droid-check` evaluates successfully.
 
+### Nix-on-Droid Activation Diagnostic Sequence (2026-08-02, In Progress)
+
+**PTY Failure Isolation (2026-08-02):** First `nix-on-droid switch` failed during `installPackages` phase with `error: getting pseudoterminal attributes: Permission denied`. Multiple hypotheses tested and eliminated via on-device diagnostics:
+- NOT general pty unavailability: trivial derivations build cleanly (`tree-2.3.2-man` user-environment succeeds)
+- NOT nix version (2.18.8 current, 2.34.8 incoming post-activation)
+- NOT TMPDIR/disk space/stdout piping issues
+- **Likely trigger:** Full ~500-package nix-on-droid-path closure; single-package installs work
+
+**Bisect test (agents.nix dropped, 2026-08-02):** Dropped `droid/agents.nix` and re-ran `nix-on-droid build`. Build succeeded cleanly, generation `9y0bmwnw5z6wnsgqf1wn0qlddf273mc1-nix-on-droid-generation` created. Full nix-on-droid-path identified: `/nix/store/sks5micnwsl228ifblhy422ybwnqwf0w-nix-on-droid-path`. Confirms flake/build-graph are correct; error confined to activation step.
+
+**Current test:** Direct `nix-env --profile /tmp/testprof2 --install <full-nix-on-droid-path>` to reproduce the pty failure in isolation and determine if it's environment-specific or a nix upstream issue. In progress.
+
+**Version bump pending:** Successful activation will upgrade nix from 2.18.8 to 2.34.8 as part of new generation.
+
+**Profile pollution (2026-08-02):** Early diagnostic `nix profile install` calls against live profile converted it from nix-env style to `nix profile` style (created `manifest.json`). This flipped the activation code path and manufactured a secondary error unrelated to the pty issue. Cleanup pending: `nix profile remove 1 2`.
+
 ---
 
 ## 7. Application Status (2026-07-14, Updated 2026-07-31)

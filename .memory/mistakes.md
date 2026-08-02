@@ -114,30 +114,6 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 * **Prevention Rule:** If GTK/Electron file pickers or portal Settings fail with `AccessDenied` / `Unable to open /proc/<pid>/root`, do NOT chase portal backends, icons, or `GTK_USE_PORTAL`. Reproduce with `gdbus call --session --dest org.freedesktop.portal.Desktop --object-path /org/freedesktop/portal/desktop --method org.freedesktop.portal.Settings.ReadAll '[]'`; if it errors, the app-id step is broken. Compare against `dbus-run-session -- <same call>`. If the daemon works and the live broker bus does not, set `services.dbus.implementation = "dbus"`.
 * **Rebuild caution:** Switching the dbus implementation restarts the message bus on `switch` and will tear down the running Wayland session (see Mistake #1). Apply via reboot, or run the rebuild detached (tmux / `systemd-run`).
 
-### 2026-08-02 — Nix-on-Droid First Switch: Four On-Device Failures, Three Resolved
-
-**Incident:** Phone's first `nix-on-droid switch` from GitHub encountered four blocking failures in sequence during and after flake evaluation.
-
-**Failure 1: Numtide cache key untrusted**
-- **Symptom:** Packages ignored from cache.numtide.com; phone recompiled llm-agents packages from source.
-- **Root cause:** `nix.conf` changes only land AFTER successful activation. The first switch evaluates with the old config, which has no trusted numtide key.
-- **Prevention:** Use `adb push droid/nix.conf /data/data/com.termux.nix/files/home/.config/nix/nix.conf` BEFORE the first switch. The app sandbox (`/data/data/com.termux.nix/files`) is readable from failsafe session. Persist `nix.conf` there across app shutdowns.
-
-**Failure 2: `termux-am` unbuildable under proot**
-- **Symptom:** `android-integration` options enabled by default pulled nix-on-droid's `termux-am` package. Phone attempted to build it; failed with `cp: setting permissions for 'source': No such file or directory`.
-- **Root cause:** nix-on-droid's own packages are prebuilt on nix-on-droid.cachix.org only against nix-on-droid's UPSTREAM nixpkgs pin. When this flake pins nix-on-droid to OUR nixpkgs, derivation hashes diverge, cache miss, phone must compile. proot sandbox breaks unpack phases (no real UID/GID mapping), so tar/chmod operations fail.
-- **Prevention:** Comment out all `android-integration.*` options in `droid/default.nix`. These enable intent broadcasts to Termux; not needed (phone-agent MCP stays in Termux regardless). Revisit only if future nix-on-droid releases add features critical to the workflow.
-
-**Failure 3: Flake tarball cache expires between retries**
-- **Symptom:** Second `nix-on-droid switch` from `github:lowcache/volnixos` re-evaluated and reported "unable to download … HTTP error 404" / "not a commit hash".
-- **Root cause:** `--flake github:owner/repo` fetches tarballs; nix caches them for 3600s default. Two runs within TTL reuse the old tarball; past TTL each fetch new. Short git hashes (7–12 chars) are rejected as ambiguous; nix requires full 40-char SHA for `github:` flake URIs.
-- **Prevention:** Use full commit SHA in flakeref (`github:owner/repo/40charSHA`) OR pass `--option tarball-ttl 0` to force fresh fetch. Better long-term: Clone flake on-device and use path flakeref (`--flake ~/.nix-config`), which has no TTL.
-
-**Failure 4: Login shell broken after partial activation**
-- **Symptom:** Activation replaced `/bin/login` and `login-inner` (transitioning to `user.shell = fish`) but crashed in `installPackages`. Fish became the live login shell without full system initialization. Consequence: Fish echoed every keystroke but executed nothing; no prompt appeared.
-- **Root cause:** `login-inner` terminated before `installPackages` completed. New shell was live but system was half-initialized.
-- **Prevention & Escape:** Failsafe session (long-press app icon → "New session (failsafe)") runs OUTSIDE proot. Use `$PREFIX/bin/login bash` to re-enter proot with bash instead of configured fish. This is the escape hatch for any future broken-login: `$PREFIX/bin/login <command>` execs the command inside proot (see `modules/environment/login/login-inner.nix:142-144`). Cleaner than failsafe, which lands without `/nix` and unwritable `TMPDIR`.
-
 ### 2026-08-02 — Nix-on-Droid Activation: PTY Failure in `installPackages` / User-Environment Build — ROOT CAUSE UNRESOLVED
 
 **Incident:** After resolving the four issues above, activation dies during `installPackages` when building a user-environment derivation for the ~500-package nix-on-droid-path closure.
@@ -157,3 +133,15 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 **Prevention rule (once root cause confirmed):** Document the trigger and add appropriate workaround or flake change.
 
 **Status:** Bisect test (agents.nix dropped) in progress on device 2026-08-02.
+
+### 2026-08-02 — Diagnostic `nix profile install` Pollution & Hypothesis Uncertainty
+
+**Symptom:** During isolation of the nix-on-droid activation PTY failure, diagnostic `nix profile install tree-2.3.2-man` calls against the live profile created `/home/nix-on-droid/.nix-profile/manifest.json`, converting the profile from nix-env style to `nix profile` style. Subsequent activation attempts took a different code path (inside `modules/environment/path.nix:45–50`, the `if [[ -e manifest.json ]]` branch). This branch had an unrelated bug (incompatible `nix profile list` parsing with nix 2.18.8 output format), which was reported as evidence of the PTY failure, but was actually a secondary defect introduced by the profile mutation.
+
+**Root cause:** Ran diagnostic tests against the live profile (`~/.nix-profile`) instead of a scratch profile (`/tmp/testprof`). This polluted state in a way that changed the activation code path.
+
+**Consequence:** Delayed identification of the real pty issue by one round trip. The actual pty failure is in the nix-env branch, but this pollution switched to nix profile and obscured that.
+
+**Prevention rule:** Always use a scratch profile for diagnostic package-install tests (e.g., `nix-env --profile /tmp/testprof --install <pkg>` or `nix profile install --profile /tmp/scratch <pkg>`). Never run install diagnostics against `~/.nix-profile` or any other live profile. Cleanup is difficult (untracking `manifest.json` requires `rm` which can corrupt the profile state if interrupted), so avoidance is far better than reversal.
+
+**Cleanup:** `nix profile remove 1 2` will remove the polluted generations. Defer until after the current direct nix-env test completes (which uses a true scratch profile `/tmp/testprof2`).

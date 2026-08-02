@@ -65,22 +65,21 @@ Implement path-prefix routing for `.memory/` inbox ingestion. See Decision #17.
 - [ ] Register hook in `~/.claude/settings.json` as SessionEnd event
 - [ ] Test with dummy work note: edit a dots file, create test note, verify routing on next sync
 
-### Nix-on-Droid Activation — PTY Failure Bisect (2026-08-02 — BLOCKING)
+### Nix-on-Droid Activation — PTY Failure Bisect (2026-08-02 — BISECT PASSED, DIRECT TEST IN PROGRESS)
 
-**Status:** First switch on phone fails during `installPackages` phase with "getting pseudoterminal attributes: Permission denied". Three prior on-device issues resolved; this one remains. Root cause narrowed but not identified.
+**Status:** Bisect commit (agents.nix dropped, `fa3276aa…`) successfully evaluates and builds. Generation created: `9y0bmwnw5z6wnsgqf1wn0qlddf273mc1-nix-on-droid-generation`. Full nix-on-droid-path hash: `sks5micnwsl228ifblhy422ybwnqwf0w-nix-on-droid-path`. Error confined to activation step, not build graph.
 
-**What's ruled out** (verified by direct on-device test):
-- NOT general pty unavailability (trivial derivations build, small user-environment builds succeed)
-- NOT nix version (2.18.8 is fine)
-- NOT TMPDIR or disk space issues
-- Specific to building user-environment from ~500-package nix-on-droid-path closure
+**Hypotheses tested and eliminated** (2026-08-02):
+- NOT general pty unavailability (trivial derivations + single-package user-env builds all succeed)
+- NOT nix version (2.18.8 is fine; 2.34.8 incoming post-activation)
+- NOT TMPDIR, disk space, or stdout piping issues
+- **Likely trigger remains:** Full ~500-package closure in user-environment derivation
 
-**In progress:**
-- Bisect by dropping `droid/agents.nix` to test if closure size is the trigger (commit `fa3276aa…` on origin/main)
-- If activation succeeds: re-add packages in halves until failure point
-- If activation fails identically: cause is in `home/common` or nix-on-droid system layer
+**Current test (in progress):** Direct `nix-env --profile /tmp/testprof2 --install <nix-on-droid-path>` to reproduce the pty error with the full closure in isolation. If this succeeds, the error is specific to how the activation environment invokes it. If it fails, it's a nix upstream issue with large closures under proot.
 
-**Next step:** User runs `nix-on-droid switch --flake github:lowcache/volnixos/fa3276aa01cd07dd9f09ac24e129182cf63b4401` on phone (currently downloading cached paths). See `mistakes.md #13–14` for full diagnostic sequence.
+**Next step:** User runs direct nix-env test; report results. If successful, re-add `droid/agents.nix` in halves to identify which package or subset triggers the pty error. If failed, file upstream bug report with nix-on-droid/nix projects.
+
+**Cleanup:** Profile pollution from earlier `nix profile install` diagnostics; cleanup via `nix profile remove 1 2` after this test completes. See mistakes.md #15.
 
 **Blocker on:** Achieving working phone shell. Desktop side is complete and verified.
 
