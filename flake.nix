@@ -57,6 +57,23 @@
       url = "github:lowcache/memd";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Nix-on-Droid: the aarch64 Android target (`nixOnDroidConfigurations.default`).
+    # No release branch is current — release-24.05 is the newest tag and it is
+    # ~2 years behind, so track master and pin nixpkgs/home-manager to ours so the
+    # phone and volnix evaluate against the same package set.
+    nix-on-droid = {
+      url = "github:nix-community/nix-on-droid";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+        # Docs/formatter-only inputs. We never evaluate nix-on-droid's own
+        # `formatter`/`checks`/docs outputs, so drop them rather than carry
+        # extra locked revisions the phone would have to resolve.
+        nix-formatter-pack.follows = "";
+        nmd.follows = "";
+        nixpkgs-docs.follows = "nixpkgs";
+      };
+    };
   };
 
   outputs =
@@ -69,6 +86,7 @@
     let
       username = "lowcache";
       system = "x86_64-linux";
+      droidSystem = "aarch64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
     in
     {
@@ -102,6 +120,28 @@
             };
           }
         ];
+      };
+
+      # Nix-on-Droid target. Built and switched ON THE PHONE
+      # (`nix-on-droid switch --flake .`) — there is no aarch64 emulation on
+      # volnix, so the laptop can only evaluate this, not build it
+      # (`make droid-check`).
+      nixOnDroidConfigurations.default = inputs.nix-on-droid.lib.nixOnDroidConfiguration {
+        pkgs = import nixpkgs {
+          system = droidSystem;
+          overlays = [
+            # Recommended by upstream: supplies the on-device packages
+            # (proot-static, termux shims) the nix-on-droid modules reference.
+            inputs.nix-on-droid.overlays.default
+            # Same overlay volnix uses, so `pkgs.llm-agents.*` resolves on the
+            # phone too. llm-agents.nix builds aarch64-linux; the substituter it
+            # publishes to is declared in droid/default.nix.
+            inputs.llm-agents.overlays.shared-nixpkgs
+          ];
+          config.allowUnfree = true;
+        };
+        modules = [ ./droid ];
+        home-manager-path = home-manager.outPath;
       };
 
       # Add this to allow building/running the VM packages

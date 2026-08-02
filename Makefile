@@ -25,6 +25,7 @@ MKDOCS := nix shell --impure --expr 'let f = builtins.getFlake (toString ./.); p
 
 # --- All Targets Declared PHONY ---
 .PHONY: help switch switch-detached build test dry-activate boot \
+        droid-check droid-plan droid-switch \
         run-netgate run-tailscale \
         sops-edit sops-rekey sops-view \
         check fmt update update-nixpkgs trash \
@@ -75,6 +76,38 @@ dry-activate:
 ## boot: Stage the rebuild for the next boot
 boot:
 	sudo TMPDIR=$(REBUILD_TMPDIR) nixos-rebuild boot --flake .#$(HOST)
+
+# ==============================================================================
+# Nix-on-Droid (aarch64 phone target)
+# ==============================================================================
+# The phone builds and switches itself — volnix has no aarch64 emulation, so
+# these laptop-side targets are evaluation gates only. `droid-switch` is what
+# you run ON the phone, from a clone of this repo.
+#
+# `--impure` is required: nix-on-droid's own CLI passes it too, because the
+# bootstrap proot binary is referenced via `builtins.storePath`.
+
+# NOTE: the '#' must be escaped — in a Make variable assignment an unescaped
+# '#' starts a comment and would silently truncate this to '.'.
+DROID_ATTR := .\#nixOnDroidConfigurations.default
+
+## droid-check: Evaluate the phone's Home Manager layer from the laptop (no build)
+droid-check:
+	@echo "==Evaluating $(DROID_ATTR) home-manager layer (aarch64-linux)=="
+	nix eval --impure --raw \
+		'$(DROID_ATTR).config.home-manager.config.home.activationPackage.drvPath'
+	@echo ""
+	@echo "++ Evaluates clean. The system layer's uid/gid probe is import-from-"
+	@echo "++ derivation and can only run on the device."
+
+## droid-plan: List what the phone would fetch vs. compile (dry-run, laptop-side)
+droid-plan:
+	nix build --impure --dry-run \
+		'$(DROID_ATTR).config.home-manager.config.home.activationPackage'
+
+## droid-switch: Build+activate on the PHONE (run this inside Nix-on-Droid)
+droid-switch:
+	nix-on-droid switch --flake .
 
 # ==============================================================================
 # MicroVM Guest Operations

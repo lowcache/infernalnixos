@@ -3,6 +3,9 @@
   home = {
     packages =
       let
+        # POSIX/toolchain basics (coreutils, findutils, gawk, make, python3,
+        # nodejs, go, …) now come from home/common/packages.nix, which the
+        # nix-on-droid config shares. Only host-bound build tooling is left here.
         baseDev = with pkgs; [
           gcc
           automake
@@ -12,26 +15,15 @@
           glibc
           gdb
           cmake
-          gnumake
           progress
-          moreutils
           cpufrequtils
           strace
           ltrace
           gperf
-          patch
-          diffutils
-          findutils
-          gawk
-          gnugrep
-          gnutar
-          gzip
-          coreutils
           go
-          dart-sass
-          python3
-          glib
           nodejs
+          dart-sass
+          glib
           gtk3
           gtk4
           dconf
@@ -141,53 +133,33 @@
           nerd-fonts.zed-mono
           nerd-fonts.atkynson-mono
         ];
+        # The portable half of this set (fish, git, gh, fzf, eza, bat, ripgrep,
+        # fd, jq, micro, htop, lazygit, nil, nixfmt, sops, …) moved to
+        # home/common/packages.nix. What remains needs a desktop session,
+        # host hardware, or an x86_64-only source.
         termUi = with pkgs; [
-          fish
-          git
           gvfs
-          gh
           gh-s
           ghdorker
           ghfetch
           ghgrab
-          fzf
-          eza
           tgpt
           hdrop
-          bat
-          bat-extras.batgrep
-          gnupg
           gpg-tui
-          sops
-          ssh-to-age
-          ripgrep
           ripgrep-all
+          pandoc # backend for micro's `preview` plugin (see home/common/tools.nix)
           flatpak
           feh
-          fd
-          jq
-          bc
           tor
-          micro
-          pandoc # backend for micro's `preview` plugin (see home/shell.nix)
           cryptsetup
-          htop
-          psmisc
-          direnv
           playerctl
           brightnessctl
-          socat
           gawk
           acpi
-          tree
-          lazygit
           upower
           ddcutil
           clinfo
-          git-lfs
-          nil
           android-tools
-          nixfmt
           inputs.volinit.packages.${pkgs.stdenv.hostPlatform.system}.default
         ];
         nixAi = with pkgs; [
