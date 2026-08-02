@@ -1,7 +1,7 @@
 ---
 type: state
 project: Vol NixOS
-last_updated: 2026-07-31
+last_updated: 2026-08-02
 status: active
 ---
 
@@ -189,11 +189,43 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
 
 ---
 
-## 6. Application Status (2026-07-14, Updated 2026-07-31)
+## 6. Nix-on-Droid — Aarch64 Android Target (2026-08-02 — COMPLETE)
+
+**Architecture:** `nixOnDroidConfigurations.default` in the existing volnixos flake. One `flake.lock`, evaluated on volnix but built on the phone. Portable Home Manager layer (`home/common/`) shared with desktop.
+
+**Portable layer (`home/common/`):** Platform-agnostic configuration — fish shell (aliases, abbrs, functions, PATH), git, micro (syntax/tools), direnv, common CLI packages (ripgrep, fd, fzf, eza, jq, yq, etc.). Extracted from `home/shell.nix` and `home/pkgs.nix`; both hosts import it, adding their own specifics on top. **Verified behavior-preserving refactor (2026-08-02):** Desktop package list, aliases, functions, git settings, micro settings, interactive shell init byte-identical before/after.
+
+**Host-specific layers:**
+- **volnix** (`home/shell.nix`, `home/pkgs.nix`): Noctalia/niri integration, systemd units, sops-nix secrets, impermanence, build toolchains (node, go, pandoc, ripgrep-all), dev/test runners.
+- **droid** (`droid/home.nix`): nix-on-droid module, android-integration services, basic CLI utilities, agent tooling. `droid/agents.nix` packages verified to have aarch64-linux substitutes at current lock (claude-code, codex, gemini-cli, rtk, MCP servers).
+
+**Closure budget achieved (2026-08-02):**
+- **Naive port (pre-refactor):** 83 derivations built (incl. `nodejs` from source), 158 MiB download, 3906 MiB unpacked.
+- **With common layer, no source builds on phone:** 87 derivations built (all HM glue; no app source compiles), 399 MiB download, 2864 MiB unpacked.
+- **Upstream requirement:** nix-on-droid's proot-termux binary available only from `https://nix-on-droid.cachix.org` (key `nix-on-droid.cachix.org-1:56snoM…`). Device config enables this by default. volnix currently must pass the key explicitly when evaluating (see `flake.nix` comments).
+
+**Constraints discovered:**
+- **nix-on-droid is not Termux.** It is a separate Android package (`com.termux.nix`) running in its own sandbox — not an authorized caller of Termux:API. Phone-agent MCP stays in Termux, accessed via network (Tailscale or loopback), just as now.
+- **No aarch64 emulation on volnix:** `boot.binfmt` is AppImage-only. Flake evaluation happens on volnix (`nix flake check`, `make droid-check` work); system layer evaluation fails (upstream's `modules/user.nix` runs IFD with aarch64 derivation). Build happens on the phone (`nix-on-droid switch --flake .`).
+- **`--impure` is mandatory for evaluation:** nix-on-droid references proot-termux via `builtins.storePath`, requiring impure eval. Upstream's own CLI (`nix-on-droid.sh:32`) passes `--impure`.
+
+**Makefile targets added (2026-08-02):**
+- `make droid-check`: Evaluate the HM layer (aarch64-linux), report any eval errors.
+- `make droid-plan`: Dry-run the HM activation package, show closure size and what would be fetched.
+- `make droid-switch`: (Placeholder for future; actual switch runs on the phone via `nix-on-droid switch --flake .`).
+
+**Verification (2026-08-02):**
+- Full system dry-build (volnix): 15 trivial HM glue derivations rebuild, zero packages. Desktop behavior unchanged.
+- Lints (deadnix, statix, nix flake check): clean.
+- Phone dry-build: 482 paths fetched, zero source builds.
+
+---
+
+## 7. Application Status (2026-07-14, Updated 2026-07-31)
 
 ### Krita 6.0.1 native + Font Gallery pykrita Plugin (2026-06-22 — User-Text Input, Implementation Validated)
 
-- **Status:** Font Gallery pykrita plugin at `~/Storage/krita-master/krita/pykrita/font_gallery/` uses **Qt rasterization** (SVG text-shape insertion crashed Krita 6.0.1 err=84; Qt path bypasses this entirely). **Enhanced (2026-06-22):** Plugin now supports **user-typed text input** (QLineEdit + size spinbox, 8–600 pt, default 96). Implementation syntax-validated; multi-line rendering validated standalone (819×346 ARGB32, 37328 opaque pixels); layer calls proven working via prior sample-text test on canvas.
+- **Status:** Font Gallery pykrita plugin at `~/Storage/krita-master/krita/pykrita/font_gallery/` uses **Qt rasterization** (SVG text-shape insertion crashed Krita 6.0.1 err=84; Qt path bypasses this entirely). **Enhanced (2026-06-22):** Plugin now supports **user-typed text input** (QLineEdit + size spinbox, 8–600 pt, default 96). Implementation syntax-validated; multi-line rendering validated standalone (819×346 ARGB32, 37328 opaque pixels); layer insertion proven working via prior sample-text test on canvas.
 - **Files:** `font_gallery.desktop` + `font_gallery/{__init__.py,font_gallery.py}`. Targets PyQt6 (Krita 6 is Qt6); uses scoped `DockWidgetFactoryBase.DockPosition.DockRight` enum.
 - **Krita Installation (2026-06-22):** **Nix** `/nix/store/...-krita-unwrapped-6.0.1` — loads cleanly, Font Gallery plugin active. **Flatpak** — uninstalled (was crashing SIGABRT on launch; removed to avoid PATH conflicts). Plugin only available in Nix build.
 - **Limitation (honest):** Output is a **raster image**, not editable vector text. To change wording, retype and double-click again for a fresh layer.

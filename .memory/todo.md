@@ -11,22 +11,13 @@ status: active
 
 ## IN PROGRESS / AWAITING USER ACTION
 
-### nix-on-droid Port & Blog Series (2026-08-02 — PROPOSED)
+### Nix-on-Droid Port — V1 Complete, Blog + MCP Integration Deferred (2026-08-02)
 
-**Scope:** Create nix-on-droid support for Vol NixOS, port parts of volnixos to Android via nix-on-droid app, write blog post series documenting the process, explore morphoAgent MCP server cross-platform integration.
+**Status:** Implementation complete (2026-08-02). `nixOnDroidConfigurations.default` output added, portable `home/common/` extracted and verified behavior-preserving, `droid/{default.nix,home.nix,agents.nix}`, Makefile targets (`droid-check`, `droid-plan`, `droid-switch`), all lints clean. Zero source builds on phone, agent stack cached.
 
-**Reference:** `nixos/phone-agent/` directory contains existing Termux + Shizuku setup documentation.
+**Next phase (DEFERRED):** Blog post series (3-5 posts documenting the architecture, portable layer strategy, MCP crosspost integration) + MCP agent tooling wired to nix-on-droid's phone-agent Termux shim (enable Claude to control phone via `noctalia msg` + phone-agent MCP).
 
-**Architectural choice (PENDING DECISION):** Separate flake (independent versioning, cleaner publishing, easier to showcase as standalone project) vs. integrated output in current flake (simpler repo structure, shared dependencies). **Once decided, add to decisions.md as Decision #31.**
-
-**Investigation steps:**
-- [ ] Decide architectural approach (separate flake vs. output) — consider blog audience expectations, versioning story, reusability
-- [ ] Review `nixos/phone-agent/README.md` and existing Termux/Shizuku infrastructure
-- [ ] Define MVP scope for v1 (minimal viable nix-on-droid config; what's the blog post's focus?)
-- [ ] Assess morphoAgent MCP server porting requirements (already running on S26 Ultra?)
-- [ ] Sketch blog post outline (audience, scope, technical depth, narrative arc)
-- [ ] Implement chosen architecture (flake structure, module organization, CI/build)
-- [ ] Test on real nix-on-droid install
+**Decision reference:** Decision #31 (architecture, constraints discovered).
 
 ---
 
@@ -39,7 +30,7 @@ status: active
 - [ ] Commit Ayu Green color-engine theme (`dots/color-engine/themes/ayu_green.json`)
 - [ ] Commit regenerated dotfiles (`dots/kitty/`, `dots/starship/starship.toml`)
 
-**Lower priority than convention alignment work.**
+**Lower priority than other work.**
 
 ### Windows 11 VM — Installation In Progress
 

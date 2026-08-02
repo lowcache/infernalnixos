@@ -1,7 +1,7 @@
 ---
 type: decisions
 project: Vol NixOS
-last_updated: 2026-07-27
+last_updated: 2026-08-02
 status: active
 ---
 
@@ -359,7 +359,7 @@ This file catalogs the active, canonical design decisions and system configurati
 
 * **Why:** `~/.nix-profile` is a symlink (`~/.nix-profile → ~/.local/state/nix/profiles/profile`) created and owned by nix. It is not canonical. Listing it under home-manager impermanence `directories` (a) treats the symlink as a directory and (b) tries to own a resource already owned by nix, causing activation conflicts. The real data (the `profile-N-link` generations, `channels` generation, manifest) live in `~/.local/state/nix/profiles/`, which existed on tmpfs and was wiped on boot.
 
-* **Implementation:** 
+* **Implementation:**
   - Remove `.nix-profile` from impermanence `directories` — you don't persist the symlink.
   - Add `.local/state/nix/profiles` to impermanence `local` directories — the canonical store where `nix-env -iA` writes generations and channels.
   - Recreate the compat symlink `~/.nix-profile → ~/.local/state/nix/profiles/profile` declaratively via `home.file` with `force = true` at each activation. This ensures `~/.nix-profile/bin` hits PATH immediately after boot without needing a prior nix command.
@@ -368,5 +368,33 @@ This file catalogs the active, canonical design decisions and system configurati
 * **Caveat:** `nix-env -iA nixos.*` requires the `nixos` channel to be present. Since the `channels` generation is now persisted alongside profiles, it should carry over post-boot — but verify `nix-channel --list` after reboot if an install ever can't resolve the channel.
 
 * **Prevention rule (mistakes.md #11 analog):** Non-canonical symlinks cannot be persisted by impermanence as directories. Identify the canonical data (where the tool writes the actual state), persist that. Recreate compat symlinks declaratively if needed.
+
+---
+
+## 31. Nix-on-Droid Architecture — One Flake, Portable Home Manager Layer, Phone Agent MCP Unchanged (2026-08-02)
+
+* **Decision:** Ship `nixOnDroidConfigurations.default` as a new output in the existing volnixos flake (not a separate flake). Extract a portable Home Manager layer (`home/common/`) shared by both volnix and droid; host-specific layers on top.
+
+* **Why one flake, not separate:** One `flake.lock` means both systems evaluate against identical nixpkgs (lazy evaluation skips non-droid outputs, so volnix-only inputs like lanzaboote don't affect the phone). Simpler to understand, easier to maintain, avoids duplicate `flake.nix` boilerplate. nix-on-droid's own `nixpkgs` and `home-manager` inputs follow the primary ones via `follows = "nixpkgs"` and `follows = "home-manager"`.
+
+* **Portable layer design (`home/common/`):** Platform-agnostic — fish shell (aliases, abbrs, functions, PATH assembly), git config, micro (syntax/tools), direnv, common CLI packages (ripgrep, fd, fzf, eza, jq, yq, coreutils, etc.). Extracted from prior volnix `home/shell.nix` and `home/pkgs.nix`; both hosts import it via `imports = [ ../home/common ]`. Works because `programs.fish.{shellInit,interactiveShellInit}` are `types.lines` (mergeable) and aliases/functions/packages are merging options (no host redefines a shared value). **Verified behavior-preserving refactor (2026-08-02):** Desktop package list (224 entries), aliases, functions, git settings, micro settings identical before/after.
+
+* **Host-specific layers:**
+  - **volnix** keeps `home/shell.nix` (niri/Noctalia integration, systemd units, sops-nix secrets), `home/pkgs.nix` (build toolchains node/go/pandoc, dev runners, ripgrep-all).
+  - **droid** has `droid/home.nix` (nix-on-droid module configuration), `droid/agents.nix` (optional agent tooling — claude-code, codex, gemini-cli, rtk, MCP servers; all have aarch64-linux substitutes).
+
+* **Phone-agent MCP unchanged:** nix-on-droid is not Termux. It is a separate Android package (`com.termux.nix`) with its own sandbox — not an authorized caller of Termux:API. Phone-agent MCP server stays in Termux and is accessed over the network (Tailscale loopback or local network) exactly as now. nix-on-droid provides the declarative dev environment **alongside** Termux, not replacing it. The `android-integration.*` options enabled in the system layer are nix-on-droid's own intent-broadcast mechanism; they don't change this architecture.
+
+* **Closure budget constraint discovered:** Naive port (pre-refactor) was 83 derivations built with `nodejs` compiling from source, 158 MiB download, 3906 MiB unpacked. With `home/common` refactor and build toolchains kept in volnix-only `home/pkgs.nix`: 87 trivial HM glue derivations, zero source builds on phone, 399 MiB download, 2864 MiB unpacked. Agent stack fully cached at current lock (claude-code, codex, gemini-cli, rtk, MCP servers all have substitutes).
+
+* **Makefile targets added:** `make droid-check` (evaluate HM layer on phone target), `make droid-plan` (dry-run show closure), `make droid-switch` (placeholder for future; actual build runs on phone via `nix-on-droid switch --flake .`).
+
+* **Constraints / Findings:**
+  - No aarch64 emulation on volnix. `boot.binfmt` is AppImage-only. Flake evaluation (`nix eval .#…`) works; system layer evaluation fails because upstream's `modules/user.nix` runs IFD with aarch64 derivation. Actual build happens on the phone.
+  - `--impure` is mandatory for evaluation (upstream references proot-termux via `builtins.storePath`). Upstream's own CLI passes it too; not a defect.
+  - proot-termux only on `https://nix-on-droid.cachix.org` (key `nix-on-droid.cachix.org-1:56snoM…`). Device enables it; volnix must pass key when evaluating. Already wired in `flake.nix` comments.
+  - nix-on-droid tracks **master** (no stable release). Newest tag is `release-24.05` (~2 years old). Using master is intentional for latest fixes.
+
+* **Rationale:** Keeps the code DRY (portable layer shared), minimizes flake.lock coupling, enables evaluation from laptop while actual builds run on device where they matter (no fake cross-compilation), and keeps the architecture honest (phone-agent MCP stays where it lives). One flake is simpler than juggling two.
 
 ---
