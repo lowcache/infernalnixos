@@ -4,7 +4,14 @@
   # are set by nix-on-droid's home-manager module — do not set them here.
   imports = [
     ../home/common
-    ./agents.nix
+    # BISECT (2026-08-02): temporarily out. Activation dies in `installPackages`
+    # with "getting pseudoterminal attributes: Permission denied" while building
+    # user-environment.drv. Verified on-device that this is NOT a general proot
+    # problem: trivial derivations build fine under both the old and new CLI, and
+    # `nix profile install` of a small path builds its user-environment cleanly.
+    # It only fails for the full ~500-package closure. Re-add once the minimal
+    # closure activates, then bisect this list.
+    # ./agents.nix
   ];
 
   home.stateVersion = "24.11";
