@@ -28,13 +28,25 @@ make droid-check   # evaluate the phone's HM layer (aarch64) — catches option/
 make droid-plan    # dry-run: what the phone would fetch vs. compile
 ```
 
-On the phone, inside the Nix-on-Droid app:
+On the phone, inside the Nix-on-Droid app. **Do the `nix.conf` step first** — see
+`droid/nix.conf` for why:
 
 ```
+mkdir -p ~/.config/nix
+curl -sfL https://raw.githubusercontent.com/lowcache/volnixos/main/droid/nix.conf \
+  -o ~/.config/nix/nix.conf
+
 nix-on-droid switch --flake github:lowcache/volnixos
 # or, from a local clone:
 make droid-switch
 ```
+
+Skipping it does not fail fast. Nix warns `ignoring substitute ... because it's
+not signed by any of the keys`, silently falls back to building the llm-agents
+set from source, and dies minutes later on
+`python3.14-sqlalchemy-bigquery` — whose tarball cannot be unpacked under proot
+(`tar: Cannot change mode ...`). The packages are all published and signed; the
+key just was not trusted yet.
 
 Both `make droid-check` and `nix-on-droid` itself pass `--impure`. That is not a
 workaround on our side: upstream references the bootstrap `proot-termux` binary
