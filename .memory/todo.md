@@ -11,16 +11,6 @@ status: active
 
 ## IN PROGRESS / AWAITING USER ACTION
 
-### Nix-on-Droid Port — V1 Complete, Blog + MCP Integration Deferred (2026-08-02)
-
-**Status:** Implementation complete (2026-08-02). `nixOnDroidConfigurations.default` output added, portable `home/common/` extracted and verified behavior-preserving, `droid/{default.nix,home.nix,agents.nix}`, Makefile targets (`droid-check`, `droid-plan`, `droid-switch`), all lints clean. Zero source builds on phone, agent stack cached.
-
-**Next phase (DEFERRED):** Blog post series (3-5 posts documenting the architecture, portable layer strategy, MCP crosspost integration) + MCP agent tooling wired to nix-on-droid's phone-agent Termux shim (enable Claude to control phone via `noctalia msg` + phone-agent MCP).
-
-**Decision reference:** Decision #31 (architecture, constraints discovered).
-
----
-
 ### Noctalia Bar — Dual Wrap-Around Layout (2026-06-22 — LIVE, CAPTURE PENDING)
 
 **Status:** Live and fully styled in runtime `~/.local/state/noctalia/settings.toml`, user-approved ("awesome"). **NOT yet committed to git.**
@@ -75,8 +65,15 @@ Implement path-prefix routing for `.memory/` inbox ingestion. See Decision #17.
 - [ ] Register hook in `~/.claude/settings.json` as SessionEnd event
 - [ ] Test with dummy work note: edit a dots file, create test note, verify routing on next sync
 
----
+### Nix-on-Droid Blog Series (2026-08-02 — DEFERRED)
 
-## COMPLETED & ARCHIVED
+**Status:** V1 implementation complete and verified. Next phase is documentation.
 
-(See archive_entries for long list of completed phases and tasks)
+**Planned blog series (3-5 posts):**
+- [ ] Architecture & portable layer strategy
+- [ ] Device setup & Makefile targets
+- [ ] MCP integration with phone-agent Termux shim
+- [ ] (Optional) Performance profiling on aarch64
+- [ ] (Optional) Troubleshooting & runtime gotchas
+
+**Lower priority than other work.**

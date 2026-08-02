@@ -193,21 +193,28 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
 
 **Architecture:** `nixOnDroidConfigurations.default` in the existing volnixos flake. One `flake.lock`, evaluated on volnix but built on the phone. Portable Home Manager layer (`home/common/`) shared with desktop.
 
-**Portable layer (`home/common/`):** Platform-agnostic configuration — fish shell (aliases, abbrs, functions, PATH), git, micro (syntax/tools), direnv, common CLI packages (ripgrep, fd, fzf, eza, jq, yq, etc.). Extracted from `home/shell.nix` and `home/pkgs.nix`; both hosts import it, adding their own specifics on top. **Verified behavior-preserving refactor (2026-08-02):** Desktop package list, aliases, functions, git settings, micro settings, interactive shell init byte-identical before/after.
+**Portable layer (`home/common/`):** Platform-agnostic configuration — fish shell (aliases, abbrs, functions, PATH), git config, micro (syntax/tools), direnv, common CLI packages (ripgrep, fd, fzf, eza, jq, yq, coreutils, etc.). Extracted from prior volnix `home/shell.nix` and `home/pkgs.nix`; both hosts import it via `imports = [ ../home/common ]`. Works because `programs.fish.{shellInit,interactiveShellInit}` are `types.lines` (mergeable) and aliases/functions/packages are merging options (no host redefines a shared value). **Verified behavior-preserving refactor (2026-08-02):** Desktop package list (224 entries), aliases, functions, git settings, micro settings, interactive shell init byte-identical before/after.
 
 **Host-specific layers:**
-- **volnix** (`home/shell.nix`, `home/pkgs.nix`): Noctalia/niri integration, systemd units, sops-nix secrets, impermanence, build toolchains (node, go, pandoc, ripgrep-all), dev/test runners.
-- **droid** (`droid/home.nix`): nix-on-droid module, android-integration services, basic CLI utilities, agent tooling. `droid/agents.nix` packages verified to have aarch64-linux substitutes at current lock (claude-code, codex, gemini-cli, rtk, MCP servers).
+- **volnix** keeps `home/shell.nix` (niri/Noctalia integration, systemd units, sops-nix secrets), `home/pkgs.nix` (build toolchains node/go/pandoc, dev runners, ripgrep-all).
+- **droid** has `droid/home.nix` (nix-on-droid module configuration), `droid/agents.nix` (agent tooling — claude-code, claude-code-router, codex, rtk, mcp-server-sequential-thinking, llmfit + llm-agents packages: ccstatusline, claude-plugins, opencode, zaly, cc-switch-cli, parallel-cli, toon, happy-coder, antigravity-cli [supersedes gemini-cli; llm-agents 1.1.8 fully substitutable on aarch64]).
 
-**Closure budget achieved (2026-08-02):**
+**Phone-agent MCP unchanged:** nix-on-droid is not Termux. It is a separate Android package (`com.termux.nix`) with its own sandbox — not an authorized caller of Termux:API. Phone-agent MCP server stays in Termux and is accessed over the network (Tailscale loopback or local network) exactly as now. nix-on-droid provides the declarative dev environment **alongside** Termux, not replacing it. The `android-integration.*` options enabled in the system layer are nix-on-droid's own intent-broadcast mechanism; they don't change this architecture.
+
+**Closure budget achieved (2026-08-02, with llm-agents + numtide cache):**
 - **Naive port (pre-refactor):** 83 derivations built (incl. `nodejs` from source), 158 MiB download, 3906 MiB unpacked.
-- **With common layer, no source builds on phone:** 87 derivations built (all HM glue; no app source compiles), 399 MiB download, 2864 MiB unpacked.
-- **Upstream requirement:** nix-on-droid's proot-termux binary available only from `https://nix-on-droid.cachix.org` (key `nix-on-droid.cachix.org-1:56snoM…`). Device config enables this by default. volnix currently must pass the key explicitly when evaluating (see `flake.nix` comments).
+- **With common layer only:** 87 derivations built (all HM glue; no app source compiles), 399 MiB download, 2864 MiB unpacked.
+- **With common layer + agent stack:** 95 derivations built (all HM glue + agent tooling), **362.52 MiB download, 4788.43 MiB unpacked, zero source builds**.
+- **Upstream requirements:** 
+  - nix-on-droid's proot-termux: `https://nix-on-droid.cachix.org` (key `nix-on-droid.cachix.org-1:56snoM…`). Device enables by default; volnix must pass key when evaluating.
+  - llm-agents packages: `https://cache.numtide.com` (key `niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=`). Wired in `droid/default.nix` to avoid phone source builds.
 
 **Constraints discovered:**
 - **nix-on-droid is not Termux.** It is a separate Android package (`com.termux.nix`) running in its own sandbox — not an authorized caller of Termux:API. Phone-agent MCP stays in Termux, accessed via network (Tailscale or loopback), just as now.
 - **No aarch64 emulation on volnix:** `boot.binfmt` is AppImage-only. Flake evaluation happens on volnix (`nix flake check`, `make droid-check` work); system layer evaluation fails (upstream's `modules/user.nix` runs IFD with aarch64 derivation). Build happens on the phone (`nix-on-droid switch --flake .`).
 - **`--impure` is mandatory for evaluation:** nix-on-droid references proot-termux via `builtins.storePath`, requiring impure eval. Upstream's own CLI (`nix-on-droid.sh:32`) passes `--impure`.
+- **proot-termux only on `https://nix-on-droid.cachix.org`** (key `nix-on-droid.cachix.org-1:56snoM…`). Device enables it; volnix must pass key when evaluating. Already wired in `flake.nix` comments.
+- **nix-on-droid tracks **master** (no stable release). Newest tag is `release-24.05` (~2 years old). Using master is intentional for latest fixes.
 
 **Makefile targets added (2026-08-02):**
 - `make droid-check`: Evaluate the HM layer (aarch64-linux), report any eval errors.
@@ -215,9 +222,10 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
 - `make droid-switch`: (Placeholder for future; actual switch runs on the phone via `nix-on-droid switch --flake .`).
 
 **Verification (2026-08-02):**
-- Full system dry-build (volnix): 15 trivial HM glue derivations rebuild, zero packages. Desktop behavior unchanged.
+- Full system dry-build (volnix): Desktop home.packages byte-identical to pre-refactor baseline, zero changes.
 - Lints (deadnix, statix, nix flake check): clean.
-- Phone dry-build: 482 paths fetched, zero source builds.
+- Phone dry-build: 362.52 MiB download / 4788.43 MiB unpacked, zero source builds.
+- `make droid-check` evaluates successfully.
 
 ---
 
@@ -242,7 +250,3 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
 ### Cargo-Installed Tools (2026-07-31)
 
 - **lonkero 3.5.0 (2026-07-31):** CLI tool. Installed via `RUSTFLAGS="-C link-arg=-Wl,-rpath,/run/current-system/sw/share/nix-ld/lib" nix-shell -p pkg-config openssl --run 'cargo install lonkero'`. Uses persistent RPATH to `/run/current-system/sw/share/nix-ld/lib` for openssl linkage (supported by `programs.nix-ld.libraries` containing `openssl.out` at `nixos/configuration.nix:288`). Required clearing stale fish universal variable `OPENSSL_DIR` that had been set to `openssl-3.6.3-dev` (see mistakes.md #12). Runtime linking verified: `libssl.so.3 => /run/current-system/sw/share/nix-ld/lib/libssl.so.3`, `libcrypto.so.3 => /run/current-system/sw/share/nix-ld/lib/libcrypto.so.3`. Binary executes cleanly (`lonkero --version` confirms).
-
----
-
-(Remaining sections 7–20 unchanged from prior state.md)
