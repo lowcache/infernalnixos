@@ -81,46 +81,45 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 
 * **Build fallback (2026-06-24):** Makefile `switch` carries `--option fallback true` to work around expired TLS cert on lantian cachy-kernel substituter. Substituter `https://attic.xuyh0120.win/lantian` serves `nix-cache-info` directly (valid cert), but 307-redirects NAR fetches to `us-central-1.telnyxstorage.com` with expired cert. Default behavior (fallback=false) halts build; fallback enables source compilation for affected packages instead. **Revert condition:** Once cert is renewed upstream, remove Makefile flag or migrate to permanent `nix.settings.fallback = true` in `nixos/configuration.nix` (superior home for resilience default). **Verification (2026-06-24):** Local clock, CA bundles (nss-cacert-3.123), and source hosts verified clean — pure upstream server-side issue. Optional: report cert expiry to github.com/xddxdd/nix-cachyos-kernel.
 
-* **proot unpack() chmod failure — proot-sandbox-structural (2026-08-03 — FIXED):** Every directory-source derivation on nix-on-droid failed with `cp: setting permissions for 'source': No such file or directory` during unpack. nixpkgs' `_defaultUnpack` uses `cp -pr --reflink=auto`; cp creates the destination directory then chmods it to preserve source mode. Under proot (ptrace-based sandbox), the chmod returns `ENOENT` even though the directory exists — proot denies ownership/mode operations on directories it creates, a structural sandbox isolation. Not about `--preserve` — `cp -r --no-preserve=mode,ownership` fails identically because cp still applies a default mode to directories it creates. **Fix applied (2026-08-03, commit d4f2968):** `droid/backports.nix` provides `prootUnpack` override that pre-creates the destination, copies *contents* with `cp -r --no-preserve=mode,ownership $src/. $dest/`, then `chmod -R u+w $dest`. Also fixes cargo's vendor hook by placing the vendor tree in `postUnpack` and setting `cargoVendorDir = "vendor"` to take the no-copy branch. Verified: rtk 0.44.0, mcp-gateway 3.3.2, and termux-am all build natively on phone; both link glibc-2.40-224 (zero glibc-2.42 in runtime closure).
-
 ---
 
-## 6. Nix-on-Droid — Aarch64 Android Target (2026-08-03 — GENERATION 5 ACTIVATION IN PROGRESS)
+## 6. Nix-on-Droid — Aarch64 Android Target (2026-08-03 — GENERATION 5 ACTIVATED & VERIFIED LIVE)
 
 **Architecture:** `nixOnDroidConfigurations.default` in the existing volnixos flake. One `flake.lock`, evaluated on volnix but built on the phone. Portable Home Manager layer (`home/common/`) shared with desktop.
 
-**Root Cause of Prior "Terminal Hang" (2026-08-02 — RESOLVED via nixos-25.11 Pin):** glibc 2.42 reimplemented `isatty()`/`tcgetattr()` to issue the `TCGETS2` ioctl (termios2, for arbitrary baud rates). Android's SELinux allowlist for `untrusted_app` permits `TCGETS` but has never included `TCGETS2` — any glibc-2.42 binary receives `EACCES` on this ioctl and reports "not a terminal". bash, fish, and all interactive shells then started in non-interactive mode: no prompt, silently reading commands from stdin, appearing hung. Proof: same fd `/dev/pts/0`, same instant: `TCGETS` OK, `TCGETS2` EACCES, `tty` (glibc 2.40) reports `/dev/pts/0`, `tty` (glibc 2.42) reports `not a tty`, `os.isatty(0)` returns False under glibc 2.42.
+**Two Root Causes Identified & Fixed (2026-08-02 — 2026-08-03):**
 
-**Fix Applied (2026-08-02, Commits 5270d12 + 871c6d9):** Pin nix-on-droid's package set to `nixos-25.11` (glibc 2.40, pre-regression) via separate `inputs.nixpkgs-droid` and `inputs.home-manager-droid` (both following release-25.11). This avoids rebuilding the entire graph on the phone. Desktop volnix remains on unstable (glibc 2.42) unaffected.
+1. **glibc 2.42 TCGETS2 Regression (Solved via nixos-25.11 Pin):** glibc 2.42 reimplemented `isatty()`/`tcgetattr()` to issue the `TCGETS2` ioctl (termios2, for arbitrary baud rates). Android's SELinux allowlist for `untrusted_app` permits `TCGETS` but not `TCGETS2`, so every glibc-2.42 binary receives `EACCES` and reports "not a terminal". Interactive shells start in non-interactive mode with no prompt, appearing hung. **Fix:** Pin nix-on-droid's package set to `nixos-25.11` (glibc 2.40, pre-regression) via separate `inputs.nixpkgs-droid` and `inputs.home-manager-droid` (both following release-25.11). Commits `5270d12 + 871c6d9`. Desktop volnix remains on unstable (glibc 2.42) unaffected.
 
-**Generation 4 Status (2026-08-03, verified live & daily-usable):** Activation successful, phone boots to working fish shell. Home Manager activates fully. Shared `home/common/` layer (fish config, aliases, functions, git, micro, CLI tools) ported intact — byte-identical to desktop before/after refactor. 820 packages installed, zero on-device source builds (llm-agents dropped; specific packages backported instead). Terminal interactivity restored: `tty` returns `/dev/pts/0`, `ll` alias works (eza with icons), git available (2.51.2), claude-code (2.1.140), codex (0.92.0), opencode (1.1.14) on `$PATH`. Agent stack operational. **Critical test verified (2026-08-03):** claude-code's full Ink/React TUI renders on phone terminal — splash art in colour, live input line, selectable text, OAuth prompt accessible. This was the linchpin test (the exact program class TCGETS2 was strangling); it passes. Phone is now daily-usable and a practical justification for nix-on-droid effort.
+2. **proot `cp -pr` chmod Failure on Directory-Source Derivations (Solved via prootUnpack Override):** Every directory-source derivation (`fetchFromGitHub`, `fetchzip`, etc.) failed with `cp: setting permissions for 'source': No such file or directory` during unpack. Root cause: nixpkgs' `_defaultUnpack` uses `cp -pr --reflink=auto`; cp creates the destination directory then chmods it to preserve source mode. Under proot (ptrace-based sandbox), chmod returns `ENOENT` even though the directory exists — proot denies ownership/mode operations on directories it creates. **Fix:** `droid/backports.nix` provides `prootUnpack` override that pre-creates the destination, copies *contents* with `cp -r --no-preserve=mode,ownership $src/. $dest/`, then `chmod -R u+w $dest`. Also fixes cargo's vendor hook by placing the vendor tree in `postUnpack` and setting `cargoVendorDir = "vendor"` to take the no-copy branch (required pairing). Verified: rtk 0.44.0, mcp-gateway 3.3.2, and termux-am all build natively on phone; both link glibc-2.40-224 (zero glibc-2.42 in runtime closure). Commit `d4f2968`.
 
-**Generation 5 — rtk + mcp-gateway Backports (2026-08-03, Commits d4f2968 + 2654b2e, Activation In Progress):** Root cause of all directory-source build failures identified: proot denies `chmod` on directories it creates. Fixed in `droid/backports.nix` by pre-creating destinations and copying contents. **Cargo vendor hook separate issue:** Uses its own `cp -Lr`; solved by placing vendor tree in `postUnpack` and setting `cargoVendorDir = "vendor"` to take the no-copy branch. **rtk 0.44.0** built and running on phone; **mcp-gateway 3.3.2** built with rustc 1.97.0 borrowed from unstable as a build-time tool (pinned stdenv still emits glibc-2.40 binary). Both verified: link glibc-2.40-224, zero glibc-2.42 in runtime closure. **termux-am also builds**, unblocking android-integration (enables browser OAuth auto-launch + wake-lock). Generation 5 activation now in progress via phone-native build (faster than QEMU emulation, no binfmt needed).
+**Generation 5 Status (2026-08-03, Verified Live & Cold-Start):**
 
-**llm-agents Strategy — Selective Backports (2026-08-03, Commits 34f3b20, 03f3a02):** Original llm-agents overlay cannot be packaged for nixos-25.11 — the pin changes transitive dependency hashes downstream, so no substitutes exist on numtide's cache (cache-key mismatch). Phone would need to compile ~40 packages (Rust vendor trees, pnpm deps, Python chains, native tools) under proot, which is fragile and slow. **Resolution:** Drop the overlay entirely; instead, backport only the load-bearing essentials from plain nixpkgs (not llm-agents). User workflow analysis identified four critical packages:
+```
+tty              /dev/pts/0
+rtk              0.44.0
+mcp-gateway      3.3.2
+opencode         1.1.14
+claude           2.1.140 (Claude Code)
+codex            0.92.0
+glibc (all)      2.40-224 only
+```
 
-| Package | 25.11 Status | Strategy | Notes |
-|---|---|---|---|
-| **opencode** | 1.1.14 ✓ present | added immediately (commit 34f3b20) | no backport needed; session-death fallback |
-| **gemini-cli** | 0.25.2 ✓ present | awaiting compatibility check | deprecated in favour of antigravity-cli (absent); tether decides if 0.25.2 suffices |
-| **rtk** | ABSENT | backported to 25.11 | Rust package; phone-native build **verified working (2026-08-03)** |
-| **mcp-gateway** | ABSENT | backported to 25.11 | Rust package; non-negotiable (enables phone-agent MCP); **verified working (2026-08-03)** |
-
-Desk-top nixAi set (node/go/pandoc, dev runners, ripgrep-all) remains on unstable unaffected.
-
-**android-integration Block — Solved, Wiring Decision Pending (2026-08-03):** `android-integration` module provides `termux-open-url` and `termux-wake-lock` (browser launch, OAuth flow fixes, long-running agent support). Previously blocked by `termux-am` build failure under proot. **Status (2026-08-03):** `termux-am` now builds successfully with the proot unpack fix. Two remaining routes to wire it in (user decision):
-  1. `disabledModules` upstream's `android-integration.nix` and ship a patched copy (~60 lines) with `prootUnpack` applied. Full feature set, ongoing upstream drift to track.
-  2. A 5-line `writeShellScriptBin "xdg-open"` calling the built termux-am. Gets OAuth's browser working; skips wake-lock/setup-storage.
-
-**Nerd Font Fix (2026-08-03, Commit 030bea2):** nix-on-droid's built-in terminal font lacks Nerd Font glyphs, so starship's powerline separators and icons render as tofu. `droid/default.nix` now sets `terminal.font = pkgs.nerd-fonts.jetbrains-mono + "/share/fonts/truetype/NerdFonts/JetBrainsMonoNerdFont-Regular.ttf"`, installing the file as `~/.termux/font.ttf` on activation.
+Activation successful end-to-end. Phone boots to working fish shell; Home Manager activates fully. Shared `home/common/` layer (fish, aliases, git, micro, CLI tools) ported byte-identical to desktop. 820 packages installed; all agents operational. Terminal interactivity restored (`tty` returns `/dev/pts/0`). **Critical test verified (2026-08-03):** claude-code's full Ink/React TUI renders on phone terminal — splash art in color, live input line, selectable text, OAuth prompt accessible. This test was the linchpin (the exact program class TCGETS2 was strangling); it passes. **Phone is now daily-usable and a practical justification for nix-on-droid effort.**
 
 **Host-specific layers:**
 - **volnix** keeps `home/shell.nix` (niri/Noctalia integration, systemd units, sops-nix secrets), `home/pkgs.nix` (build toolchains node/go/pandoc, dev runners, ripgrep-all) — evaluates against nixos-unstable (glibc 2.42).
-- **droid** has `droid/home.nix` (nix-on-droid module configuration) + `droid/agents.nix` (claude-code/codex/opencode; 25.11-compatible) + `droid/backports.nix` (rtk, mcp-gateway) — evaluates against nixos-25.11 (glibc 2.40).
+- **droid** has `droid/home.nix` (nix-on-droid module configuration) + `droid/agents.nix` (claude-code/codex/opencode; 25.11-compatible, llm-agents set removed) + `droid/backports.nix` (rtk, mcp-gateway, prootUnpack override) — evaluates against nixos-25.11 (glibc 2.40).
 
 **Phone-agent MCP unchanged:** nix-on-droid is not Termux. It is a separate Android package (`com.termux.nix`) with its own sandbox — not an authorized caller of Termux:API. Phone-agent MCP server stays in Termux and is accessed over the network (Tailscale loopback or local network) exactly as before. nix-on-droid provides the declarative dev environment **alongside** Termux, not replacing it.
 
+**Nerd Font Fix (2026-08-03, Commit 030bea2):** nix-on-droid's built-in terminal font lacks Nerd Font glyphs. `droid/default.nix` sets `terminal.font = pkgs.nerd-fonts.jetbrains-mono + "/share/fonts/truetype/NerdFonts/JetBrainsMonoNerdFont-Regular.ttf"`, installing the file as `~/.termux/font.ttf` on activation.
+
 **Makefile targets:** `make droid-check` (evaluate HM layer), `make droid-plan` (dry-run closure size), `make droid-switch` (build and activate on phone via adb).
+
+**Still open (user decision pending):**
+- **android-integration:** `termux-am` now builds successfully (proot unpack fix applied). Two wiring options: (1) `disabledModules` upstream's `android-integration.nix`, ship patched copy with `prootUnpack`. Full feature set (termux-open-url, termux-wake-lock), but track upstream drift. (2) ~5-line `writeShellScriptBin "xdg-open"` calling termux-am. Gets OAuth's browser opening; skips wake-lock and setup-storage.
+- **gemini on phone:** `gemini-cli` 0.25.2 present in nixos-25.11. `antigravity-cli` absent. Does tether require antigravity specifically, or will it work with 0.25.2?
 
 ---
 

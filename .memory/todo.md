@@ -21,36 +21,25 @@ status: active
 ✓ JetBrains Mono Nerd Font installed for proper glyph rendering (commit 030bea2)
 ✓ claude-code full Ink/React TUI verified rendering on phone (critical test passed)
 ✓ **opencode 1.1.14 added** from nixos-25.11 (no backport needed; commit 34f3b20)
-✓ **android-integration fully investigated**: termux-am now builds successfully (proot unpack fix); wiring decision pending
-✓ All functional commits pushed to main
 ✓ Phone is now daily-usable; blog series unblocked
 
-### Backport rtk and mcp-gateway to nixos-25.11 (2026-08-03 — COMPLETE)
+### Nix-on-Droid — Generation 5 Activated (2026-08-03 — VERIFIED LIVE)
 
-✓ **proot unpack bug root cause identified and fixed** (2026-08-03, commit d4f2968): nixpkgs' `_defaultUnpack` uses `cp -pr` which fails under proot when chmod-ing directories it creates. Fix: pre-create destination, copy contents with `cp -r --no-preserve=mode,ownership $src/. $dest/`, then `chmod -R u+w $dest`. Also fixed cargo's vendor hook with `cargoVendorDir = "vendor"` to take the no-copy branch.
+✓ **proot unpack bug root cause identified and fixed** (2026-08-03, commit d4f2968): nixpkgs' `_defaultUnpack` uses `cp -pr` which fails under proot when chmod-ing directories it creates. Fix: pre-create destination, copy contents with `cp -r --no-preserve=mode,ownership $src/. $dest/`, then `chmod -R u+w $dest`. Also fixed cargo's vendor hook with `cargoVendorDir = "vendor"` to take the no-copy branch (required pairing).
 ✓ **rtk 0.44.0** built and verified on phone (native aarch64 build, links glibc-2.40-224)
 ✓ **mcp-gateway 3.3.2** built and verified on phone with borrowed rustc 1.97.0 from unstable (links glibc-2.40-224, zero glibc-2.42 in runtime)
 ✓ **termux-am** builds successfully with proot fix (unblocks android-integration)
 ✓ Both backports added to `droid/agents.nix` (commits d4f2968, 2654b2e)
 ✓ Phone native build proven faster than QEMU emulation — binfmt on volnix not needed
 ✓ prootUnpack mechanism documented as canonical solution for future phone builds
+✓ Cold-start verification: tty, rtk, mcp-gateway, opencode, claude-code, codex all on PATH
+✓ glibc-2.40-224 only in entire profile closure (zero glibc-2.42)
 
-**Status:** Ready for next phase. Generation 5 activation in progress.
+**Status:** Generation 5 activated and verified live. Phone daily-usable.
 
 ---
 
-## IN PROGRESS / AWAITING USER ACTION
-
-### Nix-on-Droid Generation 5 Activation (2026-08-03 — ACTIVATION RUNNING)
-
-**Status:** Generation 5 switch via adb in progress (awaiting completion log). Contains rtk 0.44.0 + mcp-gateway 3.3.2 backports + proot unpack fix.
-
-**Next steps (sequential):**
-- [ ] Generation 5 activation completes on phone
-- [ ] Verify both binaries reachable: `which rtk`, `which mcp-gateway`
-- [ ] Test rtk: `rtk --version`
-- [ ] Test mcp-gateway: `mcp-gateway --version`
-- [ ] Activate MCP if not auto-activated (may require gateway restart)
+## IN PROGRESS / AWAITING USER DECISION
 
 ### Wire android-integration — Choose Strategy (2026-08-03 — USER DECISION PENDING)
 
@@ -72,6 +61,10 @@ status: active
 - [ ] User clarifies: does tether require antigravity-cli specifically, or is gemini-cli 0.25.2 sufficient?
 - [ ] If 0.25.2 works: add to `droid/agents.nix` (no backport needed)
 - [ ] If antigravity-cli required: backport it (fourth Rust crate, but lower priority than rtk/mcp-gateway)
+
+---
+
+## BACKLOG / DEFERRED
 
 ### Noctalia Bar — Dual Wrap-Around Layout (2026-06-22 — LIVE, CAPTURE PENDING)
 
@@ -125,13 +118,9 @@ Implement path-prefix routing for `.memory/` inbox ingestion. See Decision #17.
 - [ ] Register hook in `~/.claude/settings.json` as SessionEnd event
 - [ ] Test with dummy work note: edit a dots file, create test note, verify routing on next sync
 
----
-
-## BACKLOG / DEFERRED
-
 ### Nix-on-Droid Blog Series (2026-08-03 — Functional Work Complete, Writing Deferred)
 
-**Status:** Generation 4 functional and verified. Blog series now unblocked (no longer waiting for working system). Generation 5 (rtk + mcp-gateway) in progress.
+**Status:** Generation 5 functional and verified. Blog series now unblocked (no longer waiting for working system).
 
 **Pending posts (user writing, low priority):**
 - [ ] Write architecture post (portable layer, one-flake strategy, glibc pin)

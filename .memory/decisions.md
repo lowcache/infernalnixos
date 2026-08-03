@@ -258,7 +258,7 @@ This file catalogs the active, canonical design decisions and system configurati
 * **No C++ fork required:** The three nerves are fully served by Luau plugins + MCP shim + hooks. Frame-tick capability confirmed; plugin IPC is request/response (stdout reply). A future engine change (plugin `onIpc` *return* flows back as reply) would unlock queryable plugin services (nice-to-have, not v1), justified by real need.
 
 * **Downstream plugin designs** (deferred to v1.1 or as expansion):
-  - **Launcher `/cc <task>`:** `runInTerminal("claude --append-system-prompt '…' '<task>'")`  — real TUI with full fidelity.
+  - **Launcher `/cc <task>`:** `runInTerminal("claude --append-system-prompt '…' '<task>'")` — real TUI with full fidelity.
   - **Quick-ask panel:** One-shot `claude -p … --output-format stream-json` for read-only questions (no terminal).
   - **Status widget/bar:** Show session state, token burn, model, workspace info.
   - **Bidirectional MCP:** Teach Claude `noctalia msg` + shell controls via `--append-system-prompt`; Claude invokes shell tools mid-session (theme switch, notifications, focus windows).
@@ -371,13 +371,15 @@ This file catalogs the active, canonical design decisions and system configurati
 
 ---
 
-## 31. Nix-on-Droid Architecture — One Flake, Portable Home Manager Layer, Phone Agent MCP Unchanged (2026-08-02, Amended With glibc 2.42 Pin, Generation 4 Verified Live 2026-08-03)
+## 31. Nix-on-Droid Architecture — One Flake, Portable Home Manager Layer, Phone Agent MCP Unchanged (2026-08-02, Amended With glibc 2.42 Pin & proot Unpack Fix, Generation 5 Activated 2026-08-03)
 
 * **Original decision:** Ship `nixOnDroidConfigurations.default` as a new output in the existing volnixos flake (not a separate flake). Extract a portable Home Manager layer (`home/common/`) shared by both volnix and droid; host-specific layers on top.
 
-* **Amendment (2026-08-02 — glibc 2.42 Root Cause & Fix):** The apparent "login-path hang" was caused by glibc 2.42's reimplementation of `isatty()`/`tcgetattr()` to use the `TCGETS2` ioctl (termios2 for arbitrary baud rates). Android's SELinux allowlist for `untrusted_app` permits `TCGETS` but not `TCGETS2`, so every glibc-2.42 binary on the phone receives `EACCES` and reports "not a terminal". Interactive shells then start in non-interactive mode with no prompt. **Fix: pin nix-on-droid's package set to `nixos-25.11` (glibc 2.40, pre-regression).** This avoids rebuilding the graph on the phone. Commit `5270d12` + `871c6d9`.
+* **Amendment 1 (2026-08-02 — glibc 2.42 Root Cause & Fix):** The apparent "login-path hang" was caused by glibc 2.42's reimplementation of `isatty()`/`tcgetattr()` to use the `TCGETS2` ioctl (termios2 for arbitrary baud rates). Android's SELinux allowlist for `untrusted_app` permits `TCGETS` but not `TCGETS2`, so every glibc-2.42 binary on the phone receives `EACCES` and reports "not a terminal". Interactive shells then start in non-interactive mode with no prompt. **Fix: pin nix-on-droid's package set to `nixos-25.11` (glibc 2.40, pre-regression).** This avoids rebuilding the graph on the phone. Commit `5270d12` + `871c6d9`.
 
-* **Amendment (2026-08-03 — Generation 4 Verified Live):** claude-code's full Ink/React TUI verified rendering on phone terminal (critical test passed). opencode 1.1.14 added from nixos-25.11 (no backport needed). Phone now daily-usable; justified effort investment for nix-on-droid. Strategic decision: selective backports of essential binaries (rtk, mcp-gateway) rather than re-packaging llm-agents overlay (cache-key mismatch issue documented). android-integration investigated; two attempted fixes failed; documented as closed (binfmt+nix-copy is only remaining route).
+* **Amendment 2 (2026-08-03 — proot Unpack Bug & Backports):** Directory-source derivations failed with `cp: setting permissions for 'source': No such file or directory` during unpack. Root cause: nixpkgs' `_defaultUnpack` uses `cp -pr`; cp creates the destination then chmods it. Under proot (ptrace-based sandbox), chmod returns `ENOENT` even though the directory exists — proot denies ownership/mode operations on directories it creates. **Fix:** `droid/backports.nix` provides `prootUnpack` override: pre-create destination, copy *contents* with `cp -r --no-preserve=mode,ownership $src/. $dest/`, then `chmod -R u+w $dest`. Also fixes cargo's vendor hook by placing vendor tree in `postUnpack` and setting `cargoVendorDir = "vendor"` (required pairing — takes the no-copy branch). Verified: rtk 0.44.0, mcp-gateway 3.3.2, termux-am all build natively on phone; all link glibc-2.40-224 (zero glibc-2.42 in runtime closure). Commit `d4f2968`.
+
+* **Amendment 3 (2026-08-03 — Generation 5 Verified Live):** claude-code's full Ink/React TUI verified rendering on phone terminal (critical test passed). opencode 1.1.14 added from nixos-25.11 (no backport needed). Phone now daily-usable; strategic decision to backport only essentials (rtk, mcp-gateway) rather than re-package llm-agents overlay (cache-key mismatch). Android-integration investigated; termux-am now builds but wiring decision deferred.
 
 * **Why one flake, not separate:** One `flake.lock` means both systems evaluate against identical nixpkgs (lazy evaluation skips non-droid outputs, so volnix-only inputs like lanzaboote don't affect the phone). Simpler to understand, easier to maintain, avoids duplicate `flake.nix` boilerplate. nix-on-droid's own `nixpkgs` and `home-manager` inputs follow the primary ones via `follows = "nixpkgs"` and `follows = "home-manager"`. **Amended:** `nixpkgs-droid` pinned to `nixos-25.11` (glibc 2.40); `home-manager-droid` follows release-25.11.
 
@@ -385,8 +387,26 @@ This file catalogs the active, canonical design decisions and system configurati
 
 * **Host-specific layers:**
   - **volnix** keeps `home/shell.nix` (niri/Noctalia integration, systemd units, sops-nix secrets), `home/pkgs.nix` (build toolchains node/go/pandoc, dev runners, ripgrep-all) — evaluates against nixos-unstable (glibc 2.42).
-  - **droid** has `droid/home.nix` (nix-on-droid module configuration) + `droid/agents.nix` (claude-code/codex/opencode; 25.11-compatible, llm-agents set removed) — evaluates against nixos-25.11 (glibc 2.40).
+  - **droid** has `droid/home.nix` (nix-on-droid module configuration) + `droid/agents.nix` (claude-code/codex/opencode; 25.11-compatible) + `droid/backports.nix` (rtk, mcp-gateway, prootUnpack override) — evaluates against nixos-25.11 (glibc 2.40).
 
 * **Phone-agent MCP unchanged:** nix-on-droid is not Termux. It is a separate Android package (`com.termux.nix`) with its own sandbox — not an authorized caller of Termux:API. Phone-agent MCP server stays in Termux and is accessed over the network (Tailscale loopback or local network) exactly as before. nix-on-droid provides the declarative dev environment **alongside** Termux, not replacing it.
 
-* **Makefile targets:** `make droid-check` (evaluate HM layer), `make droid-plan` (dry-run closure size).
+* **Makefile targets:** `make droid-check` (evaluate HM layer), `make droid-plan` (dry-run closure size), `make droid-switch` (build and activate on phone via adb).
+
+---
+
+## 32. proot Unpack Override — Pre-Create Destination, Copy Contents, chmod (2026-08-03)
+
+* **Decision:** When building derivations with directory sources on proot (nix-on-droid sandbox), override `_defaultUnpack` to sidestep proot's structural chmod denial.
+
+* **Why:** nixpkgs' `_defaultUnpack` uses `cp -pr --reflink=auto` which creates the destination directory, then chmods it to preserve source mode. Under proot, the chmod call returns `ENOENT` even though the directory exists — proot denies ownership/mode operations on directories it creates, a **structural sandbox isolation rule**, not a permissions issue. The failure is **not** about `--preserve` flags; `cp -r --no-preserve=mode,ownership` fails identically because cp still applies a default mode to directories it creates, and proot still denies chmod.
+
+* **Solution:** Pre-create the destination with `mkdir -p`, copy *contents* into it with `cp -r --no-preserve=mode,ownership $src/. $dest/`, then `chmod -R u+w $dest` to enable subsequent phases. This avoids letting cp create the destination and sidesteps proot's chmod restriction entirely.
+
+* **Cargo pairing:** cargo's `cargoSetupPostUnpackHook` has a no-copy branch when `cargoVendorDir` is set. Place the vendor tree in `postUnpack` (which fires *before* `postUnpackHooks`) so cargo skips its broken `cp -Lr` entirely. Setting `cargoVendorDir = "vendor"` is **required**; the two mechanisms form a pair.
+
+* **Implementation:** `droid/backports.nix` provides `prootUnpack` override implementing this logic. Apply to any directory-source derivation that would otherwise fail under proot with the `cp: setting permissions` error.
+
+* **Prevention rule (for mistakes.md):** Do not retry `cp -pr` with `--no-preserve=*` flags; that treats the symptom. The root cause is proot's denial of chmod on directories it creates. The solution is structural: pre-create, copy contents, then chmod.
+
+* **Verified on (2026-08-03):** rtk 0.44.0, mcp-gateway 3.3.2, termux-am — all build natively on phone.
