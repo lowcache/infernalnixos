@@ -70,5 +70,12 @@
     # droid/README.md.
     mcp-nixos
     github-mcp-server
+
+    # Backported from unstable against the pinned package set — see
+    # droid/backports.nix. Both are Rust and BUILD ON-DEVICE (a few minutes
+    # each, natively; no binfmt or remote builder needed). Verified 2026-08-03:
+    # both link glibc-2.40-224, with no glibc-2.42 in the runtime closure.
+    rtk
+    mcp-gateway
   ];
 }

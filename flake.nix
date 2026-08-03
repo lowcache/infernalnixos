@@ -159,6 +159,17 @@
             # phone too. llm-agents.nix builds aarch64-linux; the substituter it
             # publishes to is declared in droid/default.nix.
             inputs.llm-agents.overlays.shared-nixpkgs
+            # Tools that exist only in unstable, rebuilt against the pinned
+            # (glibc 2.40) package set. See droid/backports.nix — building any
+            # directory source on-device needs a proot workaround, and one of
+            # them needs a newer rustc than 25.11 ships.
+            (import ./droid/backports.nix {
+              unstable = inputs.nixpkgs;
+              unstablePkgs = import inputs.nixpkgs {
+                system = droidSystem;
+                config.allowUnfree = true;
+              };
+            })
           ];
           config.allowUnfree = true;
         };
