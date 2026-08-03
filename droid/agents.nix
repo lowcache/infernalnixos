@@ -59,6 +59,12 @@
     claude-code-router
     codex
 
+    # Session-death fallback: what lowcache reaches for when a Claude session gets
+    # cut off. In nixpkgs proper, so it needs neither llm-agents nor a backport
+    # — but 25.11 carries 1.1.14 against unstable's 1.18.4. If that gap starts
+    # to bite, it is a backport like rtk/mcp-gateway, not a re-nixification.
+    opencode
+
     # MCP servers. The phone-agent server itself is NOT here — it stays in the
     # Termux app, which is the only package Termux:API will talk to. See
     # droid/README.md.
