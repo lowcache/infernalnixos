@@ -108,4 +108,12 @@ in
   mcp-gateway = prootUnpack (
     fromUnstable "/pkgs/by-name/mc/mcp-gateway/package.nix" { rustPlatform = newerRust; }
   );
+
+  # termux-am and termux-tools both use fetchFromGitHub, which produces a
+  # directory source — the same proot cp problem that blocked rtk and
+  # mcp-gateway. Override them here so android-integration can be enabled in
+  # droid/default.nix. termux-tools takes termux-am as a named parameter, so
+  # inject our fixed copy so the embedded `am` path stays consistent.
+  termux-am = prootUnpack _prev.termux-am;
+  termux-tools = prootUnpack (_prev.termux-tools.override { termux-am = final.termux-am; });
 }

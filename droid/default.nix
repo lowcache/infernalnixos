@@ -1,5 +1,11 @@
-{ pkgs, ... }:
+{ pkgs, nix-on-droid, ... }:
 {
+  # The upstream android-integration module calls pkgs.callPackage directly on
+  # the termux-am/termux-tools derivation files, bypassing pkgs.termux-am from
+  # our overlay. Disable it and load our replacement (./android-integration.nix)
+  # which goes through the overlay so prootUnpack takes effect.
+  disabledModules = [ "${nix-on-droid}/modules/environment/android-integration.nix" ];
+  imports = [ ./android-integration.nix ];
   # Nix-on-Droid system layer (aarch64-linux, Android, no systemd, no Wayland).
   #
   # Nix-on-Droid is its own Android package (`com.termux.nix`) — a Termux fork,
@@ -39,42 +45,15 @@
 
   time.timeZone = "America/New_York";
 
-  # Termux-compat shims (termux-open, termux-setup-storage, termux-wake-lock,
-  # xdg-open, am). All default to false and are DELIBERATELY LEFT OFF.
-  #
-  # Enabling any of them pulls `termux-am`, which is one of nix-on-droid's own
-  # packages — built from source with cmake, not a nixpkgs package. Upstream
-  # publishes it prebuilt on nix-on-droid.cachix.org, but only against UPSTREAM'S
-  # pinned nixpkgs, so our derivation hash does not match and the phone must
-  # compile it. It cannot. Measured 2026-08-03 at the nixos-25.11 pin:
-  #
-  #   Running phase: unpackPhase
-  #   cp: setting permissions for 'source': No such file or directory
-  #   do not know how to unpack source archive /nix/store/...-source
-  #
-  # proot cannot set permissions on a directory it just created, so nixpkgs'
-  # `unpackFile` (`cp -pr --reflink=auto`) dies on any directory source. Same
-  # class as tar's "Cannot change mode ..." that killed sqlalchemy-bigquery.
-  #
-  # Two fixes were tried on-device and BOTH FAILED — do not retry them:
-  #
-  #   1. The nixos-25.11 pin. The old note here guessed that giving nix-on-droid
-  #      its own nixpkgs would make upstream's cachix builds match again. It does
-  #      not: upstream pins its own rev, not a release channel. Verified — the
-  #      resulting path 404s on nix-on-droid.cachix.org, cache.nixos.org AND
-  #      cache.numtide.com.
-  #   2. `overrideAttrs` with `cp -r --no-preserve=mode,ownership`. Identical
-  #      failure: cp sets the mode on directories it creates regardless.
-  #
-  # The remaining route is to build it somewhere that is not proot and copy the
-  # closure in — `boot.binfmt.emulatedSystems = [ "aarch64-linux" ]` on volnix,
-  # then `nix copy`. It is a tiny C program, so emulation is cheap here.
-  #
-  # Cost of leaving this off: no `xdg-open`/`termux-open-url`, so `claude` cannot
-  # launch a browser for OAuth — press `c` at its prompt to copy the URL instead
-  # (hand-selecting it clips the leading `h` at this terminal width). Also no
-  # `termux-wake-lock`, which will matter for long-running agents on the phone.
-  # android-integration = { ... };
+  # termux-am and termux-tools are overridden in droid/backports.nix with
+  # `prootUnpack`, which fixes the fetchFromGitHub directory-source cp failure
+  # under proot that previously blocked these shims. See backports.nix for the
+  # full problem description and fix.
+  android-integration = {
+    xdg-open.enable = true; # `claude` calls xdg-open for OAuth browser flow
+    termux-wake-lock.enable = true; # prevent sleep during long agent sessions
+    termux-wake-unlock.enable = true;
+  };
 
   nix = {
     extraOptions = ''
