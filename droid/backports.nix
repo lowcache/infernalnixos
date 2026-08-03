@@ -71,6 +71,13 @@ let
         }
       '';
 
+      # REQUIRED, and easy to drop by accident: without this the hook takes its
+      # `cp -Lr` branch and fails with
+      #   cp: setting permissions for '<pname>-<version>-vendor'
+      # even though postUnpack below already staged the tree. Setting it on a
+      # non-cargo derivation is an inert env var.
+      cargoVendorDir = "vendor";
+
       postUnpack = ''
         if [ -n "''${cargoDeps-}" ]; then
           mkdir -p source/vendor
