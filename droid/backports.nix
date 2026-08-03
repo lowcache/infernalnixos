@@ -11,6 +11,7 @@
 {
   unstable, # the nixpkgs-unstable SOURCE tree (for its package expressions)
   unstablePkgs, # unstable instantiated for aarch64 (for its newer rustc only)
+  nix-on-droid-src, # nix-on-droid flake (for its pkg expressions — termux-am etc.)
 }:
 
 final: _prev:
@@ -109,11 +110,17 @@ in
     fromUnstable "/pkgs/by-name/mc/mcp-gateway/package.nix" { rustPlatform = newerRust; }
   );
 
-  # termux-am and termux-tools both use fetchFromGitHub, which produces a
-  # directory source — the same proot cp problem that blocked rtk and
-  # mcp-gateway. Override them here so android-integration can be enabled in
-  # droid/default.nix. termux-tools takes termux-am as a named parameter, so
-  # inject our fixed copy so the embedded `am` path stays consistent.
-  termux-am = prootUnpack _prev.termux-am;
-  termux-tools = prootUnpack (_prev.termux-tools.override { termux-am = final.termux-am; });
+  # termux-am and termux-tools are NOT in the nix-on-droid overlay — they only
+  # exist inside the android-integration module via pkgs.callPackage. We build
+  # them fresh here from the nix-on-droid source so the overlay exposes them as
+  # pkgs.termux-am / pkgs.termux-tools for our replacement module to use.
+  # Both use fetchFromGitHub (directory source) and need prootUnpack.
+  termux-am = prootUnpack (
+    final.callPackage "${nix-on-droid-src}/pkgs/android-integration/termux-am.nix" { }
+  );
+  termux-tools = prootUnpack (
+    final.callPackage "${nix-on-droid-src}/pkgs/android-integration/termux-tools.nix" {
+      termux-am = final.termux-am;
+    }
+  );
 }
