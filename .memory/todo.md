@@ -21,50 +21,66 @@ status: active
 ✓ JetBrains Mono Nerd Font installed for proper glyph rendering (commit 030bea2)
 ✓ claude-code full Ink/React TUI verified rendering on phone (critical test passed)
 ✓ **opencode 1.1.14 added** from nixos-25.11 (no backport needed; commit 34f3b20)
-✓ **android-integration fully investigated**: two attempted fixes failed; documented as closed (commits 34f3b20, 03f3a02)
+✓ **android-integration fully investigated**: termux-am now builds successfully (proot unpack fix); wiring decision pending
 ✓ All functional commits pushed to main
 ✓ Phone is now daily-usable; blog series unblocked
 
-**Status:** Ready for next phase: rtk + mcp-gateway backports (phone-first Rust build). Awaiting tether/gemini-cli compatibility decision.
+### Backport rtk and mcp-gateway to nixos-25.11 (2026-08-03 — COMPLETE)
+
+✓ **proot unpack bug root cause identified and fixed** (2026-08-03, commit d4f2968): nixpkgs' `_defaultUnpack` uses `cp -pr` which fails under proot when chmod-ing directories it creates. Fix: pre-create destination, copy contents with `cp -r --no-preserve=mode,ownership $src/. $dest/`, then `chmod -R u+w $dest`. Also fixed cargo's vendor hook with `cargoVendorDir = "vendor"` to take the no-copy branch.
+✓ **rtk 0.44.0** built and verified on phone (native aarch64 build, links glibc-2.40-224)
+✓ **mcp-gateway 3.3.2** built and verified on phone with borrowed rustc 1.97.0 from unstable (links glibc-2.40-224, zero glibc-2.42 in runtime)
+✓ **termux-am** builds successfully with proot fix (unblocks android-integration)
+✓ Both backports added to `droid/agents.nix` (commits d4f2968, 2654b2e)
+✓ Phone native build proven faster than QEMU emulation — binfmt on volnix not needed
+✓ prootUnpack mechanism documented as canonical solution for future phone builds
+
+**Status:** Ready for next phase. Generation 5 activation in progress.
 
 ---
 
 ## IN PROGRESS / AWAITING USER ACTION
 
-### Backport rtk and mcp-gateway to nixos-25.11 — Phone-First Native Build
+### Nix-on-Droid Generation 5 Activation (2026-08-03 — ACTIVATION RUNNING)
 
-**Status:** Queued. Both are Rust packages (`cargoDeps`); phone is 8-core native at 4.74 GHz (faster than QEMU emulation on volnix). Test phone build first, fall back to binfmt+nix-copy if needed.
+**Status:** Generation 5 switch via adb in progress (awaiting completion log). Contains rtk 0.44.0 + mcp-gateway 3.3.2 backports + proot unpack fix.
 
-**Steps (in order):**
-- [ ] Build rtk 0.44.0 on phone (native `nix build …` against 25.11 nixpkgs)
-- [ ] If successful: backport expression (`callPackage` unstable's package.nix against 25.11's pkgs) and add to `droid/agents.nix`
-- [ ] Build mcp-gateway 3.3.2 on phone (same approach)
-- [ ] If either fails: set up binfmt on volnix (`boot.binfmt.emulatedSystems = [ "aarch64-linux" ]`) and retry via `nix copy`
-- [ ] Activate generation on phone; verify both work
+**Next steps (sequential):**
+- [ ] Generation 5 activation completes on phone
+- [ ] Verify both binaries reachable: `which rtk`, `which mcp-gateway`
+- [ ] Test rtk: `rtk --version`
+- [ ] Test mcp-gateway: `mcp-gateway --version`
+- [ ] Activate MCP if not auto-activated (may require gateway restart)
 
-**Rationale:** Native beats emulated 5–10×; two small crates may finish faster on-device than setting up cross-compile. If phone build fails, binfmt is a one-line fix.
+### Wire android-integration — Choose Strategy (2026-08-03 — USER DECISION PENDING)
 
-### Verify tether Compatibility with gemini-cli 0.25.2 (Blocker for gemini Decision)
+**Status:** termux-am now builds successfully (proot unpack fix applied). Two approaches to integrate:
 
-**Status:** Decision point. Awaiting user input.
+1. **disabledModules approach** (~60 lines): Disable upstream's `android-integration.nix`, ship patched copy with `prootUnpack` applied. Full feature set (termux-open-url, termux-wake-lock), but requires ongoing upstream drift tracking.
 
-**Context:** User moved from gemini-cli to antigravity-cli; antigravity-cli is absent from nixos-25.11. gemini-cli 0.25.2 IS present in 25.11. Question: does tether need antigravity-cli specifically, or will it work with gemini-cli 0.25.2?
+2. **xdg-open shim** (~5 lines): `writeShellScriptBin "xdg-open"` calling the built termux-am. Gets OAuth's browser opening; skips wake-lock and setup-storage.
 
-**Steps:**
-- [ ] User decides: does tether call antigravity-cli by name, or just "any gemini CLI"?
-- [ ] If tether works with 0.25.2: gemini on phone is free (already in 25.11). Add to `droid/agents.nix`.
-- [ ] If tether requires antigravity-cli: backport it (third Rust crate, but lower priority than rtk/mcp-gateway).
+**User decision needed:** Which approach (1 or 2)? Or defer android-integration entirely?
+
+### Verify tether Compatibility with gemini-cli 0.25.2 (AWAITING USER DECISION)
+
+**Status:** Decision point. gemini-cli 0.25.2 is present in nixos-25.11. antigravity-cli is absent (requires nixos-unstable).
+
+**Question:** Does tether call antigravity-cli by name, or will it work with any gemini CLI? If tether works with 0.25.2, gemini on phone is free (already in 25.11).
+
+**Steps (user decision first):**
+- [ ] User clarifies: does tether require antigravity-cli specifically, or is gemini-cli 0.25.2 sufficient?
+- [ ] If 0.25.2 works: add to `droid/agents.nix` (no backport needed)
+- [ ] If antigravity-cli required: backport it (fourth Rust crate, but lower priority than rtk/mcp-gateway)
 
 ### Noctalia Bar — Dual Wrap-Around Layout (2026-06-22 — LIVE, CAPTURE PENDING)
 
 **Status:** Live and fully styled in runtime `~/.local/state/noctalia/settings.toml`, user-approved ("awesome"). **NOT yet committed to git.**
 
-**Steps (in order):**
+**Steps (in order, lower priority):**
 - [ ] Capture runtime state to `dots/noctalia/config.toml`
 - [ ] Commit Ayu Green color-engine theme (`dots/color-engine/themes/ayu_green.json`)
 - [ ] Commit regenerated dotfiles (`dots/kitty/`, `dots/starship/starship.toml`)
-
-**Lower priority than other work.**
 
 ### Windows 11 VM — Installation In Progress
 
@@ -115,12 +131,13 @@ Implement path-prefix routing for `.memory/` inbox ingestion. See Decision #17.
 
 ### Nix-on-Droid Blog Series (2026-08-03 — Functional Work Complete, Writing Deferred)
 
-**Status:** Generation 4 functional and verified. Blog series now unblocked (no longer waiting for working system).
+**Status:** Generation 4 functional and verified. Blog series now unblocked (no longer waiting for working system). Generation 5 (rtk + mcp-gateway) in progress.
 
 **Pending posts (user writing, low priority):**
 - [ ] Write architecture post (portable layer, one-flake strategy, glibc pin)
 - [ ] Write deployment post (phone setup, Makefile targets, adb debug channel)
 - [ ] Write MCP integration post (phone-agent Termux shim, Tailscale)
+- [ ] Write proot portability post (one-line bug behind every directory-source build failure)
 - [ ] (Optional) Performance/runtime gotchas post
 - [ ] (Optional) Troubleshooting recovery ladder post
 
