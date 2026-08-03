@@ -3,6 +3,42 @@
 The aarch64 Android target. Same flake, same `flake.lock`, same shared Home
 Manager layer as volnix — see `home/common/`.
 
+## The phone is pinned to nixos-25.11, and must stay there
+
+`flake.nix` gives the droid output its own `nixpkgs-droid` / `home-manager-droid`
+input pair instead of following our unstable. This is load-bearing, not tidiness.
+
+glibc 2.42 reimplemented `isatty()` / `tcgetattr()` on top of the **`TCGETS2`**
+ioctl (termios2, arbitrary baud rates). Android's SELinux ioctl allowlist for
+`untrusted_app` permits `TCGETS` but has never included `TCGETS2`, so on-device
+it returns `EACCES`. Every glibc-2.42 binary therefore concludes it has no
+terminal. bash and fish start, decide they are non-interactive, print no prompt,
+and read commands silently from the pty — which is indistinguishable from a hang
+until you redirect stdout and discover your keystrokes were executing all along.
+
+Measured on a live pty (Android 16, proot-termux 5.1.0, `/dev/pts/0`):
+
+```
+ioctl TCGETS  0x5401      OK        ioctl TIOCGWINSZ 0x5413  OK
+ioctl TCGETS2 0x802C542A  EACCES    ioctl TIOCGPGRP  0x540F  OK
+tty (coreutils 9.5,  glibc 2.40) -> /dev/pts/0
+tty (coreutils 9.11, glibc 2.42) -> not a tty
+python3.14 (glibc 2.42): os.isatty(0) -> False
+```
+
+Same program, two glibcs, opposite answers. That isolates glibc and clears bash,
+fish, readline, job control, proot, closure size and everything in `home/common`
+— all of which were tested individually and are innocent.
+
+glibc sits at the root of the package graph, so patching it means rebuilding all
+of nixpkgs on a phone. nixos-25.11 ships glibc 2.40, uses `TCGETS`, and stays
+fully cached.
+
+Symptom to recognise if the pin is ever dropped: the app opens, prints the motd,
+and shows a bare cursor with no prompt. It is not frozen. Type `echo hi > /sdcard/x`
+and the file appears. Unpin only once glibc falls back to `TCGETS` when `TCGETS2`
+is refused.
+
 ## What is shared vs. what is not
 
 | Layer | Lives in | volnix | phone |
@@ -105,7 +141,30 @@ and is reached over the network (Tailscale today; plain loopback also works,
 since Android permits 127.0.0.1 between apps). Nix-on-Droid sits alongside it as
 the declarative dev environment, not as a replacement host.
 
-The `android-integration.*` options enabled in `default.nix` are a different
-thing: they broadcast Android intents at Nix-on-Droid's *own* package, so
-`termux-open`, `termux-setup-storage` and `termux-wake-lock` work without the
-Termux app being involved at all.
+The `android-integration.*` options are a different thing: they broadcast Android
+intents at Nix-on-Droid's *own* package, so `termux-open`, `termux-setup-storage`
+and `termux-wake-lock` would work without the Termux app being involved at all.
+They are currently **commented out** in `default.nix` — see the note there. Worth
+retrying now that nix-on-droid's nixpkgs is a release channel rather than our
+unstable, since that was why `termux-am` missed upstream's cachix and had to be
+built locally.
+
+## Debugging the phone from the laptop
+
+The app's terminal is the only way in, but it can be driven over USB without
+touching the screen. `adb shell input text` types into the focused field, and two
+file channels move data both ways:
+
+```
+adb push probe.sh /data/local/tmp/     # laptop -> phone: world-readable, app can read it
+# in the app:  bash /android/data/local/tmp/probe.sh > /android/sdcard/out.txt 2>&1
+adb shell cat /sdcard/out.txt          # phone -> laptop: /sdcard is app-writable
+```
+
+`/android` is the host Android root (nix-on-droid binds `-b /:/android`).
+`/proc/<pid>/stat` is readable for the app's own processes, which is how a
+"hang" gets classified: field 3 is the state, and comparing field 5 (`pgrp`)
+against field 8 (`tpgid`) tells you whether a stopped process is merely in a
+background process group. Note that wrapping a test in `timeout` creates a new
+process group and manufactures exactly that false positive — use
+`timeout --foreground`.
