@@ -114,29 +114,6 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 * **Prevention Rule:** If GTK/Electron file pickers or portal Settings fail with `AccessDenied` / `Unable to open /proc/<pid>/root`, do NOT chase portal backends, icons, or `GTK_USE_PORTAL`. Reproduce with `gdbus call --session --dest org.freedesktop.portal.Desktop --object-path /org/freedesktop/portal/desktop --method org.freedesktop.portal.Settings.ReadAll '[]'`; if it errors, the app-id step is broken. Compare against `dbus-run-session -- <same call>`. If the daemon works and the live broker bus does not, set `services.dbus.implementation = "dbus"`.
 * **Rebuild caution:** Switching the dbus implementation restarts the message bus on `switch` and will tear down the running Wayland session (see Mistake #1). Apply via reboot, or run the rebuild detached (tmux / `systemd-run`).
 
-### 2026-08-02 — Nix-on-Droid Login-Path Pty Hang — Upstream, Workaround Proven
-
-**Incident:** Generation 2 activates cleanly end-to-end. However, any shell attached to the terminal under the new `login-inner` hangs indefinitely and never services SIGINT, even after 40+ minutes of waiting.
-
-**Measured behavior:**
-- `login sh -c '<cmd>'` works instantly (command runs inside proot, no terminal attach)
-- `fish -i -c 'echo'` with full config: 0.463s (fast, not a shell issue)
-- `fish --no-config -i`: 0.022s (fast, not a config issue)
-- `login fish` or `login bash --noprofile --norc` on generation 2: hangs, Ctrl-C never lands
-- Same shells under generation 1: work fine
-- Timeout after 40+ minutes: SIGINT still not serviced → blocked in syscall, not slow
-
-**Hypothesis:** Generation 2's `login-inner` or proot's pty handling under Android 16. The terminal-attach machinery is broken in a way that doesn't surface until a shell is launched as the session leader.
-
-**Workaround (proven):**
-1. Failsafe session (long-press app icon → "New session (failsafe)"): runs outside proot, bypasses `login-inner` entirely.
-2. From failsafe: `$PREFIX/bin/login sh -c 'nix-on-droid rollback'` instantly restores generation 1.
-3. Post-rollback: interactive shells work normally.
-
-**Prevention rule:** Before committing to a new generation that changes terminal-attach machinery, test interactivity on a clean boot with all prior sessions closed. The `.login-inner.new` swap only happens when no proot is running; testing with other sessions alive masks the defect.
-
-**Related constraint (for future ref):** nix-on-droid bootstraps with nix 2.18.8, but the activated generation specifies nix 2.34.8 via `config.nix.package`. The activation script replaces PATH entirely with `activationBinPaths`, so all nix commands inside activation run against the newer version. This version bump during activation combined with Android 16 proot may be related to the pty issue.
-
 ### 2026-08-02 — glibc 2.42 TCGETS2 Ioctl Regression in Sandboxes (Android SELinux Allowlist Mismatch)
 
 **Symptom:** Nix-on-droid generation 2 appeared to hang on every interactive shell (bash, fish) with no prompt and no SIGINT servicing. Same symptom appeared when trying generation 2 bash binary under generation 1's proot. Process was not hung — blocked in `read(0,…,1)` waiting on terminal.
@@ -146,3 +123,19 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 **Prevention Rule:** Before activating a new nixpkgs generation on nix-on-droid, verify that glibc and any terminal-interactive tools (bash, fish, coreutils) remain on a version proven to work in the Android `untrusted_app` sandbox. glibc 2.40 is known-good (pre-TCGETS2); 2.42 fails. Do not assume newer = better on Android — SELinux allowlists are not updated in sync with libc. Pin the droid package set to a known-good glibc version if upgrading the main flake would break it. Commit `5270d12` pins nix-on-droid to `nixos-25.11` (glibc 2.40) for this reason.
 
 **Note:** This is an upstream Android limitation, not a nix-on-droid or proot defect. glibc 2.42 broke all sandboxes with `untrusted_app` SELinux profiles (Arch Linux users reported the same issue when glibc 2.42 hit their desktops). glibc should fall back to `TCGETS` on `EACCES` — it does not. The libc bug will be fixed upstream eventually; until then, the pin is the only viable workaround for nix-on-droid.
+
+### 2026-08-03 — Overlay Cache-Key Mismatch When Pinning nixpkgs to Non-Current Release
+
+**Symptom:** After pinning nix-on-droid's nixpkgs input to `nixos-25.11` (to work around glibc 2.42 regression), all packages from an overlay (`pkgs.llm-agents`) failed to substitute from cache. nix attempted to compile ~40 derivations (Rust vendor trees, pnpm deps, Python chains, native tools) on the phone under proot, where tar and build tools are fragile and compilation is 50-100× slower than desktop. Build failed midway through the chain.
+
+**Root cause:** numtide (the overlay publisher) pre-builds and publishes `pkgs.llm-agents.*` packages to their cache (`cache.numtide.com`), but the cache is keyed to *numtide's own nixpkgs version*. When the droid output feeds the overlay a different nixpkgs version (25.11 vs. numtide's current), the derivation hashes shift due to transitive dependency changes (compilers, libc versions, flags). Every package hash no longer matches the cached version, so the cache keys fail and nix falls back to source compilation.
+
+**Why it matters:** Overlays that add packages (not just patch existing ones) have a load-bearing dependency on the underlying nixpkgs version. A pin that works for the base system (`nixpkgs-25.11`) may break overlays that were published against a newer base (`nixpkgs-unstable`).
+
+**Prevention rule:** When pinning nixpkgs to a non-current release on a resource-constrained secondary host (phone, embedded, slow builder), audit ALL non-trivial overlays for cache compatibility BEFORE applying the pin:
+  1. Identify overlays in use (search `imports = ` and `packages = with pkgs.overlay.name` in config).
+  2. For each overlay, determine: Does the publisher (numtide, nixpkgs maintainers, etc.) publish pre-built caches? If yes, what nixpkgs version do they target?
+  3. If the overlay is keyed to a different nixpkgs than your pin, either: (a) find a local substitute package, (b) drop the overlay, or (c) accept the compilation cost on the secondary host.
+  4. Document the decision and the cost (package count, estimated build time).
+
+**Applied mitigation (2026-08-03):** Dropped `pkgs.llm-agents.*` from droid/agents.nix entirely. Desktop nixAi set remains unaffected (on unstable). Lost 7+ packages on phone (antigravity-cli, opencode, parallel-cli, happy-coder, etc.) and 5+ from unstable-only (rtk, mcp-gateway, etc.). Kept core tools (claude-code, codex). `rtk` (token-optimization proxy) is the highest-value loss; consider re-adding if numtide publishes against a release channel.

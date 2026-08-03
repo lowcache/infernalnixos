@@ -9,6 +9,23 @@ status: active
 
 ---
 
+## COMPLETE (2026-08-03)
+
+### Nix-on-Droid — Generation 4 Live and Verified (2026-08-02 — VERIFIED WORKING)
+
+✓ glibc 2.42 TCGETS2 regression diagnosed and fixed via nixos-25.11 pin
+✓ Generation 4 activation successful end-to-end
+✓ Fish shell interactive on cold start
+✓ Shared `home/common/` layer ported intact (zero changes)
+✓ 820 packages installed; agents re-enabled (claude-code, codex, gemini-cli)
+✓ JetBrains Mono Nerd Font installed for proper glyph rendering (commit 030bea2)
+✓ All functional commits on main (5270d12, 871c6d9, 8233240, 030bea2)
+✓ Phone daily-usable; blog series unblocked
+
+**Status:** Awaiting user push of `030bea2` if not yet done. Functional work complete.
+
+---
+
 ## IN PROGRESS / AWAITING USER ACTION
 
 ### Noctalia Bar — Dual Wrap-Around Layout (2026-06-22 — LIVE, CAPTURE PENDING)
@@ -65,28 +82,19 @@ Implement path-prefix routing for `.memory/` inbox ingestion. See Decision #17.
 - [ ] Register hook in `~/.claude/settings.json` as SessionEnd event
 - [ ] Test with dummy work note: edit a dots file, create test note, verify routing on next sync
 
-### Nix-on-Droid — Generation 3 Live, Agents Re-Added, Blog Unblocked (2026-08-02 — COMPLETE, BLOG SERIES AWAITING WRITE-UP)
+---
 
-**Status (2026-08-02):** glibc 2.42 TCGETS2 root cause found and fixed (pin to nixos-25.11). Generation 3 activates cleanly with shared `home/common/` layer intact. Terminal interactivity restored. Agent stack re-enabled (7 26.11-only packages removed from agents.nix). Phone is now daily-usable.
+## BACKLOG / DEFERRED
 
-**Completion verified:**
-- ✓ Activation end-to-end successful
-- ✓ Fish prompt live on cold start
-- ✓ `tty` reports `/dev/pts/0` (fixed from prior `not a tty`)
-- ✓ Shared home/common aliases, functions, git config working
-- ✓ starship prompt live
-- ✓ Agents re-enabled (claude-code, codex, gemini-cli)
-- ✓ Root cause archived in `.memory/inbox/` (TCGETS2 SELinux allowlist)
+### Nix-on-Droid Blog Series (2026-08-03 — Functional Work Complete, Writing Deferred)
 
-**Blog series now unblocked:**
-- [ ] Write architecture post (portable layer, one-flake strategy)
+**Status:** Generation 4 functional and verified. Blog series now unblocked (no longer waiting for working system).
+
+**Pending posts (user writing, low priority):**
+- [ ] Write architecture post (portable layer, one-flake strategy, glibc pin)
 - [ ] Write deployment post (phone setup, Makefile targets, adb debug channel)
 - [ ] Write MCP integration post (phone-agent Termux shim, Tailscale)
 - [ ] (Optional) Performance/runtime gotchas post
 - [ ] (Optional) Troubleshooting recovery ladder post
 
 **Waiting on:** User to write blog posts (lower priority than active work).
-
----
-
-## BACKLOG / DEFERRED
