@@ -65,36 +65,44 @@ Implement path-prefix routing for `.memory/` inbox ingestion. See Decision #17.
 - [ ] Register hook in `~/.claude/settings.json` as SessionEnd event
 - [ ] Test with dummy work note: edit a dots file, create test note, verify routing on next sync
 
-### Nix-on-Droid Activation — PTY Failure Bisect (2026-08-02 — BISECT PASSED, DIRECT TEST IN PROGRESS)
+### Nix-on-Droid — Login-Path Bug Fix + Re-Add Agents (2026-08-02 — AWAITING UPSTREAM)
 
-**Status:** Bisect commit (agents.nix dropped, `fa3276aa…`) successfully evaluates and builds. Generation created: `9y0bmwnw5z6wnsgqf1wn0qlddf273mc1-nix-on-droid-generation`. Full nix-on-droid-path hash: `sks5micnwsl228ifblhy422ybwnqwf0w-nix-on-droid-path`. Error confined to activation step, not build graph.
+**Status:** First activation successful (generation 2 active). Home Manager activates fully, 626 packages installed zero-compilation. One upstream login-path bug remains: any shell attached to the terminal hangs under generation 2's `login-inner`.
 
-**Hypotheses tested and eliminated** (2026-08-02):
-- NOT general pty unavailability (trivial derivations + single-package user-env builds all succeed)
-- NOT nix version (2.18.8 is fine; 2.34.8 incoming post-activation)
-- NOT TMPDIR, disk space, or stdout piping issues
-- **Likely trigger remains:** Full ~500-package closure in user-environment derivation
+**Evidence (2026-08-02):**
+- Activation completes end-to-end without error
+- `fish -i -c 'echo'` with full config: 0.463s (fast)
+- `fish --no-config -i`: 0.022s (fast)
+- `fastfetch`: 0.889s (fast, ruled out)
+- Every component tested in isolation is fast
+- `login sh -c '<cmd>'` works fine (no terminal attachment)
+- `login bash --noprofile --norc` hangs on clean slate (not fish-specific)
+- SIGINT never lands after 40+ minutes (blocked in syscall, not slow)
 
-**Current test (in progress):** Direct `nix-env --profile /tmp/testprof2 --install <nix-on-droid-path>` to reproduce the pty error with the full closure in isolation. If this succeeds, the error is specific to how the activation environment invokes it. If it fails, it's a nix upstream issue with large closures under proot.
+**Hypothesis:** Generation 2's `login-inner` terminal-attach path or proot's pty handling under Android 16.
 
-**Next step:** User runs direct nix-env test; report results. If successful, re-add `droid/agents.nix` in halves to identify which package or subset triggers the pty error. If failed, file upstream bug report with nix-on-droid/nix projects.
+**Workaround:** Generation 1 is available via rollback; recovery proven instant: `login sh -c 'nix-on-droid rollback'`.
 
-**Cleanup:** Profile pollution from earlier `nix profile install` diagnostics; cleanup via `nix profile remove 1 2` after this test completes. See mistakes.md #15.
+**Next steps:**
+- [ ] File upstream issue on nix-on-droid with timings and evidence
+- [ ] Optional: drill into `login-inner.nix` terminal-setup code (may reveal a nixpkgs interaction)
+- [ ] Once login issue is understood, test re-adding `droid/agents.nix` by halves
+- [ ] Write blog series once phone is daily-usable
 
-**Blocker on:** Achieving working phone shell. Desktop side is complete and verified.
+**Blocks on:** Upstream response or self-contained understanding of login-path pty handling.
 
-### Nix-on-Droid Blog Series (2026-08-02 — DEFERRED, BLOCKS ON ACTIVATION FIX)
+### Nix-on-Droid Blog Series (2026-08-02 — DEFERRED, BLOCKS ON LOGIN FIX)
 
-**Status:** V1 implementation complete and verified (laptop side). Awaits working phone to validate end-to-end. Blog series deferred until activation PTY issue is resolved.
+**Status:** V1 implementation complete and verified (laptop side). Awaits working phone shell (login-path fix) to validate end-to-end. Blog series deferred until the phone is daily-usable.
 
 **Planned blog series (3-5 posts):**
 - [ ] Architecture & portable layer strategy
 - [ ] Device setup & Makefile targets
 - [ ] MCP integration with phone-agent Termux shim
 - [ ] (Optional) Performance profiling on aarch64
-- [ ] (Optional) Troubleshooting & runtime gotchas
+- [ ] (Optional) Troubleshooting & runtime gotchas (bootstrap paradox, recovery ladder)
 
-**Lower priority than fixing activation.
+**Lower priority than fixing login issue.**
 
 ---
 

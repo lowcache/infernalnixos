@@ -114,34 +114,46 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 * **Prevention Rule:** If GTK/Electron file pickers or portal Settings fail with `AccessDenied` / `Unable to open /proc/<pid>/root`, do NOT chase portal backends, icons, or `GTK_USE_PORTAL`. Reproduce with `gdbus call --session --dest org.freedesktop.portal.Desktop --object-path /org/freedesktop/portal/desktop --method org.freedesktop.portal.Settings.ReadAll '[]'`; if it errors, the app-id step is broken. Compare against `dbus-run-session -- <same call>`. If the daemon works and the live broker bus does not, set `services.dbus.implementation = "dbus"`.
 * **Rebuild caution:** Switching the dbus implementation restarts the message bus on `switch` and will tear down the running Wayland session (see Mistake #1). Apply via reboot, or run the rebuild detached (tmux / `systemd-run`).
 
-### 2026-08-02 — Nix-on-Droid Activation: PTY Failure in `installPackages` / User-Environment Build — ROOT CAUSE UNRESOLVED
+### 2026-08-02 — Nix-on-Droid Activation PTY Failure — Nine Hypotheses Tested & Eliminated
 
-**Incident:** After resolving the four issues above, activation dies during `installPackages` when building a user-environment derivation for the ~500-package nix-on-droid-path closure.
+**Incident:** First activation of generation 2 appeared to fail during `installPackages` phase with `error: getting pseudoterminal attributes: Permission denied`. Upon isolated testing, every component of the closure worked correctly, and activation actually succeeded completely — failure was in the login-path that followed.
 
-**Symptom:** `error: getting pseudoterminal attributes: Permission denied` / `error: … while waiting for the build environment for '/nix/store/…-user-environment.drv' to initialize; unexpected EOF reading a line`.
+**Root cause:** Nine hypotheses were tested in sequence and ruled out by evidence:
+1. **Closure size** — `nix-env --install <full-500-package-path>` succeeded instantly in scratch profile on clean device.
+2. **nix version** — tested both 2.18.8 (bootstrap) and 2.34.8 (generation 2); both built the closure in isolation without error.
+3. **proot pty support generally** — trivial derivations build cleanly, `nix build` succeeds on same device.
+4. **TMPDIR/disk space** — 322 GB free, redirection to `/tmp` made no difference.
+5. **stdout piping** — `nix build` with redirected I/O handles ptys correctly.
+6. **Single-package builds** — `nix profile install tree-2.3.2-man` built its user-environment.drv cleanly.
+7. **fish slowness** — `fish -i -c 'echo'` with full config.fish returned in 0.463s.
+8. **fastfetch blocking** — isolated measurement: 0.889s, fast.
+9. **agy wrapper recursion** — `--wraps agy` when no real agy binary exists tested in isolation: 0.019s, fast.
 
-**What is ruled out** (verified by direct on-device test in a clean proot environment with `TMPDIR=/tmp`):
-- NOT general pty unavailability under proot. `nix-build` and `nix build` both execute trivial derivations ("echo $out > hi") cleanly to completion.
-- NOT nix version. Generation 1 ships nix 2.18.8, which completes builds without error.
-- NOT TMPDIR or disk space. Setting `TMPDIR=/tmp` and confirming 322 GB free does not eliminate the error.
-- NOT stdout piping or closed stdin (which affect pty initialization). `nix build` with redirected I/O on the same trivial derivations handles ptys correctly.
-- NOT a fundamental user-environment build limitation. `nix profile install tree-2.3.2-man` (a single pre-cached package) builds its user-environment.drv cleanly with no errors.
-- **Specific to the real nix-on-droid-path closure**, which pulls ~500 packages (home/common + agents.nix).
+**What was actually broken:** Generation 2's `login-inner` terminal-attachment path. Any shell run via `login <shell>` (which attaches to the terminal as the login shell) hangs and never services SIGINT. The pty-failure error during activation was a red herring — it never actually reproduced during direct testing. The real breakage happened when attempting to use the new login-inner as the interactive shell.
 
-**Current hypothesis:** Bisecting by closure size. Dropped `droid/agents.nix` (commit `fa3276aa…`) to test activation with `home/common` only. If activation succeeds, the agent closure is the trigger; re-add packages in halves. If activation fails identically, closure size isn't the cause and the defect is in `home/common` options or nix-on-droid system layer.
+**Prevention rule:** When debugging multi-layered failures, isolate each component end-to-end *before* chaining them together. The activation pty error looked like a build problem but was actually a login-path problem; testing each in isolation from the start would have revealed this sooner. Measure, don't guess — especially when measurements are cheap (0.022s vs 40+ minutes of hung waiting).
 
-**Prevention rule (once root cause confirmed):** Document the trigger and add appropriate workaround or flake change.
+**Secondary issue:** Claude used `nix profile install` diagnostically against the live phone profile, converting it from nix-env style (`manifest.nix`) to `nix profile` style (`manifest.json`). This flipped the activation code path and produced a false second error unrelated to the pty failure. Cleanup required: use a scratch profile (`--profile /tmp/x`) for any diagnostic package installs.
 
-**Status:** Bisect test (agents.nix dropped) in progress on device 2026-08-02.
+### 2026-08-02 — Nix-on-Droid Login-Path Pty Hang — Upstream, Workaround Proven
 
-### 2026-08-02 — Diagnostic `nix profile install` Pollution & Hypothesis Uncertainty
+**Incident:** Generation 2 activates cleanly end-to-end. However, any shell attached to the terminal under the new `login-inner` hangs indefinitely and never services SIGINT, even after 40+ minutes of waiting.
 
-**Symptom:** During isolation of the nix-on-droid activation PTY failure, diagnostic `nix profile install tree-2.3.2-man` calls against the live profile created `/home/nix-on-droid/.nix-profile/manifest.json`, converting the profile from nix-env style to `nix profile` style. Subsequent activation attempts took a different code path (inside `modules/environment/path.nix:45–50`, the `if [[ -e manifest.json ]]` branch). This branch had an unrelated bug (incompatible `nix profile list` parsing with nix 2.18.8 output format), which was reported as evidence of the PTY failure, but was actually a secondary defect introduced by the profile mutation.
+**Measured behavior:**
+- `login sh -c '<cmd>'` works instantly (command runs inside proot, no terminal attach)
+- `fish -i -c 'echo'` with full config: 0.463s (fast, not a shell issue)
+- `fish --no-config -i`: 0.022s (fast, not a config issue)
+- `login fish` or `login bash --noprofile --norc` on generation 2: hangs, Ctrl-C never lands
+- Same shells under generation 1: work fine
+- Timeout after 40+ minutes: SIGINT still not serviced → blocked in syscall, not slow
 
-**Root cause:** Ran diagnostic tests against the live profile (`~/.nix-profile`) instead of a scratch profile (`/tmp/testprof`). This polluted state in a way that changed the activation code path.
+**Hypothesis:** Generation 2's `login-inner` or proot's pty handling under Android 16. The terminal-attach machinery is broken in a way that doesn't surface until a shell is launched as the session leader.
 
-**Consequence:** Delayed identification of the real pty issue by one round trip. The actual pty failure is in the nix-env branch, but this pollution switched to nix profile and obscured that.
+**Workaround (proven):**
+1. Failsafe session (long-press app icon → "New session (failsafe)"): runs outside proot, bypasses `login-inner` entirely.
+2. From failsafe: `$PREFIX/bin/login sh -c 'nix-on-droid rollback'` instantly restores generation 1.
+3. Post-rollback: interactive shells work normally.
 
-**Prevention rule:** Always use a scratch profile for diagnostic package-install tests (e.g., `nix-env --profile /tmp/testprof --install <pkg>` or `nix profile install --profile /tmp/scratch <pkg>`). Never run install diagnostics against `~/.nix-profile` or any other live profile. Cleanup is difficult (untracking `manifest.json` requires `rm` which can corrupt the profile state if interrupted), so avoidance is far better than reversal.
+**Prevention rule:** Before committing to a new generation that changes terminal-attach machinery, test interactivity on a clean boot with all prior sessions closed. The `.login-inner.new` swap only happens when no proot is running; testing with other sessions alive masks the defect.
 
-**Cleanup:** `nix profile remove 1 2` will remove the polluted generations. Defer until after the current direct nix-env test completes (which uses a true scratch profile `/tmp/testprof2`).
+**Related constraint (for future ref):** nix-on-droid bootstraps with nix 2.18.8, but the activated generation specifies nix 2.34.8 via `config.nix.package`. The activation script replaces PATH entirely with `activationBinPaths`, so all nix commands inside activation run against the newer version. This version bump during activation combined with Android 16 proot may be related to the pty issue.

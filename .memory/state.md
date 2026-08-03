@@ -83,6 +83,45 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 
 ---
 
+## 6. Nix-on-Droid — Aarch64 Android Target (2026-08-02 — FIRST ACTIVATION SUCCESSFUL)
+
+**Architecture:** `nixOnDroidConfigurations.default` in the existing volnixos flake. One `flake.lock`, evaluated on volnix but built on the phone. Portable Home Manager layer (`home/common/`) shared with desktop.
+
+**Status (2026-08-02, post-activation):** First successful activation of generation 2. Home Manager activates fully (`checkLinkTargets`, `writeBoundary`, `linkGeneration`, `linkProfile` all complete). 626 packages installed with zero on-device source compilation. Fish config written, starship linked, git identity available. Flake builds/activates cleanly from `~/.nix-config` (local clone on phone recommended for iteration).
+
+**Activation success details:**
+- `nix-on-droid switch` completes without error
+- `installPackages` phase (the former pty-failure point) passes cleanly
+- Home Manager activation completes end-to-end
+- Profile generations tracked (generation 1 = bootstrap Apr 18; generation 2 = current activation Aug 2)
+- Rollback tested and works: `login sh -c 'nix-on-droid rollback'` recovers to generation 1 immediately
+
+**One known defect (login-path, upstream):**
+Generation 2 activates successfully, but any shell attached to the terminal under the new `login-inner` (e.g., `login bash --noprofile --norc` or `login fish`) hangs and never services SIGINT after 40+ minutes. All components tested in isolation are fast (fish 0.463s with full config, fish --no-config 0.022s, fastfetch 0.889s). Fault is not in `home/common`, `fastfetch`, `starship`, or our config — it's in `login-inner` / proot's terminal-attach machinery or pty handling under Android 16. **Workaround:** `login sh -c '<cmd>'` works (commands run inside proot, no terminal attachment) and `login bash --noprofile --norc` works via failsafe session. Recovery via rollback is instant.
+
+**Recovery ladder (tested, proven):**
+1. Failsafe session (long-press app icon → "New session (failsafe)"): runs outside proot, bypasses `login-inner` entirely.
+2. From failsafe: `$PREFIX/bin/login sh -c 'nix-on-droid rollback'` restores generation 1 immediately. No data loss — store, profiles, generations all on disk.
+3. Post-rollback: `$PREFIX/bin/login bash` works for interactive shells. Generation 1 has no login-path defect.
+
+**Portable layer (`home/common/`):** Platform-agnostic configuration — fish shell (aliases, abbrs, functions, PATH), git config, micro (syntax/tools), direnv, common CLI packages (ripgrep, fd, fzf, eza, jq, yq, coreutils, etc.). Extracted from prior volnix `home/shell.nix` and `home/pkgs.nix`; both hosts import it via `imports = [ ../home/common ]`. **Verified behavior-preserving refactor (2026-08-02):** Desktop package list (224 entries), aliases, functions, git settings, micro settings, interactive shell init byte-identical before/after.
+
+**Host-specific layers:**
+- **volnix** keeps `home/shell.nix` (niri/Noctalia integration, systemd units, sops-nix secrets), `home/pkgs.nix` (build toolchains node/go/pandoc, dev runners, ripgrep-all).
+- **droid** has `droid/home.nix` (nix-on-droid module configuration), `droid/agents.nix` (optional agent tooling; commented out, awaiting re-test post-login-fix).
+
+**Phone-agent MCP unchanged:** nix-on-droid is not Termux. It is a separate Android package (`com.termux.nix`) with its own sandbox — not an authorized caller of Termux:API. Phone-agent MCP server stays in Termux and is accessed over the network (Tailscale loopback or local network) exactly as now. nix-on-droid provides the declarative dev environment **alongside** Termux, not replacing it.
+
+**Closure budget achieved (2026-08-02, with home/common + reduced agents):**
+- **With common layer only (agents.nix commented out):** 87 trivial HM glue derivations, zero source builds on phone, 399 MiB download, 2864 MiB unpacked.
+- **Upstream requirements satisfied:** nix-on-droid's proot-termux cachix key passed during evaluation; llm-agents and agent stack fully cached.
+
+**Makefile targets added (2026-08-02):**
+- `make droid-check`: Evaluate the HM layer (aarch64-linux), report any eval errors.
+- `make droid-plan`: Dry-run the HM activation package, show closure size and what would be fetched.
+
+---
+
 ## 5. Niri Compositor + Noctalia v5 — PRIMARY DESKTOP (2026-06-17, Sole WM as of 2026-06-28)
 
 **Status (2026-06-28):** niri + Noctalia v5 are the **only** desktop. Hyprland + ii/quickshell removed (see commit ee2efb4). niri is the default session launched by greetd/tuigreet.
@@ -186,62 +225,6 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
 - **Capabilities:** Add notes, delete, clear all, desktop widget with input field.
 - **Architecture:** Shares state via `noctalia.state` + `notes.json`; launcher provider and desktop widget synchronized.
 - **UI controls:** `ui.input`, `ui.scroll` — both newly exposed to plugins (Layer 1 complete 2026-06-24).
-
----
-
-## 6. Nix-on-Droid — Aarch64 Android Target (2026-08-02 — COMPLETE)
-
-**Architecture:** `nixOnDroidConfigurations.default` in the existing volnixos flake. One `flake.lock`, evaluated on volnix but built on the phone. Portable Home Manager layer (`home/common/`) shared with desktop.
-
-**Portable layer (`home/common/`):** Platform-agnostic configuration — fish shell (aliases, abbrs, functions, PATH), git config, micro (syntax/tools), direnv, common CLI packages (ripgrep, fd, fzf, eza, jq, yq, coreutils, etc.). Extracted from prior volnix `home/shell.nix` and `home/pkgs.nix`; both hosts import it via `imports = [ ../home/common ]`. Works because `programs.fish.{shellInit,interactiveShellInit}` are `types.lines` (mergeable) and aliases/functions/packages are merging options (no host redefines a shared value). **Verified behavior-preserving refactor (2026-08-02):** Desktop package list (224 entries), aliases, functions, git settings, micro settings, interactive shell init byte-identical before/after.
-
-**Host-specific layers:**
-- **volnix** keeps `home/shell.nix` (niri/Noctalia integration, systemd units, sops-nix secrets), `home/pkgs.nix` (build toolchains node/go/pandoc, dev runners, ripgrep-all).
-- **droid** has `droid/home.nix` (nix-on-droid module configuration), `droid/agents.nix` (agent tooling — claude-code, claude-code-router, codex, rtk, mcp-server-sequential-thinking, llmfit + llm-agents packages: ccstatusline, claude-plugins, opencode, zaly, cc-switch-cli, parallel-cli, toon, happy-coder, antigravity-cli [supersedes gemini-cli; llm-agents 1.1.8 fully substitutable on aarch64]).
-
-**Phone-agent MCP unchanged:** nix-on-droid is not Termux. It is a separate Android package (`com.termux.nix`) with its own sandbox — not an authorized caller of Termux:API. Phone-agent MCP server stays in Termux and is accessed over the network (Tailscale loopback or local network) exactly as now. nix-on-droid provides the declarative dev environment **alongside** Termux, not replacing it. The `android-integration.*` options enabled in the system layer are nix-on-droid's own intent-broadcast mechanism; they don't change this architecture.
-
-**Closure budget achieved (2026-08-02, with llm-agents + numtide cache):**
-- **Naive port (pre-refactor):** 83 derivations built (incl. `nodejs` from source), 158 MiB download, 3906 MiB unpacked.
-- **With common layer only:** 87 derivations built (all HM glue; no app source compiles), 399 MiB download, 2864 MiB unpacked.
-- **With common layer + agent stack:** 95 derivations built (all HM glue + agent tooling), **362.52 MiB download, 4788.43 MiB unpacked, zero source builds**.
-- **Upstream requirements:** 
-  - nix-on-droid's proot-termux: `https://nix-on-droid.cachix.org` (key `nix-on-droid.cachix.org-1:56snoM…`). Device enables by default; volnix must pass key when evaluating.
-  - llm-agents packages: `https://cache.numtide.com` (key `niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=`). Wired in `droid/default.nix` to avoid phone source builds.
-
-**Constraints discovered:**
-- **nix-on-droid is not Termux.** It is a separate Android package (`com.termux.nix`) running in its own sandbox — not an authorized caller of Termux:API. Phone-agent MCP stays in Termux, accessed via network (Tailscale or loopback), just as now.
-- **No aarch64 emulation on volnix:** `boot.binfmt` is AppImage-only. Flake evaluation happens on volnix (`nix flake check`, `make droid-check` work); system layer evaluation fails (upstream's `modules/user.nix` runs IFD with aarch64 derivation). Build happens on the phone (`nix-on-droid switch --flake .`).
-- **`--impure` is mandatory for evaluation:** nix-on-droid references proot-termux via `builtins.storePath`, requiring impure eval. Upstream's own CLI (`nix-on-droid.sh:32`) passes `--impure`.
-- **proot-termux only on `https://nix-on-droid.cachix.org`** (key `nix-on-droid.cachix.org-1:56snoM…`). Device enables it; volnix must pass key when evaluating. Already wired in `flake.nix` comments.
-- **nix-on-droid tracks **master** (no stable release). Newest tag is `release-24.05` (~2 years old). Using master is intentional for latest fixes.
-
-**Makefile targets added (2026-08-02):**
-- `make droid-check`: Evaluate the HM layer (aarch64-linux), report any eval errors.
-- `make droid-plan`: Dry-run the HM activation package, show closure size and what would be fetched.
-- `make droid-switch`: (Placeholder for future; actual switch runs on the phone via `nix-on-droid switch --flake .`).
-
-**Verification (2026-08-02):**
-- Full system dry-build (volnix): Desktop home.packages byte-identical to pre-refactor baseline, zero changes.
-- Lints (deadnix, statix, nix flake check): clean.
-- Phone dry-build: 362.52 MiB download / 4788.43 MiB unpacked, zero source builds.
-- `make droid-check` evaluates successfully.
-
-### Nix-on-Droid Activation Diagnostic Sequence (2026-08-02, In Progress)
-
-**PTY Failure Isolation (2026-08-02):** First `nix-on-droid switch` failed during `installPackages` phase with `error: getting pseudoterminal attributes: Permission denied`. Multiple hypotheses tested and eliminated via on-device diagnostics:
-- NOT general pty unavailability: trivial derivations build cleanly (`tree-2.3.2-man` user-environment succeeds)
-- NOT nix version (2.18.8 current, 2.34.8 incoming post-activation)
-- NOT TMPDIR/disk space/stdout piping issues
-- **Likely trigger:** Full ~500-package nix-on-droid-path closure; single-package installs work
-
-**Bisect test (agents.nix dropped, 2026-08-02):** Dropped `droid/agents.nix` and re-ran `nix-on-droid build`. Build succeeded cleanly, generation `9y0bmwnw5z6wnsgqf1wn0qlddf273mc1-nix-on-droid-generation` created. Full nix-on-droid-path identified: `/nix/store/sks5micnwsl228ifblhy422ybwnqwf0w-nix-on-droid-path`. Confirms flake/build-graph are correct; error confined to activation step.
-
-**Current test:** Direct `nix-env --profile /tmp/testprof2 --install <full-nix-on-droid-path>` to reproduce the pty failure in isolation and determine if it's environment-specific or a nix upstream issue. In progress.
-
-**Version bump pending:** Successful activation will upgrade nix from 2.18.8 to 2.34.8 as part of new generation.
-
-**Profile pollution (2026-08-02):** Early diagnostic `nix profile install` calls against live profile converted it from nix-env style to `nix profile` style (created `manifest.json`). This flipped the activation code path and manufactured a secondary error unrelated to the pty issue. Cleanup pending: `nix profile remove 1 2`.
 
 ---
 
