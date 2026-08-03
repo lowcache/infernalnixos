@@ -57,21 +57,40 @@
       url = "github:lowcache/memd";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Package set for the phone. Deliberately NOT our nixpkgs.
+    #
+    # glibc 2.42 reimplemented isatty()/tcgetattr() on top of the TCGETS2 ioctl
+    # (termios2, arbitrary baud rates). Android's SELinux ioctl allowlist for
+    # untrusted_app permits TCGETS but not TCGETS2, so on-device it returns
+    # EACCES. Every glibc-2.42 binary therefore concludes it has no terminal:
+    # bash and fish start, decide they are non-interactive, print no prompt and
+    # silently read commands from the pty. It reads exactly like a hang.
+    # Measured on-device 2026-08-02 against a live pty (nix-on-droid, Android 16):
+    #   TCGETS  0x5401     OK        tty (coreutils 9.5, glibc 2.40) -> /dev/pts/0
+    #   TCGETS2 0x802C542A EACCES    tty (coreutils 9.11, glibc 2.42) -> not a tty
+    # glibc is the root of the package graph, so patching it means rebuilding all
+    # of nixpkgs on a phone. Pinning to a release with glibc 2.40 costs nothing
+    # and stays fully cached. Revisit once glibc falls back to TCGETS on EACCES.
+    nixpkgs-droid.url = "github:nixos/nixpkgs/nixos-25.11";
+    home-manager-droid = {
+      url = "github:nix-community/home-manager/release-25.11";
+      inputs.nixpkgs.follows = "nixpkgs-droid";
+    };
     # Nix-on-Droid: the aarch64 Android target (`nixOnDroidConfigurations.default`).
     # No release branch is current — release-24.05 is the newest tag and it is
-    # ~2 years behind, so track master and pin nixpkgs/home-manager to ours so the
-    # phone and volnix evaluate against the same package set.
+    # ~2 years behind, so track master and point its nixpkgs/home-manager at the
+    # droid pin above rather than at ours.
     nix-on-droid = {
       url = "github:nix-community/nix-on-droid";
       inputs = {
-        nixpkgs.follows = "nixpkgs";
-        home-manager.follows = "home-manager";
+        nixpkgs.follows = "nixpkgs-droid";
+        home-manager.follows = "home-manager-droid";
         # Docs/formatter-only inputs. We never evaluate nix-on-droid's own
         # `formatter`/`checks`/docs outputs, so drop them rather than carry
         # extra locked revisions the phone would have to resolve.
         nix-formatter-pack.follows = "";
         nmd.follows = "";
-        nixpkgs-docs.follows = "nixpkgs";
+        nixpkgs-docs.follows = "nixpkgs-droid";
       };
     };
   };
@@ -127,7 +146,10 @@
       # volnix, so the laptop can only evaluate this, not build it
       # (`make droid-check`).
       nixOnDroidConfigurations.default = inputs.nix-on-droid.lib.nixOnDroidConfiguration {
-        pkgs = import nixpkgs {
+        # inputs.nixpkgs-droid, NOT nixpkgs — see the input comment: glibc 2.42's
+        # TCGETS2 isatty() is denied by Android SELinux, which leaves every
+        # interactive shell promptless.
+        pkgs = import inputs.nixpkgs-droid {
           system = droidSystem;
           overlays = [
             # Recommended by upstream: supplies the on-device packages
@@ -141,7 +163,7 @@
           config.allowUnfree = true;
         };
         modules = [ ./droid ];
-        home-manager-path = home-manager.outPath;
+        home-manager-path = inputs.home-manager-droid.outPath;
       };
 
       # Add this to allow building/running the VM packages
