@@ -10,6 +10,12 @@
   # Termux, and is reached over the network (Tailscale, or 127.0.0.1 — loopback
   # works between Android apps). See droid/README.md.
 
+  # The app's built-in font has no Nerd Font glyphs, so starship's powerline
+  # separators and icons render as tofu. `terminal.font` takes a path to a font
+  # file and installs it as ~/.termux/font.ttf (any pre-existing file is backed
+  # up to font.ttf.bak). Same family volnix uses — see home/pkgs.nix.
+  terminal.font = "${pkgs.nerd-fonts.jetbrains-mono}/share/fonts/truetype/NerdFonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Regular.ttf";
+
   environment.packages = with pkgs; [
     # Minimal system floor. Everything else is user-scoped via home-manager
     # below, which nix-on-droid folds into environment.packages anyway
