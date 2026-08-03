@@ -1,9 +1,10 @@
 { pkgs, ... }:
 {
-  # Agent / MCP tooling on the phone — the subset of home/pkgs.nix `nixAi` that
-  # has an aarch64-linux substitute at the current lock. Verified with
-  # `nix build --dry-run` per package: every entry here is fetched, none is
-  # compiled on-device.
+  # Agent / MCP tooling on the phone. Every entry here is fetched from
+  # cache.nixos.org rather than compiled on-device, except `claude-code`, which
+  # is one npm derivation and cheap. Re-check with `make droid-plan` after any
+  # change: anything in the "will be built" list that is not fish-completions or
+  # hm_* glue means the phone compiles it.
   #
   # Kept as its own module on purpose. When a nixpkgs bump drops the aarch64
   # build for one of these, the fix is to comment out a line here rather than
@@ -20,45 +21,48 @@
   #                          need a phone-local checkout before they can be
   #                          wired up.
   #
-  # Absent because of the nixos-25.11 pin (see droid/README.md — glibc 2.42's
-  # TCGETS2 isatty() is refused by Android SELinux, so the phone cannot track
-  # unstable). These exist only in unstable at this lock:
+  # ── The whole `pkgs.llm-agents.*` set is absent, and this is the pin's cost ──
+  #
+  # droid/README.md explains why the phone is pinned to nixos-25.11 (glibc 2.42's
+  # TCGETS2 isatty() is refused by Android SELinux). numtide publishes aarch64
+  # builds of llm-agents to cache.numtide.com, but keyed to *their* nixpkgs. Feed
+  # the overlay 25.11 instead and every store path hashes differently, so nothing
+  # substitutes. Measured with `make droid-plan`:
+  #
+  #   nixpkgs agents only            88 derivations,   2 real packages
+  #   + pkgs.llm-agents.*           131 derivations,  ~40 real packages
+  #
+  # Those ~40 are Rust vendor trees (cc-switch-cli, toon), pnpm dependency sets
+  # (happy-coder) and prebuilt arm64 tarballs — compiled on a phone, under proot,
+  # where `tar` cannot set modes. That is exactly how the first attempt died:
+  #
+  #   tar: python-bigquery-sqlalchemy-1.16.0/docs/README.rst:
+  #        Cannot change mode to rwxr-xr-x: No such file or directory
+  #
+  # (from parallel-cli -> python3.13-sqlalchemy-bigquery.)
+  #
+  # So the following are dropped until one of these is true: llm-agents publishes
+  # against a release channel, the glibc pin lifts, or the set gets built once on
+  # a real aarch64 builder and pushed to a cache we trust:
+  #   antigravity-cli, ccstatusline, claude-plugins, opencode, cc-switch-cli,
+  #   toon, happy-coder, parallel-cli, zaly
+  #
+  # Also unstable-only at this lock, same reasoning:
   #   rtk, mcp-gateway, context7-mcp, mcp-server-fetch,
-  #   mcp-server-sequential-thinking, llmfit, llm-agents.zaly
-  # Do NOT reach into `inputs.nixpkgs` for them: they would come back linked
-  # against glibc 2.42 and land in the same promptless/no-tty state the pin
-  # exists to avoid. Re-add when the pin lifts, or when 25.11 gains them.
-  home.packages =
-    with pkgs;
-    [
-      claude-code
-      claude-code-router
-      codex
+  #   mcp-server-sequential-thinking, llmfit
+  #
+  # Do NOT reach into `inputs.nixpkgs` for any of them. They would come back
+  # linked against glibc 2.42 and land in the promptless/no-tty state the pin
+  # exists to avoid.
+  home.packages = with pkgs; [
+    claude-code
+    claude-code-router
+    codex
 
-      # MCP servers. The phone-agent server itself is NOT here — it stays in the
-      # Termux app, which is the only package Termux:API will talk to. See
-      # droid/README.md.
-      mcp-nixos
-      github-mcp-server
-    ]
-    ++ (with pkgs.llm-agents; [
-      # numtide/llm-agents.nix — same set volnix installs. The flake declares
-      # aarch64-linux support and publishes aarch64 builds to cache.numtide.com,
-      # which droid/default.nix adds as a substituter. Verified per package:
-      # all fetched, none built.
-      #
-      # antigravity-cli supersedes gemini-cli, which is why gemini-cli is not in
-      # the list above. Taken from llm-agents rather than nixpkgs: 1.1.8 vs 1.1.4,
-      # and the llm-agents build is fully substitutable while the nixpkgs one is
-      # not. This is the CLI — NOT the `antigravity` / `antigravity-ide` Electron
-      # desktop app, which cannot run without a display server.
-      antigravity-cli
-      ccstatusline
-      claude-plugins
-      opencode
-      cc-switch-cli
-      parallel-cli
-      toon
-      happy-coder
-    ]);
+    # MCP servers. The phone-agent server itself is NOT here — it stays in the
+    # Termux app, which is the only package Termux:API will talk to. See
+    # droid/README.md.
+    mcp-nixos
+    github-mcp-server
+  ];
 }
