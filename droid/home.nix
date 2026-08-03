@@ -4,14 +4,7 @@
   # are set by nix-on-droid's home-manager module — do not set them here.
   imports = [
     ../home/common
-    # BISECT (2026-08-02): temporarily out. Activation dies in `installPackages`
-    # with "getting pseudoterminal attributes: Permission denied" while building
-    # user-environment.drv. Verified on-device that this is NOT a general proot
-    # problem: trivial derivations build fine under both the old and new CLI, and
-    # `nix profile install` of a small path builds its user-environment cleanly.
-    # It only fails for the full ~500-package closure. Re-add once the minimal
-    # closure activates, then bisect this list.
-    # ./agents.nix
+    ./agents.nix
   ];
 
   home.stateVersion = "24.11";
@@ -43,6 +36,13 @@
       cfg = "cd $NIX_CONFIG_DIR";
     };
   };
+
+  # home/common only sets `programs.starship.enable`, so the phone would get the
+  # stock prompt. volnix gets the real one from home/persist.nix as an
+  # out-of-store symlink into /persist — that path is impermanence-specific and
+  # meaningless here, so point at the same dotfile through the store instead.
+  # Read-only on the phone, which is what you want: edit it on volnix, switch here.
+  xdg.configFile."starship.toml".source = ../dots/starship/starship.toml;
 
   home.packages = with pkgs; [
     # Phone-side extras that make sense without a desktop session.

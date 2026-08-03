@@ -19,24 +19,27 @@
   #                          /persist, which does not exist on Android. They
   #                          need a phone-local checkout before they can be
   #                          wired up.
+  #
+  # Absent because of the nixos-25.11 pin (see droid/README.md — glibc 2.42's
+  # TCGETS2 isatty() is refused by Android SELinux, so the phone cannot track
+  # unstable). These exist only in unstable at this lock:
+  #   rtk, mcp-gateway, context7-mcp, mcp-server-fetch,
+  #   mcp-server-sequential-thinking, llmfit, llm-agents.zaly
+  # Do NOT reach into `inputs.nixpkgs` for them: they would come back linked
+  # against glibc 2.42 and land in the same promptless/no-tty state the pin
+  # exists to avoid. Re-add when the pin lifts, or when 25.11 gains them.
   home.packages =
     with pkgs;
     [
       claude-code
       claude-code-router
       codex
-      rtk
 
       # MCP servers. The phone-agent server itself is NOT here — it stays in the
       # Termux app, which is the only package Termux:API will talk to. See
       # droid/README.md.
       mcp-nixos
-      mcp-gateway
       github-mcp-server
-      context7-mcp
-      mcp-server-fetch
-      mcp-server-sequential-thinking
-      llmfit
     ]
     ++ (with pkgs.llm-agents; [
       # numtide/llm-agents.nix — same set volnix installs. The flake declares
@@ -53,7 +56,6 @@
       ccstatusline
       claude-plugins
       opencode
-      zaly
       cc-switch-cli
       parallel-cli
       toon
