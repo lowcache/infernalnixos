@@ -11,22 +11,49 @@ status: active
 
 ## COMPLETE (2026-08-03)
 
-### Nix-on-Droid — Generation 4 Live and Verified (2026-08-02 — VERIFIED WORKING)
+### Nix-on-Droid — Generation 4 Live and Verified (2026-08-02 — VERIFIED WORKING 2026-08-03)
 
 ✓ glibc 2.42 TCGETS2 regression diagnosed and fixed via nixos-25.11 pin
 ✓ Generation 4 activation successful end-to-end
 ✓ Fish shell interactive on cold start
 ✓ Shared `home/common/` layer ported intact (zero changes)
-✓ 820 packages installed; agents re-enabled (claude-code, codex, gemini-cli)
+✓ 820 packages installed; agents operational (claude-code, codex, opencode)
 ✓ JetBrains Mono Nerd Font installed for proper glyph rendering (commit 030bea2)
-✓ All functional commits on main (5270d12, 871c6d9, 8233240, 030bea2)
-✓ Phone daily-usable; blog series unblocked
+✓ claude-code full Ink/React TUI verified rendering on phone (critical test passed)
+✓ **opencode 1.1.14 added** from nixos-25.11 (no backport needed; commit 34f3b20)
+✓ **android-integration fully investigated**: two attempted fixes failed; documented as closed (commits 34f3b20, 03f3a02)
+✓ All functional commits pushed to main
+✓ Phone is now daily-usable; blog series unblocked
 
-**Status:** Awaiting user push of `030bea2` if not yet done. Functional work complete.
+**Status:** Ready for next phase: rtk + mcp-gateway backports (phone-first Rust build). Awaiting tether/gemini-cli compatibility decision.
 
 ---
 
 ## IN PROGRESS / AWAITING USER ACTION
+
+### Backport rtk and mcp-gateway to nixos-25.11 — Phone-First Native Build
+
+**Status:** Queued. Both are Rust packages (`cargoDeps`); phone is 8-core native at 4.74 GHz (faster than QEMU emulation on volnix). Test phone build first, fall back to binfmt+nix-copy if needed.
+
+**Steps (in order):**
+- [ ] Build rtk 0.44.0 on phone (native `nix build …` against 25.11 nixpkgs)
+- [ ] If successful: backport expression (`callPackage` unstable's package.nix against 25.11's pkgs) and add to `droid/agents.nix`
+- [ ] Build mcp-gateway 3.3.2 on phone (same approach)
+- [ ] If either fails: set up binfmt on volnix (`boot.binfmt.emulatedSystems = [ "aarch64-linux" ]`) and retry via `nix copy`
+- [ ] Activate generation on phone; verify both work
+
+**Rationale:** Native beats emulated 5–10×; two small crates may finish faster on-device than setting up cross-compile. If phone build fails, binfmt is a one-line fix.
+
+### Verify tether Compatibility with gemini-cli 0.25.2 (Blocker for gemini Decision)
+
+**Status:** Decision point. Awaiting user input.
+
+**Context:** User moved from gemini-cli to antigravity-cli; antigravity-cli is absent from nixos-25.11. gemini-cli 0.25.2 IS present in 25.11. Question: does tether need antigravity-cli specifically, or will it work with gemini-cli 0.25.2?
+
+**Steps:**
+- [ ] User decides: does tether call antigravity-cli by name, or just "any gemini CLI"?
+- [ ] If tether works with 0.25.2: gemini on phone is free (already in 25.11). Add to `droid/agents.nix`.
+- [ ] If tether requires antigravity-cli: backport it (third Rust crate, but lower priority than rtk/mcp-gateway).
 
 ### Noctalia Bar — Dual Wrap-Around Layout (2026-06-22 — LIVE, CAPTURE PENDING)
 

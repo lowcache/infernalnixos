@@ -258,7 +258,7 @@ This file catalogs the active, canonical design decisions and system configurati
 * **No C++ fork required:** The three nerves are fully served by Luau plugins + MCP shim + hooks. Frame-tick capability confirmed; plugin IPC is request/response (stdout reply). A future engine change (plugin `onIpc` *return* flows back as reply) would unlock queryable plugin services (nice-to-have, not v1), justified by real need.
 
 * **Downstream plugin designs** (deferred to v1.1 or as expansion):
-  - **Launcher `/cc <task>`:** `runInTerminal("claude --append-system-prompt '…' '<task>'")` — real TUI with full fidelity.
+  - **Launcher `/cc <task>`:** `runInTerminal("claude --append-system-prompt '…' '<task>'")`  — real TUI with full fidelity.
   - **Quick-ask panel:** One-shot `claude -p … --output-format stream-json` for read-only questions (no terminal).
   - **Status widget/bar:** Show session state, token burn, model, workspace info.
   - **Bidirectional MCP:** Teach Claude `noctalia msg` + shell controls via `--append-system-prompt`; Claude invokes shell tools mid-session (theme switch, notifications, focus windows).
@@ -371,11 +371,13 @@ This file catalogs the active, canonical design decisions and system configurati
 
 ---
 
-## 31. Nix-on-Droid Architecture — One Flake, Portable Home Manager Layer, Phone Agent MCP Unchanged (2026-08-02, Amended With glibc 2.42 Pin)
+## 31. Nix-on-Droid Architecture — One Flake, Portable Home Manager Layer, Phone Agent MCP Unchanged (2026-08-02, Amended With glibc 2.42 Pin, Generation 4 Verified Live 2026-08-03)
 
 * **Original decision:** Ship `nixOnDroidConfigurations.default` as a new output in the existing volnixos flake (not a separate flake). Extract a portable Home Manager layer (`home/common/`) shared by both volnix and droid; host-specific layers on top.
 
 * **Amendment (2026-08-02 — glibc 2.42 Root Cause & Fix):** The apparent "login-path hang" was caused by glibc 2.42's reimplementation of `isatty()`/`tcgetattr()` to use the `TCGETS2` ioctl (termios2 for arbitrary baud rates). Android's SELinux allowlist for `untrusted_app` permits `TCGETS` but not `TCGETS2`, so every glibc-2.42 binary on the phone receives `EACCES` and reports "not a terminal". Interactive shells then start in non-interactive mode with no prompt. **Fix: pin nix-on-droid's package set to `nixos-25.11` (glibc 2.40, pre-regression).** This avoids rebuilding the graph on the phone. Commit `5270d12` + `871c6d9`.
+
+* **Amendment (2026-08-03 — Generation 4 Verified Live):** claude-code's full Ink/React TUI verified rendering on phone terminal (critical test passed). opencode 1.1.14 added from nixos-25.11 (no backport needed). Phone now daily-usable; justified effort investment for nix-on-droid. Strategic decision: selective backports of essential binaries (rtk, mcp-gateway) rather than re-packaging llm-agents overlay (cache-key mismatch issue documented). android-integration investigated; two attempted fixes failed; documented as closed (binfmt+nix-copy is only remaining route).
 
 * **Why one flake, not separate:** One `flake.lock` means both systems evaluate against identical nixpkgs (lazy evaluation skips non-droid outputs, so volnix-only inputs like lanzaboote don't affect the phone). Simpler to understand, easier to maintain, avoids duplicate `flake.nix` boilerplate. nix-on-droid's own `nixpkgs` and `home-manager` inputs follow the primary ones via `follows = "nixpkgs"` and `follows = "home-manager"`. **Amended:** `nixpkgs-droid` pinned to `nixos-25.11` (glibc 2.40); `home-manager-droid` follows release-25.11.
 
@@ -383,10 +385,8 @@ This file catalogs the active, canonical design decisions and system configurati
 
 * **Host-specific layers:**
   - **volnix** keeps `home/shell.nix` (niri/Noctalia integration, systemd units, sops-nix secrets), `home/pkgs.nix` (build toolchains node/go/pandoc, dev runners, ripgrep-all) — evaluates against nixos-unstable (glibc 2.42).
-  - **droid** has `droid/home.nix` (nix-on-droid module configuration) + `droid/agents.nix` (claude-code/codex/gemini-cli; 25.11-compatible, 7 26.11-only packages removed) — evaluates against nixos-25.11 (glibc 2.40).
+  - **droid** has `droid/home.nix` (nix-on-droid module configuration) + `droid/agents.nix` (claude-code/codex/opencode; 25.11-compatible, llm-agents set removed) — evaluates against nixos-25.11 (glibc 2.40).
 
 * **Phone-agent MCP unchanged:** nix-on-droid is not Termux. It is a separate Android package (`com.termux.nix`) with its own sandbox — not an authorized caller of Termux:API. Phone-agent MCP server stays in Termux and is accessed over the network (Tailscale loopback or local network) exactly as before. nix-on-droid provides the declarative dev environment **alongside** Termux, not replacing it.
 
 * **Makefile targets:** `make droid-check` (evaluate HM layer), `make droid-plan` (dry-run closure size).
-
-* **Generation 3 Status (2026-08-02):** Activation successful; fish prompt live; shared layer intact; terminal interactivity restored (`tty` returns `/dev/pts/0`).

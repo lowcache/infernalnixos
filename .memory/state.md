@@ -83,7 +83,7 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 
 ---
 
-## 6. Nix-on-Droid — Aarch64 Android Target (2026-08-03 — GENERATION 4 LIVE & VERIFIED)
+## 6. Nix-on-Droid — Aarch64 Android Target (2026-08-03 — GENERATION 4 VERIFIED LIVE)
 
 **Architecture:** `nixOnDroidConfigurations.default` in the existing volnixos flake. One `flake.lock`, evaluated on volnix but built on the phone. Portable Home Manager layer (`home/common/`) shared with desktop.
 
@@ -91,15 +91,30 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 
 **Fix Applied (2026-08-02, Commits 5270d12 + 871c6d9):** Pin nix-on-droid's package set to `nixos-25.11` (glibc 2.40, pre-regression) via separate `inputs.nixpkgs-droid` and `inputs.home-manager-droid` (both following release-25.11). This avoids rebuilding the entire graph on the phone. Desktop volnix remains on unstable (glibc 2.42) unaffected.
 
-**Generation 4 Status (2026-08-03, verified live):** Activation successful, phone boots to a working fish shell. Home Manager activates fully. Shared `home/common/` layer (fish config, aliases, functions, git, micro, CLI tools) ported intact — byte-identical to desktop before/after refactor. 820 packages installed, zero on-device source builds (except llm-agents, see below). Terminal interactivity restored: `tty` returns `/dev/pts/0`, `ll` alias works (eza with icons), git available (2.51.2), starship prompt live, claude-code (2.1.140) and codex (0.92.0) on `$PATH`. Agent stack re-enabled with 26.11-only packages removed (see droid/agents.nix notes).
+**Generation 4 Status (2026-08-03, verified live & daily-usable):** Activation successful, phone boots to working fish shell. Home Manager activates fully. Shared `home/common/` layer (fish config, aliases, functions, git, micro, CLI tools) ported intact — byte-identical to desktop before/after refactor. 820 packages installed, zero on-device source builds (llm-agents dropped; specific packages backported instead). Terminal interactivity restored: `tty` returns `/dev/pts/0`, `ll` alias works (eza with icons), git available (2.51.2), claude-code (2.1.140), codex (0.92.0), opencode (1.1.14) on `$PATH`. Agent stack operational. **Critical test verified (2026-08-03):** claude-code's full Ink/React TUI renders on phone terminal — splash art in colour, live input line, selectable text, OAuth prompt accessible. This was the linchpin test (the exact program class TCGETS2 was strangling); it passes. Phone is now daily-usable and a practical justification for nix-on-droid effort.
 
-**Known Regression — llm-agents Overlay Cache Miss (2026-08-03, Commits 8233240):** numtide publishes aarch64 pre-built caches for `pkgs.llm-agents.*` keyed to *numtide's own* nixpkgs. Feeding the overlay `nixos-25.11` rehashes every store path, so no substitutes exist. The phone would compile ~40 packages (Rust vendor trees, pnpm deps, Python chains) under proot, where tar and build tools are fragile. **Mitigation:** `droid/agents.nix` drops the llm-agents set entirely. Desktop nixAi set (node/go/pandoc, dev runners, ripgrep-all) remains unaffected. **Lost on phone:** antigravity-cli, opencode, ccstatusline, claude-plugins, cc-switch-cli, parallel-cli, toon, happy-coder, zaly (llm-agents) and rtk, mcp-gateway, context7-mcp, mcp-server-fetch, mcp-server-sequential-thinking, llmfit. **Kept:** claude-code, claude-code-router, codex, mcp-nixos, github-mcp-server. `rtk` (the token-optimization proxy) is the highest-value loss and should be reconsidered if numtide publishes against a release channel.
+**llm-agents Strategy — Selective Backports (2026-08-03, Commits 34f3b20, 03f3a02):** Original llm-agents overlay cannot be packaged for nixos-25.11 — the pin changes transitive dependency hashes downstream, so no substitutes exist on numtide's cache (cache-key mismatch). Phone would need to compile ~40 packages (Rust vendor trees, pnpm deps, Python chains, native tools) under proot, which is fragile and slow. **Resolution:** Drop the overlay entirely; instead, backport only the load-bearing essentials from plain nixpkgs (not llm-agents). User workflow analysis identified four critical packages:
+
+| Package | 25.11 Status | Strategy | Notes |
+|---|---|---|---|
+| **opencode** | 1.1.14 ✓ present | added immediately (commit 34f3b20) | no backport needed; session-death fallback |
+| **gemini-cli** | 0.25.2 ✓ present | awaiting compatibility check | deprecated in favour of antigravity-cli (absent); tether decides if 0.25.2 suffices |
+| **rtk** | ABSENT | backport from unstable | Rust package; phone-native build priority |
+| **mcp-gateway** | ABSENT | backport from unstable | Rust package; non-negotiable (enables phone-agent MCP); phone-native build priority |
+
+Desk-top nixAi set (node/go/pandoc, dev runners, ripgrep-all) remains on unstable unaffected.
+
+**android-integration Block — Investigated & Documented Closed (2026-08-03):** `android-integration` module provides `termux-open-url` and `termux-wake-lock` (browser launch, OAuth flow fixes, long-running agent support). Blocked by `termux-am` build failure under proot. **Two fix attempts (2026-08-03, both failed identically):**
+  1. Pin nixpkgs-droid to nixos-25.11 (hypothesis: upstream's termux-am cachix would match older nixpkgs). Result: derivative path still 404s on nix-on-droid.cachix.org, cache.nixos.org, cache.numtide.com. The pin shifts nix-on-droid's own rev, but termux-am's unpackFile failure persists at the same step.
+  2. Override with `overrideAttrs` replacing `cp -pr` with `cp -r --no-preserve=mode,ownership`. Result: identical unpackFile failure; `cp` sets mode on directories it creates regardless of flags. The permission denial is structural (proot lacks authority to `chown` within its sandbox).
+
+**Only remaining route:** binfmt on volnix (aarch64-linux native compilation via QEMU user-mode emulation) plus `nix copy` to transfer result to phone. Cost: only viable for packages needing compilation (not applicable to prebuild binaries); binfmt setup is cheap. Documented in `droid/default.nix` comments so nobody retries the same two approaches.
 
 **Nerd Font Fix (2026-08-03, Commit 030bea2):** nix-on-droid's built-in terminal font lacks Nerd Font glyphs, so starship's powerline separators and icons render as tofu. `droid/default.nix` now sets `terminal.font = pkgs.nerd-fonts.jetbrains-mono + "/share/fonts/truetype/NerdFonts/JetBrainsMonoNerdFont-Regular.ttf"`, installing the file as `~/.termux/font.ttf` on activation.
 
 **Host-specific layers:**
 - **volnix** keeps `home/shell.nix` (niri/Noctalia integration, systemd units, sops-nix secrets), `home/pkgs.nix` (build toolchains node/go/pandoc, dev runners, ripgrep-all) — evaluates against nixos-unstable (glibc 2.42).
-- **droid** has `droid/home.nix` (nix-on-droid module configuration) + `droid/agents.nix` (claude-code/codex/gemini-cli; 25.11-compatible, llm-agents removed) — evaluates against nixos-25.11 (glibc 2.40).
+- **droid** has `droid/home.nix` (nix-on-droid module configuration) + `droid/agents.nix` (claude-code/codex/opencode/gemini-cli; 25.11-compatible) — evaluates against nixos-25.11 (glibc 2.40).
 
 **Phone-agent MCP unchanged:** nix-on-droid is not Termux. It is a separate Android package (`com.termux.nix`) with its own sandbox — not an authorized caller of Termux:API. Phone-agent MCP server stays in Termux and is accessed over the network (Tailscale loopback or local network) exactly as before. nix-on-droid provides the declarative dev environment **alongside** Termux, not replacing it.
 

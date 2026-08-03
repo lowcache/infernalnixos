@@ -114,16 +114,6 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 * **Prevention Rule:** If GTK/Electron file pickers or portal Settings fail with `AccessDenied` / `Unable to open /proc/<pid>/root`, do NOT chase portal backends, icons, or `GTK_USE_PORTAL`. Reproduce with `gdbus call --session --dest org.freedesktop.portal.Desktop --object-path /org/freedesktop/portal/desktop --method org.freedesktop.portal.Settings.ReadAll '[]'`; if it errors, the app-id step is broken. Compare against `dbus-run-session -- <same call>`. If the daemon works and the live broker bus does not, set `services.dbus.implementation = "dbus"`.
 * **Rebuild caution:** Switching the dbus implementation restarts the message bus on `switch` and will tear down the running Wayland session (see Mistake #1). Apply via reboot, or run the rebuild detached (tmux / `systemd-run`).
 
-### 2026-08-02 — glibc 2.42 TCGETS2 Ioctl Regression in Sandboxes (Android SELinux Allowlist Mismatch)
-
-**Symptom:** Nix-on-droid generation 2 appeared to hang on every interactive shell (bash, fish) with no prompt and no SIGINT servicing. Same symptom appeared when trying generation 2 bash binary under generation 1's proot. Process was not hung — blocked in `read(0,…,1)` waiting on terminal.
-
-**Root Cause:** glibc 2.42 reimplemented `isatty()`/`tcgetattr()` to issue the `TCGETS2` ioctl (termios2 for arbitrary baud rates, replacing legacy `TCGETS` which only carries `Bxxxx` constants). Android's SELinux allowlist for `untrusted_app` permits `TCGETS`, `TCSETS`, `TIOCGWINSZ`, `TIOCGPGRP` on `/dev/pts/*` but has never included `TCGETS2`. Any glibc-2.42 binary receives `EACCES` on this ioctl and reports "not a terminal". Interactive shells then start in non-interactive mode: no prompt, silent command reading from stdin, appearing hung. Proven via Python ioctl probe: same fd, same instant, `TCGETS` OK + `TCGETS2` EACCES + `tty` (old glibc) `/dev/pts/0` + `tty` (glibc 2.42) `not a tty`.
-
-**Prevention Rule:** Before activating a new nixpkgs generation on nix-on-droid, verify that glibc and any terminal-interactive tools (bash, fish, coreutils) remain on a version proven to work in the Android `untrusted_app` sandbox. glibc 2.40 is known-good (pre-TCGETS2); 2.42 fails. Do not assume newer = better on Android — SELinux allowlists are not updated in sync with libc. Pin the droid package set to a known-good glibc version if upgrading the main flake would break it. Commit `5270d12` pins nix-on-droid to `nixos-25.11` (glibc 2.40) for this reason.
-
-**Note:** This is an upstream Android limitation, not a nix-on-droid or proot defect. glibc 2.42 broke all sandboxes with `untrusted_app` SELinux profiles (Arch Linux users reported the same issue when glibc 2.42 hit their desktops). glibc should fall back to `TCGETS` on `EACCES` — it does not. The libc bug will be fixed upstream eventually; until then, the pin is the only viable workaround for nix-on-droid.
-
 ### 2026-08-03 — Overlay Cache-Key Mismatch When Pinning nixpkgs to Non-Current Release
 
 **Symptom:** After pinning nix-on-droid's nixpkgs input to `nixos-25.11` (to work around glibc 2.42 regression), all packages from an overlay (`pkgs.llm-agents`) failed to substitute from cache. nix attempted to compile ~40 derivations (Rust vendor trees, pnpm deps, Python chains, native tools) on the phone under proot, where tar and build tools are fragile and compilation is 50-100× slower than desktop. Build failed midway through the chain.
@@ -139,3 +129,17 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
   4. Document the decision and the cost (package count, estimated build time).
 
 **Applied mitigation (2026-08-03):** Dropped `pkgs.llm-agents.*` from droid/agents.nix entirely. Desktop nixAi set remains unaffected (on unstable). Lost 7+ packages on phone (antigravity-cli, opencode, parallel-cli, happy-coder, etc.) and 5+ from unstable-only (rtk, mcp-gateway, etc.). Kept core tools (claude-code, codex). `rtk` (token-optimization proxy) is the highest-value loss; consider re-adding if numtide publishes against a release channel.
+
+### 2026-08-03 — termux-am proot unpackFile Failure Persists Across nixos Versions
+
+**Symptom:** `termux-am` build fails under proot with `cp: cannot change ownership of '/…': Operation not permitted`. Symptom identical at both nixos-unstable and nixos-25.11.
+
+**Root cause:** proot lacks authority to `chown` directories it creates. The build's unpackFile phase uses `cp -pr` (preserve mode + ownership); proot denies the ownership change on a directory it just created, even though the source and destination are both within proot's scope. The failure is below the derivation level — not a Nix package issue, but proot's security model.
+
+**Attempted fixes (2026-08-03, both failed identically):**
+1. Pin nixpkgs-droid to nixos-25.11 (hypothesis: upstream publishes termux-am cachix for older channels). Result: path still 404s on nix-on-droid.cachix.org, cache.nixos.org, cache.numtide.com. Pins nix-on-droid itself to an older rev, but the build still fails at the same unpackFile step.
+2. Override with `overrideAttrs` replacing `cp -pr` with `cp -r --no-preserve=mode,ownership`. Result: identical unpackFile failure. `cp` sets mode on directories it creates regardless of flags; the ownership change still fails under proot.
+
+**Prevention rule:** Do not retry either approach. The permission failure is structural to proot's isolation model. The only viable route is binfmt on volnix (aarch64-linux native compilation on x86-64 desktop) plus `nix copy` to transfer the result to the phone. Documented in `droid/default.nix` as closed with reasons.
+
+**Strategic note:** Impacts android-integration (termux-open-url, termux-wake-lock) — blocks OAuth flow auto-launch and long-running agent support. Cost of leaving it off: manual URL copy+paste for OAuth (press `c` in claude), no wake-lock for phone agents. Acceptable tradeoff vs. the 40-minute binfmt setup and transfer for one package.
