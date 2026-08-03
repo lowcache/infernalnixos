@@ -1,7 +1,7 @@
 ---
 type: todo
 project: Vol NixOS
-last_updated: 2026-08-02
+last_updated: 2026-08-03
 status: active
 ---
 
@@ -65,44 +65,27 @@ Implement path-prefix routing for `.memory/` inbox ingestion. See Decision #17.
 - [ ] Register hook in `~/.claude/settings.json` as SessionEnd event
 - [ ] Test with dummy work note: edit a dots file, create test note, verify routing on next sync
 
-### Nix-on-Droid — Login-Path Bug Fix + Re-Add Agents (2026-08-02 — AWAITING UPSTREAM)
+### Nix-on-Droid — Generation 3 Live, Agents Re-Added, Blog Unblocked (2026-08-02 — COMPLETE, BLOG SERIES AWAITING WRITE-UP)
 
-**Status:** First activation successful (generation 2 active). Home Manager activates fully, 626 packages installed zero-compilation. One upstream login-path bug remains: any shell attached to the terminal hangs under generation 2's `login-inner`.
+**Status (2026-08-02):** glibc 2.42 TCGETS2 root cause found and fixed (pin to nixos-25.11). Generation 3 activates cleanly with shared `home/common/` layer intact. Terminal interactivity restored. Agent stack re-enabled (7 26.11-only packages removed from agents.nix). Phone is now daily-usable.
 
-**Evidence (2026-08-02):**
-- Activation completes end-to-end without error
-- `fish -i -c 'echo'` with full config: 0.463s (fast)
-- `fish --no-config -i`: 0.022s (fast)
-- `fastfetch`: 0.889s (fast, ruled out)
-- Every component tested in isolation is fast
-- `login sh -c '<cmd>'` works fine (no terminal attachment)
-- `login bash --noprofile --norc` hangs on clean slate (not fish-specific)
-- SIGINT never lands after 40+ minutes (blocked in syscall, not slow)
+**Completion verified:**
+- ✓ Activation end-to-end successful
+- ✓ Fish prompt live on cold start
+- ✓ `tty` reports `/dev/pts/0` (fixed from prior `not a tty`)
+- ✓ Shared home/common aliases, functions, git config working
+- ✓ starship prompt live
+- ✓ Agents re-enabled (claude-code, codex, gemini-cli)
+- ✓ Root cause archived in `.memory/inbox/` (TCGETS2 SELinux allowlist)
 
-**Hypothesis:** Generation 2's `login-inner` terminal-attach path or proot's pty handling under Android 16.
+**Blog series now unblocked:**
+- [ ] Write architecture post (portable layer, one-flake strategy)
+- [ ] Write deployment post (phone setup, Makefile targets, adb debug channel)
+- [ ] Write MCP integration post (phone-agent Termux shim, Tailscale)
+- [ ] (Optional) Performance/runtime gotchas post
+- [ ] (Optional) Troubleshooting recovery ladder post
 
-**Workaround:** Generation 1 is available via rollback; recovery proven instant: `login sh -c 'nix-on-droid rollback'`.
-
-**Next steps:**
-- [ ] File upstream issue on nix-on-droid with timings and evidence
-- [ ] Optional: drill into `login-inner.nix` terminal-setup code (may reveal a nixpkgs interaction)
-- [ ] Once login issue is understood, test re-adding `droid/agents.nix` by halves
-- [ ] Write blog series once phone is daily-usable
-
-**Blocks on:** Upstream response or self-contained understanding of login-path pty handling.
-
-### Nix-on-Droid Blog Series (2026-08-02 — DEFERRED, BLOCKS ON LOGIN FIX)
-
-**Status:** V1 implementation complete and verified (laptop side). Awaits working phone shell (login-path fix) to validate end-to-end. Blog series deferred until the phone is daily-usable.
-
-**Planned blog series (3-5 posts):**
-- [ ] Architecture & portable layer strategy
-- [ ] Device setup & Makefile targets
-- [ ] MCP integration with phone-agent Termux shim
-- [ ] (Optional) Performance profiling on aarch64
-- [ ] (Optional) Troubleshooting & runtime gotchas (bootstrap paradox, recovery ladder)
-
-**Lower priority than fixing login issue.**
+**Waiting on:** User to write blog posts (lower priority than active work).
 
 ---
 

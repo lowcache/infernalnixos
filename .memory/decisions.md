@@ -1,7 +1,7 @@
 ---
 type: decisions
 project: Vol NixOS
-last_updated: 2026-08-02
+last_updated: 2026-08-03
 status: active
 ---
 
@@ -371,30 +371,22 @@ This file catalogs the active, canonical design decisions and system configurati
 
 ---
 
-## 31. Nix-on-Droid Architecture — One Flake, Portable Home Manager Layer, Phone Agent MCP Unchanged (2026-08-02)
+## 31. Nix-on-Droid Architecture — One Flake, Portable Home Manager Layer, Phone Agent MCP Unchanged (2026-08-02, Amended With glibc 2.42 Pin)
 
-* **Decision:** Ship `nixOnDroidConfigurations.default` as a new output in the existing volnixos flake (not a separate flake). Extract a portable Home Manager layer (`home/common/`) shared by both volnix and droid; host-specific layers on top.
+* **Original decision:** Ship `nixOnDroidConfigurations.default` as a new output in the existing volnixos flake (not a separate flake). Extract a portable Home Manager layer (`home/common/`) shared by both volnix and droid; host-specific layers on top.
 
-* **Why one flake, not separate:** One `flake.lock` means both systems evaluate against identical nixpkgs (lazy evaluation skips non-droid outputs, so volnix-only inputs like lanzaboote don't affect the phone). Simpler to understand, easier to maintain, avoids duplicate `flake.nix` boilerplate. nix-on-droid's own `nixpkgs` and `home-manager` inputs follow the primary ones via `follows = "nixpkgs"` and `follows = "home-manager"`.
+* **Amendment (2026-08-02 — glibc 2.42 Root Cause & Fix):** The apparent "login-path hang" was caused by glibc 2.42's reimplementation of `isatty()`/`tcgetattr()` to use the `TCGETS2` ioctl (termios2 for arbitrary baud rates). Android's SELinux allowlist for `untrusted_app` permits `TCGETS` but not `TCGETS2`, so every glibc-2.42 binary on the phone receives `EACCES` and reports "not a terminal". Interactive shells then start in non-interactive mode with no prompt. **Fix: pin nix-on-droid's package set to `nixos-25.11` (glibc 2.40, pre-regression).** This avoids rebuilding the graph on the phone. Commit `5270d12` + `871c6d9`.
 
-* **Portable layer design (`home/common/`):** Platform-agnostic — fish shell (aliases, abbrs, functions, PATH assembly), git config, micro (syntax/tools), direnv, common CLI packages (ripgrep, fd, fzf, eza, jq, yq, coreutils, etc.). Extracted from prior volnix `home/shell.nix` and `home/pkgs.nix`; both hosts import it via `imports = [ ../home/common ]`. Works because `programs.fish.{shellInit,interactiveShellInit}` are `types.lines` (mergeable) and aliases/functions/packages are merging options (no host redefines a shared value). **Verified behavior-preserving refactor (2026-08-02):** Desktop package list (224 entries), aliases, functions, git settings, micro settings identical before/after.
+* **Why one flake, not separate:** One `flake.lock` means both systems evaluate against identical nixpkgs (lazy evaluation skips non-droid outputs, so volnix-only inputs like lanzaboote don't affect the phone). Simpler to understand, easier to maintain, avoids duplicate `flake.nix` boilerplate. nix-on-droid's own `nixpkgs` and `home-manager` inputs follow the primary ones via `follows = "nixpkgs"` and `follows = "home-manager"`. **Amended:** `nixpkgs-droid` pinned to `nixos-25.11` (glibc 2.40); `home-manager-droid` follows release-25.11.
+
+* **Portable layer design (`home/common/`):** Platform-agnostic — fish shell (aliases, abbrs, functions, PATH assembly), git config, micro (syntax/tools), direnv, common CLI packages (ripgrep, fd, fzf, eza, jq, yq, coreutils, etc.). Extracted from prior volnix `home/shell.nix` and `home/pkgs.nix`; both hosts import it via `imports = [ ../home/common ]`. Works because `programs.fish.{shellInit,interactiveShellInit}` are `types.lines` (mergeable) and aliases/functions/packages are merging options (no host redefines a shared value). **Verified behavior-preserving refactor (2026-08-02):** Desktop package list (224 entries), aliases, functions, git settings, micro settings identical before/after. Same layer deployed to phone in generation 3 with zero changes.
 
 * **Host-specific layers:**
-  - **volnix** keeps `home/shell.nix` (niri/Noctalia integration, systemd units, sops-nix secrets), `home/pkgs.nix` (build toolchains node/go/pandoc, dev runners, ripgrep-all).
-  - **droid** has `droid/home.nix` (nix-on-droid module configuration), `droid/agents.nix` (optional agent tooling — claude-code, codex, gemini-cli, rtk, MCP servers; all have aarch64-linux substitutes).
+  - **volnix** keeps `home/shell.nix` (niri/Noctalia integration, systemd units, sops-nix secrets), `home/pkgs.nix` (build toolchains node/go/pandoc, dev runners, ripgrep-all) — evaluates against nixos-unstable (glibc 2.42).
+  - **droid** has `droid/home.nix` (nix-on-droid module configuration) + `droid/agents.nix` (claude-code/codex/gemini-cli; 25.11-compatible, 7 26.11-only packages removed) — evaluates against nixos-25.11 (glibc 2.40).
 
-* **Phone-agent MCP unchanged:** nix-on-droid is not Termux. It is a separate Android package (`com.termux.nix`) with its own sandbox — not an authorized caller of Termux:API. Phone-agent MCP server stays in Termux and is accessed over the network (Tailscale loopback or local network) exactly as now. nix-on-droid provides the declarative dev environment **alongside** Termux, not replacing it. The `android-integration.*` options enabled in the system layer are nix-on-droid's own intent-broadcast mechanism; they don't change this architecture.
+* **Phone-agent MCP unchanged:** nix-on-droid is not Termux. It is a separate Android package (`com.termux.nix`) with its own sandbox — not an authorized caller of Termux:API. Phone-agent MCP server stays in Termux and is accessed over the network (Tailscale loopback or local network) exactly as before. nix-on-droid provides the declarative dev environment **alongside** Termux, not replacing it.
 
-* **Closure budget constraint discovered:** Naive port (pre-refactor) was 83 derivations built with `nodejs` compiling from source, 158 MiB download, 3906 MiB unpacked. With `home/common` refactor and build toolchains kept in volnix-only `home/pkgs.nix`: 87 trivial HM glue derivations, zero source builds on phone, 399 MiB download, 2864 MiB unpacked. Agent stack fully cached at current lock (claude-code, codex, gemini-cli, rtk, MCP servers all have substitutes).
+* **Makefile targets:** `make droid-check` (evaluate HM layer), `make droid-plan` (dry-run closure size).
 
-* **Makefile targets added:** `make droid-check` (evaluate HM layer on phone target), `make droid-plan` (dry-run show closure), `make droid-switch` (placeholder for future; actual build runs on phone via `nix-on-droid switch --flake .`).
-
-* **Constraints / Findings:**
-  - No aarch64 emulation on volnix. `boot.binfmt` is AppImage-only. Flake evaluation (`nix eval .#…`) works; system layer evaluation fails because upstream's `modules/user.nix` runs IFD with aarch64 derivation. Actual build happens on the phone.
-  - `--impure` is mandatory for evaluation (upstream references proot-termux via `builtins.storePath`). Upstream's own CLI passes it too; not a defect.
-  - proot-termux only on `https://nix-on-droid.cachix.org` (key `nix-on-droid.cachix.org-1:56snoM…`). Device enables it; volnix must pass key when evaluating. Already wired in `flake.nix` comments.
-  - nix-on-droid tracks **master** (no stable release). Newest tag is `release-24.05` (~2 years old). Using master is intentional for latest fixes.
-
-* **Rationale:** Keeps the code DRY (portable layer shared), minimizes flake.lock coupling, enables evaluation from laptop while actual builds run on device where they matter (no fake cross-compilation), and keeps the architecture honest (phone-agent MCP stays where it lives). One flake is simpler than juggling two.
-
----
+* **Generation 3 Status (2026-08-02):** Activation successful; fish prompt live; shared layer intact; terminal interactivity restored (`tty` returns `/dev/pts/0`).

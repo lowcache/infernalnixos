@@ -1,7 +1,7 @@
 ---
 type: mistakes
 project: Vol NixOS
-last_updated: 2026-08-02
+last_updated: 2026-08-03
 status: append-only
 ---
 
@@ -114,27 +114,6 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 * **Prevention Rule:** If GTK/Electron file pickers or portal Settings fail with `AccessDenied` / `Unable to open /proc/<pid>/root`, do NOT chase portal backends, icons, or `GTK_USE_PORTAL`. Reproduce with `gdbus call --session --dest org.freedesktop.portal.Desktop --object-path /org/freedesktop/portal/desktop --method org.freedesktop.portal.Settings.ReadAll '[]'`; if it errors, the app-id step is broken. Compare against `dbus-run-session -- <same call>`. If the daemon works and the live broker bus does not, set `services.dbus.implementation = "dbus"`.
 * **Rebuild caution:** Switching the dbus implementation restarts the message bus on `switch` and will tear down the running Wayland session (see Mistake #1). Apply via reboot, or run the rebuild detached (tmux / `systemd-run`).
 
-### 2026-08-02 — Nix-on-Droid Activation PTY Failure — Nine Hypotheses Tested & Eliminated
-
-**Incident:** First activation of generation 2 appeared to fail during `installPackages` phase with `error: getting pseudoterminal attributes: Permission denied`. Upon isolated testing, every component of the closure worked correctly, and activation actually succeeded completely — failure was in the login-path that followed.
-
-**Root cause:** Nine hypotheses were tested in sequence and ruled out by evidence:
-1. **Closure size** — `nix-env --install <full-500-package-path>` succeeded instantly in scratch profile on clean device.
-2. **nix version** — tested both 2.18.8 (bootstrap) and 2.34.8 (generation 2); both built the closure in isolation without error.
-3. **proot pty support generally** — trivial derivations build cleanly, `nix build` succeeds on same device.
-4. **TMPDIR/disk space** — 322 GB free, redirection to `/tmp` made no difference.
-5. **stdout piping** — `nix build` with redirected I/O handles ptys correctly.
-6. **Single-package builds** — `nix profile install tree-2.3.2-man` built its user-environment.drv cleanly.
-7. **fish slowness** — `fish -i -c 'echo'` with full config.fish returned in 0.463s.
-8. **fastfetch blocking** — isolated measurement: 0.889s, fast.
-9. **agy wrapper recursion** — `--wraps agy` when no real agy binary exists tested in isolation: 0.019s, fast.
-
-**What was actually broken:** Generation 2's `login-inner` terminal-attachment path. Any shell run via `login <shell>` (which attaches to the terminal as the login shell) hangs and never services SIGINT. The pty-failure error during activation was a red herring — it never actually reproduced during direct testing. The real breakage happened when attempting to use the new login-inner as the interactive shell.
-
-**Prevention rule:** When debugging multi-layered failures, isolate each component end-to-end *before* chaining them together. The activation pty error looked like a build problem but was actually a login-path problem; testing each in isolation from the start would have revealed this sooner. Measure, don't guess — especially when measurements are cheap (0.022s vs 40+ minutes of hung waiting).
-
-**Secondary issue:** Claude used `nix profile install` diagnostically against the live phone profile, converting it from nix-env style (`manifest.nix`) to `nix profile` style (`manifest.json`). This flipped the activation code path and produced a false second error unrelated to the pty failure. Cleanup required: use a scratch profile (`--profile /tmp/x`) for any diagnostic package installs.
-
 ### 2026-08-02 — Nix-on-Droid Login-Path Pty Hang — Upstream, Workaround Proven
 
 **Incident:** Generation 2 activates cleanly end-to-end. However, any shell attached to the terminal under the new `login-inner` hangs indefinitely and never services SIGINT, even after 40+ minutes of waiting.
@@ -157,3 +136,13 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 **Prevention rule:** Before committing to a new generation that changes terminal-attach machinery, test interactivity on a clean boot with all prior sessions closed. The `.login-inner.new` swap only happens when no proot is running; testing with other sessions alive masks the defect.
 
 **Related constraint (for future ref):** nix-on-droid bootstraps with nix 2.18.8, but the activated generation specifies nix 2.34.8 via `config.nix.package`. The activation script replaces PATH entirely with `activationBinPaths`, so all nix commands inside activation run against the newer version. This version bump during activation combined with Android 16 proot may be related to the pty issue.
+
+### 2026-08-02 — glibc 2.42 TCGETS2 Ioctl Regression in Sandboxes (Android SELinux Allowlist Mismatch)
+
+**Symptom:** Nix-on-droid generation 2 appeared to hang on every interactive shell (bash, fish) with no prompt and no SIGINT servicing. Same symptom appeared when trying generation 2 bash binary under generation 1's proot. Process was not hung — blocked in `read(0,…,1)` waiting on terminal.
+
+**Root Cause:** glibc 2.42 reimplemented `isatty()`/`tcgetattr()` to issue the `TCGETS2` ioctl (termios2 for arbitrary baud rates, replacing legacy `TCGETS` which only carries `Bxxxx` constants). Android's SELinux allowlist for `untrusted_app` permits `TCGETS`, `TCSETS`, `TIOCGWINSZ`, `TIOCGPGRP` on `/dev/pts/*` but has never included `TCGETS2`. Any glibc-2.42 binary receives `EACCES` on this ioctl and reports "not a terminal". Interactive shells then start in non-interactive mode: no prompt, silent command reading from stdin, appearing hung. Proven via Python ioctl probe: same fd, same instant, `TCGETS` OK + `TCGETS2` EACCES + `tty` (old glibc) `/dev/pts/0` + `tty` (glibc 2.42) `not a tty`.
+
+**Prevention Rule:** Before activating a new nixpkgs generation on nix-on-droid, verify that glibc and any terminal-interactive tools (bash, fish, coreutils) remain on a version proven to work in the Android `untrusted_app` sandbox. glibc 2.40 is known-good (pre-TCGETS2); 2.42 fails. Do not assume newer = better on Android — SELinux allowlists are not updated in sync with libc. Pin the droid package set to a known-good glibc version if upgrading the main flake would break it. Commit `5270d12` pins nix-on-droid to `nixos-25.11` (glibc 2.40) for this reason.
+
+**Note:** This is an upstream Android limitation, not a nix-on-droid or proot defect. glibc 2.42 broke all sandboxes with `untrusted_app` SELinux profiles (Arch Linux users reported the same issue when glibc 2.42 hit their desktops). glibc should fall back to `TCGETS` on `EACCES` — it does not. The libc bug will be fixed upstream eventually; until then, the pin is the only viable workaround for nix-on-droid.
