@@ -1,0 +1,15 @@
+# Cloudflare Workers Static Assets deployment for the MkDocs wiki.
+#
+# Without this file, `npx wrangler deploy` falls back to auto-configuration and
+# invents a build command that does not exist, failing the deploy after an
+# otherwise successful build.
+#
+# No Worker script: `main` is omitted so Cloudflare serves ./site directly.
+# mkdocs copies docs/_redirects into site/_redirects, which is the assets root,
+# so the existing Netlify-syntax redirects keep working.
+name = "volnixos-wiki"
+compatibility_date = "2026-08-04"
+
+[assets]
+directory = "./site"
+not_found_handling = "404-page"
