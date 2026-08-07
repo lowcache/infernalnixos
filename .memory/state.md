@@ -1,7 +1,7 @@
 ---
 type: state
 project: Vol NixOS
-last_updated: 2026-08-03
+last_updated: 2026-08-06
 status: active
 ---
 
@@ -43,13 +43,15 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 
 **Flatpak data (persisted 2026-06-22):** `/var/lib/flatpak` and `~/.local/share/flatpak` persisted (`hardware-configuration.nix:91`, `persist.nix:110`); Flatpak installs survive boot. Flathub remote added; `org.kde.krita` 5.3.2.1 (uninstalled 2026-06-22) and `org.gimp.GIMP` 3.2.4 installed. Host fonts (`~/.local/share/fonts`, 2772 files) mounted read-only into Flatpak sandboxes; access via `filesystems=host`.
 
+**Phone-agent ingest (2026-08-06):** Staged files from phone arrive at `~/ingest/staged/` (managed by phone-ingest-sync.timer). Delivered files moved to `~/ingest/delivered/` after hash verification.
+
 ---
 
-## 3. MicroVM Guest Network
+## 3. MicroVM Guest Network (2026-08-06 — Confirmed Working)
 
-* `net-gate`: host `vm-netgate` → `192.168.100.1`; guest → `192.168.100.2`; Tor `9040`/DNS `5353`/**SOCKS 9050 (2026-07-09)**.
-* `tailscale-vm`: host `vm-tailscale` → `192.168.101.1`; guest → `192.168.101.2`.
-* VM tap interfaces `unmanaged` in NetworkManager.
+* **net-gate (Tor relay):** Host `vm-netgate` → `192.168.100.1`; guest → `192.168.100.2`. Tor `9040`/DNS `5353`/SOCKS `9050`.
+* **tailscale (Tailnet access):** Host `vm-tailscale` → `192.168.101.1`; guest → `192.168.101.2`. Service `microvm@tailscale` active (autostart enabled, status confirmed 2026-08-06 21:02:09). Guest runs `tailscaled` with auth-key from `/persist/var/lib/tailscale-vm/authkey`, reaches tailnet at guest IP `100.66.249.117`. Host accesses tailnet via static route `100.64.0.0/10 via 192.168.101.2 dev vm-tailscale` (host is **not** a tailnet node itself; routes through the VM). All routes active; guest reachable on tailnet IP (verified HTTP 200 on guest health endpoint 2026-08-06). **Start/restart:** `sudo systemctl start microvm@tailscale` (or stop/restart). Do not use `make run-tailscale` while unit is active (will fight over tap/socket).
+* **VM tap interfaces** `unmanaged` in NetworkManager.
 
 ---
 
@@ -83,6 +85,28 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 
 ---
 
+## 5. Phone-Agent File Transfer (2026-08-06 — Confirmed Working, Pull-Only by Design)
+
+**Status:** Phone-agent subsystem supports **phone → laptop pull-only** file transfer via `phone-ingest-sync` subsystem. Confirmed working 2026-08-06.
+
+**Mechanics:**
+* User stages file on phone (Android share sheet → Termux hooks spool via `termux-url-opener`/`termux-file-editor`, or manual placement in phone's ingest directory).
+* `phone-ingest-sync.timer` fires every 2 minutes, calls `phone-agent phone.ingest.fetch` to pull staged files.
+* Downloaded files land at `~/ingest/staged/`, verified against sha256, moved to `~/ingest/delivered/` after verification (automatic, prevents duplicates).
+* **Current state (2026-08-06, 2h38m after boot):** Timer active and working (last run ~45s ago, exit 0); `/home/lowcache/ingest/staged/` empty (no files staged on phone currently); phone reachable at 100.101.229.9 via Tailscale (HTTP 200 on health endpoint).
+
+**Available tools:** All 34 phone-agent tools implement phone → laptop only by design (phone never initiates; returning data in the response IS the delivery). Key ingest tools: `phone.ingest.list` (list staged files with name/size/sha256), `phone.ingest.fetch` (download file, returns content_b64), `phone.capture.share` (receive Android share sheet content via termux hooks), `phone.queue.deliver` (queue management).
+
+**Manual triggering:**
+* Immediate pull: `systemctl --user start phone-ingest-sync.service`
+* Hand-invoke: `phone-agent phone.ingest.list '{"limit":50}'` (list files); `phone-agent phone.ingest.fetch '{"name":"file.pdf","delete_after":true}'` (download with automatic cleanup). Caller must manually decode base64 and verify sha256 if invoking directly.
+
+**Limitation: Laptop → phone transfer NOT natively supported.** All 34 tools are pull-only. Workaround: Use `phone.system.termux_exec` or `phone.system.rish` to have the phone `curl` the file from the host. Requires (1) DNAT entry in `nixos/vms.nix:225` to forward inbound port to host, (2) systemd socket/http.server on host to serve the file. Not yet implemented.
+
+**Note on Taildrop:** Tailscale's native file transfer (`tailscale file cp`, `tailscale file get`) is also phone → laptop only and not exposed in the web UI. Web UI supports connect/disconnect/exit-node selection only, not file transfer.
+
+---
+
 ## 6. Nix-on-Droid — Aarch64 Android Target (2026-08-03 — GENERATION 5 ACTIVATED & VERIFIED LIVE)
 
 **Architecture:** `nixOnDroidConfigurations.default` in the existing volnixos flake. One `flake.lock`, evaluated on volnix but built on the phone. Portable Home Manager layer (`home/common/`) shared with desktop.
@@ -91,7 +115,7 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 
 1. **glibc 2.42 TCGETS2 Regression (Solved via nixos-25.11 Pin):** glibc 2.42 reimplemented `isatty()`/`tcgetattr()` to issue the `TCGETS2` ioctl (termios2, for arbitrary baud rates). Android's SELinux allowlist for `untrusted_app` permits `TCGETS` but not `TCGETS2`, so every glibc-2.42 binary receives `EACCES` and reports "not a terminal". Interactive shells start in non-interactive mode with no prompt, appearing hung. **Fix:** Pin nix-on-droid's package set to `nixos-25.11` (glibc 2.40, pre-regression) via separate `inputs.nixpkgs-droid` and `inputs.home-manager-droid` (both following release-25.11). Commits `5270d12 + 871c6d9`. Desktop volnix remains on unstable (glibc 2.42) unaffected.
 
-2. **proot `cp -pr` chmod Failure on Directory-Source Derivations (Solved via prootUnpack Override):** Every directory-source derivation (`fetchFromGitHub`, `fetchzip`, etc.) failed with `cp: setting permissions for 'source': No such file or directory` during unpack. Root cause: nixpkgs' `_defaultUnpack` uses `cp -pr --reflink=auto`; cp creates the destination directory then chmods it to preserve source mode. Under proot (ptrace-based sandbox), chmod returns `ENOENT` even though the directory exists — proot denies ownership/mode operations on directories it creates. **Fix:** `droid/backports.nix` provides `prootUnpack` override that pre-creates the destination, copies *contents* with `cp -r --no-preserve=mode,ownership $src/. $dest/`, then `chmod -R u+w $dest`. Also fixes cargo's vendor hook by placing the vendor tree in `postUnpack` and setting `cargoVendorDir = "vendor"` to take the no-copy branch (required pairing). Verified: rtk 0.44.0, mcp-gateway 3.3.2, and termux-am all build natively on phone; both link glibc-2.40-224 (zero glibc-2.42 in runtime closure). Commit `d4f2968`.
+2. **proot `cp -pr` chmod Failure on Directory-Source Derivations (Solved via prootUnpack Override):** Every directory-source derivation (`fetchFromGitHub`, `fetchzip`, etc.) failed with `cp: setting permissions for 'source': No such file or directory` during unpack. Root cause: nixpkgs' `_defaultUnpack` uses `cp -pr --reflink=auto`; cp creates the destination directory then chmods it to preserve source mode. Under proot (ptrace-based sandbox), chmod returns `ENOENT` even though the directory exists — proot denies ownership/mode operations on directories it creates. **Fix:** `droid/backports.nix` provides `prootUnpack` override that pre-creates the destination, copies *contents* with `cp -r --no-preserve=mode,ownership $src/. $dest/`, then `chmod -R u+w $dest` to take the no-copy branch (required pairing). Verified: rtk 0.44.0, mcp-gateway 3.3.2, and termux-am all build natively on phone; both link glibc-2.40-224 (zero glibc-2.42 in runtime closure). Commit `d4f2968`.
 
 **Generation 5 Status (2026-08-03, Verified Live & Cold-Start):**
 
@@ -123,7 +147,7 @@ Activation successful end-to-end. Phone boots to working fish shell; Home Manage
 
 ---
 
-## 5. Niri Compositor + Noctalia v5 — PRIMARY DESKTOP (2026-06-17, Sole WM as of 2026-06-28)
+## 7. Niri Compositor + Noctalia v5 — PRIMARY DESKTOP (2026-06-17, Sole WM as of 2026-06-28)
 
 **Status (2026-06-28):** niri + Noctalia v5 are the **only** desktop. Hyprland + ii/quickshell removed (see commit ee2efb4). niri is the default session launched by greetd/tuigreet.
 
@@ -229,7 +253,7 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
 
 ---
 
-## 7. Application Status (2026-07-14, Updated 2026-07-31)
+## 8. Application Status (2026-07-14, Updated 2026-07-31)
 
 ### Krita 6.0.1 native + Font Gallery pykrita Plugin (2026-06-22 — User-Text Input, Implementation Validated)
 
