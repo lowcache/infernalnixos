@@ -47,7 +47,7 @@
       wifi = {
         scanRandMacAddress = true;
         macAddress = "stable-ssid";
-      };  
+      };
       settings = {
         "connection-tether-lowprio" = {
           match-device = "driver:rndis_host,driver:cdc_ether,driver:cdc_ncm";
@@ -423,11 +423,11 @@
         };
       };
     };
-#    resolved = {
-#      enable = true;
-#      dnsovertls = "opportunistic";
-#      fallbackDns = [ "1.1.1.1#cloudflare.dns.com" "9.9.9.9#dns.quad9.net" ];    
-#    };
+    #    resolved = {
+    #      enable = true;
+    #      dnsovertls = "opportunistic";
+    #      fallbackDns = [ "1.1.1.1#cloudflare.dns.com" "9.9.9.9#dns.quad9.net" ];
+    #    };
   };
 
   xdg.portal = {

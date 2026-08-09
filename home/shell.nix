@@ -51,6 +51,10 @@
         # Github token - sops-nix to /run/secrets/github_token
         test -r /run/secrets/github_token
         and set -gx GITHUB_TOKEN (cat /run/secrets/github_token)
+        # Phone-agent bearer token - sops-nix to /run/secrets/phone_agent_token;
+        # consumed by the phone-agent MCP server in .model/.claude/.mcp.json
+        test -r /run/secrets/phone_agent_token
+        and set -gx PHONE_AGENT_TOKEN (cat /run/secrets/phone_agent_token)
       '';
       shellAbbrs = {
         # Anonymous mode (P5-T3): arm/disarm egress via the net-gate Tor VM.
