@@ -104,6 +104,20 @@
         ignorecase = true;
         smartcase = true;
         "lsp.server" = "nix=nil";
+        # Prose files wrap to the published measure. hotelevangelism.blog
+        # renders .post-content-main in Literata 18px inside an 800px column,
+        # which measures 94 characters per line (70 sampled full lines, median
+        # 94, IQR 92-95) — NOT the 76 that 800px/1ch implies, because Literata's
+        # digits are wider than its letters and `ch` is the zero advance.
+        # colorcolumn sits at 95 so column 94 is the last legal one.
+        # For wrap that lands exactly on the published measure rather than just
+        # marking it, size the terminal to 99 columns: micro's chrome with
+        # ruler+scrollbar is 5 columns (measured), so 99 - 5 = 94.
+        "*.md" = {
+          softwrap = true;
+          wordwrap = true;
+          colorcolumn = 95;
+        };
         # Third-party plugin channel for `preview` (pandoc-backed markdown
         # preview split). Plugins themselves install imperatively into
         # ~/.config/micro/plug, which persist.nix already keeps.
