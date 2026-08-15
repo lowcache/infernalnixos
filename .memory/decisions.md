@@ -1,7 +1,7 @@
 ---
 type: decisions
 project: Vol NixOS
-last_updated: 2026-08-03
+last_updated: 2026-08-15
 status: active
 ---
 
@@ -258,7 +258,7 @@ This file catalogs the active, canonical design decisions and system configurati
 * **No C++ fork required:** The three nerves are fully served by Luau plugins + MCP shim + hooks. Frame-tick capability confirmed; plugin IPC is request/response (stdout reply). A future engine change (plugin `onIpc` *return* flows back as reply) would unlock queryable plugin services (nice-to-have, not v1), justified by real need.
 
 * **Downstream plugin designs** (deferred to v1.1 or as expansion):
-  - **Launcher `/cc <task>`:** `runInTerminal("claude --append-system-prompt '…' '<task>'")` — real TUI with full fidelity.
+  - **Launcher `/cc <task>`:** `runInTerminal("claude --append-system-prompt '…' '<task>'" — real TUI with full fidelity.
   - **Quick-ask panel:** One-shot `claude -p … --output-format stream-json` for read-only questions (no terminal).
   - **Status widget/bar:** Show session state, token burn, model, workspace info.
   - **Bidirectional MCP:** Teach Claude `noctalia msg` + shell controls via `--append-system-prompt`; Claude invokes shell tools mid-session (theme switch, notifications, focus windows).
@@ -410,3 +410,13 @@ This file catalogs the active, canonical design decisions and system configurati
 * **Prevention rule (for mistakes.md):** Do not retry `cp -pr` with `--no-preserve=*` flags; that treats the symptom. The root cause is proot's denial of chmod on directories it creates. The solution is structural: pre-create, copy contents, then chmod.
 
 * **Verified on (2026-08-03):** rtk 0.44.0, mcp-gateway 3.3.2, termux-am — all build natively on phone.
+
+---
+
+## 33. Documentation Platform — Hugo + E25DX Theme (2026-08-15, Activated)
+
+* **Decision:** Migrate wiki from MkDocs to Hugo (0.164.0) + E25DX theme. Host in separate independent repo (`lowcache/volnixos-wiki`) rather than symlinked into `.nix-config`.
+* **Why:** Hugo + Module-based themes decouple docs toolchain from system config; E25DX provides modern Material-inspired design out-of-box. Separate repo allows independent versioning and cleaner build process.
+* **Build shape:** `build.sh` is single source of truth; used by both `make build` and Workers Builds CI. Pagefind post-build for search.
+* **Load-bearing gotchas (E25DX):** Four traps discovered during migration (see state.md §8); all cost real time but produce no build error. Documented to prevent future regressions.
+* **Process note:** Conversion was scripted (27 pages, 47 admonitions→alerts, 3 tab blocks→shortcodes, .md links→pretty URLs); delegation would have been slower for deterministic text transformation.

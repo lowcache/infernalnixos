@@ -1,7 +1,7 @@
 ---
 type: todo
 project: Vol NixOS
-last_updated: 2026-08-07
+last_updated: 2026-08-15
 status: active
 ---
 
@@ -51,6 +51,14 @@ status: active
 ---
 
 ## BACKLOG / DEFERRED
+
+### Wiki — Hugo Activation Complete, CI & Polish Pending (2026-08-15)
+
+- [x] Migrate MkDocs → Hugo (27 pages, 2026-08-15)
+- [x] Deploy to independent repo `lowcache/volnixos-wiki`
+- [ ] Connect Workers Builds CI (set command `./build.sh`, var `HUGO_VERSION=0.164.0`)
+- [ ] Convert home page to native data-driven layout (currently markdown, should be hero/card-grid yaml)
+- [ ] Visual overhaul: port Material palette to E25DX, center content (currently left-aligned)
 
 ### Noctalia Bar — Dual Wrap-Around Layout (2026-06-22 — LIVE, CAPTURE PENDING)
 

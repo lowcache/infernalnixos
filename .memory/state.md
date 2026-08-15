@@ -1,7 +1,7 @@
 ---
 type: state
 project: Vol NixOS
-last_updated: 2026-08-06
+last_updated: 2026-08-15
 status: active
 ---
 
@@ -253,7 +253,24 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
 
 ---
 
-## 8. Application Status (2026-07-14, Updated 2026-07-31)
+## 8. Documentation Platform — Hugo + E25DX (2026-08-15, Live)
+
+* **Status:** Wiki migrated from MkDocs to Hugo (0.164.0) + E25DX theme (Hugo Module).
+* **Repository:** Independent repo at `~/CodeRepo/blogs/wiki` (main pushed), published as `lowcache/volnixos-wiki`. No longer symlinked into `.nix-config`.
+* **Build:** `build.sh` (shared by `make build` and Workers Builds); pagefind post-build (`npx -y pagefind@1` fallback for Workers image).
+* **Deployment:** Workers Builds integration pending (dashboard: set Build command `./build.sh`, build var `HUGO_VERSION=0.164.0`). Current deploys via `make deploy` (direct wrangler).
+* **Theme gotchas (load-bearing — do not omit):**
+  1. `[[module.imports]]` requires `ignoreConfig = true` (theme's `hugo.yaml` defines `theme: E25DX`; Hugo merges and fails without the ignore flag).
+  2. Section pages need `layout: single` in front matter (no section template; omitting renders nothing).
+  3. Sidebar navigation driven by presence flag `data/en/<section>/sidebar.yaml` (contents ignored; removal omits sidebar).
+  4. Mermaid requires custom renderer at `layouts/_markup/render-codeblock-mermaid.html` (theme ships no third-party JS).
+  5. Goldmark does not render markdown inside `<div markdown>` — rewrite as HTML.
+* **Stylesheet:** Material legacy preserved at `assets/css/mkdocs-legacy-extra.css` (input to visual pass; does not apply as-is).
+* **Outstanding:** Workers Builds CI wiring, home page data-driven conversion, visual overhaul (palette port + centring).
+
+---
+
+## 9. Application Status (2026-07-14, Updated 2026-07-31)
 
 ### Krita 6.0.1 native + Font Gallery pykrita Plugin (2026-06-22 — User-Text Input, Implementation Validated)
 
