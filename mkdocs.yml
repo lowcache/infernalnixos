@@ -12,7 +12,23 @@ copyright: Volatile NixOS · 2026 · dev LowCache
 
 theme:
   name: material
-  custom_dir: overrides
+  # NO custom_dir. It used to say `overrides`, which resolves relative to this
+  # file and therefore named ./overrides — the nixpkgs overlay patch directory,
+  # not a theme directory. Two consequences, both live:
+  #
+  #   1. mkdocs copies everything in custom_dir into the site root, so
+  #      gmic-qt-filtersview-nullptr-contextmenu.patch was published at
+  #      https://wiki.infernalcode.com/gmic-qt-filtersview-nullptr-contextmenu.patch
+  #      and answered 200 with a C++ diff for a GIMP plugin.
+  #   2. The wiki working copy at ~/CodeRepo/blogs/wiki is hard-linked file by
+  #      file, and directories cannot be hard-linked, so ./overrides does not
+  #      exist there and a build run from that directory fails on a custom_dir
+  #      that points at nothing.
+  #
+  # There were no theme overrides to lose: a search of both trees found no
+  # template files under any overrides path. If real overrides are ever added,
+  # give them their own directory name that cannot collide with the Nix tree,
+  # and add it to BOTH working copies.
   language: en
   logo: assets/logo.png
   favicon: assets/favicon.png
