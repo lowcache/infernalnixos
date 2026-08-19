@@ -168,11 +168,13 @@
                 system = droidSystem;
                 config.allowUnfree = true;
               };
+              nix-on-droid-src = inputs.nix-on-droid;
             })
           ];
           config.allowUnfree = true;
         };
         modules = [ ./droid ];
+        extraSpecialArgs = { nix-on-droid = inputs.nix-on-droid; };
         home-manager-path = inputs.home-manager-droid.outPath;
       };
 
