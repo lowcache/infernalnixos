@@ -169,6 +169,7 @@
                 system = droidSystem;
                 config.allowUnfree = true;
               };
+              nix-on-droid-src = inputs.nix-on-droid;
             })
           ];
           config.allowUnfree = true;
