@@ -250,6 +250,38 @@
       github_token = {
         owner = username;
       };
+      # Buttondown API tokens, one per newsletter account — the two lists are
+      # deliberately separate identities, so a single shared key would defeat
+      # the separation at the only layer that still enforces it. Scoped in
+      # Buttondown to emails:write / subscribers:none; ./newsletter.sh in each
+      # blog repo only ever creates drafts, and a key that can also read the
+      # subscriber list is a bigger blast radius than the script needs.
+      #
+      # Consumed by PATH (/run/secrets/...), never exported: the scripts read
+      # BUTTONDOWN_API_KEY_FILE so the token stays out of the environment.
+      buttondown_api_key_hotelevangelism = {
+        owner = username;
+      };
+      # Cloudflare deploy token for `make deploy` in the blog repos. Needed
+      # because wrangler stores its OAuth credentials under ~/.config/.wrangler,
+      # which impermanence discards on every boot (home/persist.nix does not
+      # list it), so an interactive `wrangler login` survives exactly until the
+      # next reboot. A sops secret survives by construction rather than by
+      # remembering to persist a directory.
+      #
+      # wrangler reads CLOUDFLARE_API_TOKEN from the environment and offers no
+      # file-based alternative, so the blog Makefiles cat this path into the
+      # environment of that one command rather than exporting it into the shell.
+      cloudflare_api_token = {
+        owner = username;
+      };
+      # Second Buttondown token, for Volatile Testimony. Separate from the
+      # hotelevangelism key on purpose: the two lists are separate identities
+      # with separate sending reputations, and one shared key would undo that
+      # at the only layer still enforcing it.
+      buttondown_api_key_volatiletestimony = {
+        owner = username;
+      };
       # Phone-agent bearer token (laptop -> phone MCP auth, scripts/verify.sh).
       # Placed at the exact path the client reads; sops re-materializes it at
       # activation every boot, so it survives the impermanence rollback of

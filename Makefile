@@ -13,25 +13,40 @@ DOTS_BRANCH       ?= main
 DOTS_SPLIT_BRANCH ?= dots-history
 
 # --- SOPS / Secret Management ---
-SOPS_FILE         ?= secrets/secrets.yaml
-SOPS_AGE_KEY_FILE ?= ~/.config/sops/age/keys.txt
+# The secrets are split by TRUST BOUNDARY, and nixos/.sops.yaml encrypts the two
+# files to different key sets: host-secrets.yaml to the admin user AND the host
+# key; vm-secrets.yaml to the host key ONLY, because net-gate shares the host
+# SSH key over virtio-fs and anything in that file is therefore readable by the
+# guest. Editing the wrong file puts a secret behind the wrong keys.
+#
+# These paths MUST name files that already exist. `sops <path>` on a missing
+# path CREATES it rather than failing, so a stale default here does not error —
+# it silently writes a new encrypted file that nothing reads, and the rebuild
+# then fails at activation hunting a secret that went somewhere else. That is
+# exactly what the old default did: it still said nixos/secrets.yaml after the
+# file was split into host- and vm-secrets, so every sops-edit was one keystroke
+# from a decoy. The targets below assert existence for that reason.
+SOPS_FILE         ?= nixos/host-secrets.yaml
+SOPS_VM_FILE      ?= nixos/vm-secrets.yaml
+# $(HOME), not ~ — a tilde inside a make variable only survives because the
+# shell happens to expand it in a leading assignment; it breaks the moment the
+# value is used anywhere else, such as the test -f guards below.
+SOPS_AGE_KEY_FILE ?= $(HOME)/.config/sops/age/keys.txt
 
-# --- Documentation site (MkDocs Material) ---
-DOCS_PROJECT ?= wiki
-DOCS_REMOTE  ?= pgs.sh
-
-# Ephemeral MkDocs Material environment from the flake's own pinned nixpkgs
-MKDOCS := nix shell --impure --expr 'let f = builtins.getFlake (toString ./.); pkgs = f.inputs.nixpkgs.legacyPackages.x86_64-linux; in pkgs.python313.withPackages (ps: [ ps.mkdocs-material ])' -c mkdocs
+# --- Documentation site ---
+# The wiki is its own repo now (~/CodeRepo/blogs/wiki), alongside the other
+# sites. Its serve/build/deploy targets live in that repo's Makefile. The `docs`
+# and `site` entries here were symlinks into it and have been removed, along
+# with the duplicated mkdocs.yml and wrangler.toml.
 
 # --- All Targets Declared PHONY ---
 .PHONY: help switch switch-detached build test dry-activate boot \
         droid-check droid-plan droid-switch \
         run-netgate run-tailscale \
-        sops-edit sops-rekey sops-view \
+        sops-edit sops-edit-vm sops-rekey sops-view sops-view-vm \
         check fmt update update-nixpkgs trash \
         git comm push \
-        dots-log dots-split dots-remote dots-push dots-pull \
-        docs-serve docs-build docs-deploy
+        dots-log dots-split dots-remote dots-push dots-pull
 
 .DEFAULT_GOAL := help
 
@@ -126,17 +141,35 @@ run-tailscale:
 # Secrets Management (SOPS / Age)
 # ==============================================================================
 ## Secret Management
-## :sops-edit: ..........: Decrypt and edit SOPS secrets file
+## :sops-edit: ..........: Decrypt and edit host secrets (nixos/host-secrets.yaml)
 sops-edit:
+	@test -f "$(SOPS_FILE)" || { echo "no such secrets file: $(SOPS_FILE)"; \
+	  echo "(sops would CREATE it — refusing, check the path)"; exit 1; }
 	SOPS_AGE_KEY_FILE=$(SOPS_AGE_KEY_FILE) sops $(SOPS_FILE)
 
-## :sops-rekey: ..........: Re-encrypt secrets across public host keys listed in .sops.yaml
-sops-rekey:
-	SOPS_AGE_KEY_FILE=$(SOPS_AGE_KEY_FILE) sops updatekeys $(SOPS_FILE)
+## :sops-edit-vm: ..........: Decrypt and edit VM secrets (host key only)
+sops-edit-vm:
+	@test -f "$(SOPS_VM_FILE)" || { echo "no such secrets file: $(SOPS_VM_FILE)"; \
+	  echo "(sops would CREATE it — refusing, check the path)"; exit 1; }
+	SOPS_AGE_KEY_FILE=$(SOPS_AGE_KEY_FILE) sops $(SOPS_VM_FILE)
 
-## :sops-view: ..........: Print decrypted secrets without opening an editor
+## :sops-rekey: ..........: Re-encrypt BOTH files against the keys in .sops.yaml
+sops-rekey:
+	@for f in $(SOPS_FILE) $(SOPS_VM_FILE); do \
+	  test -f "$$f" || { echo "missing: $$f"; exit 1; }; \
+	  echo "== rekeying $$f"; \
+	  SOPS_AGE_KEY_FILE=$(SOPS_AGE_KEY_FILE) sops updatekeys "$$f" || exit 1; \
+	done
+
+## :sops-view: ..........: Print decrypted host secrets without an editor
 sops-view:
+	@test -f "$(SOPS_FILE)" || { echo "no such secrets file: $(SOPS_FILE)"; exit 1; }
 	SOPS_AGE_KEY_FILE=$(SOPS_AGE_KEY_FILE) sops -d $(SOPS_FILE)
+
+## :sops-view-vm: ..........: Print decrypted VM secrets without an editor
+sops-view-vm:
+	@test -f "$(SOPS_VM_FILE)" || { echo "no such secrets file: $(SOPS_VM_FILE)"; exit 1; }
+	SOPS_AGE_KEY_FILE=$(SOPS_AGE_KEY_FILE) sops -d $(SOPS_VM_FILE)
 
 # ==============================================================================
 # Flake & Code Maintenance
@@ -245,17 +278,10 @@ dots-pull:
 	git subtree pull --prefix=$(DOTS_PREFIX) $(DOTS_REMOTE) $(DOTS_BRANCH)
 
 # ==============================================================================
-# Documentation Wiki (MkDocs Material -> pgs.sh)
+# Documentation Wiki
 # ==============================================================================
-## MkDocs Volnixos Wiki
-## :docs-serve: ..........: Live-preview the docs site locally (127.0.0.1 @ port-8000)
-docs-serve:
-	$(MKDOCS) serve
-
-## :docs-build: ..........: Build the static site strictly to ./site
-docs-build:
-	$(MKDOCS) build --strict
-
-## :docs-deploy: ..........: Build and rsync ./site to remote documentation host
-docs-deploy: docs-build
-	rsync --delete -rv ./site/ $(DOCS_REMOTE):/$(DOCS_PROJECT)
+# Moved out. The wiki is a standalone repo at ~/CodeRepo/blogs/wiki with its own
+# Makefile:
+#   make -C ~/CodeRepo/blogs/wiki serve       # live preview
+#   make -C ~/CodeRepo/blogs/wiki build       # strict build to ./site
+#   make -C ~/CodeRepo/blogs/wiki deploy-cf   # publish to Cloudflare
