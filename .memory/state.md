@@ -1,7 +1,7 @@
 ---
 type: state
 project: Vol NixOS
-last_updated: 2026-08-15
+last_updated: 2026-08-19
 status: active
 ---
 
@@ -221,7 +221,7 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
 **Status (2026-06-26):** V1 live and verified. Pulse widget animating in top bar. MCP shim and launcher hardened against crash vectors via independent review (tether/Gemini). **Perceive + Act + Pulse all verified end-to-end; MCP robustness validated.**
 
 **Live state:**
-- **Plugin path:** Symlink `~/.local/share/noctalia/plugins/claude` → `~/CodeRepo/noctalia-claude-plugin/` (GitHub: `github.com/lowcache/noctalia-claude-plugin`).
+- **Plugin path:** Symlink `~/.local/share/noctalia/plugins/claude` → `~/CodeRepo/claude-companion/noctalia-claude-plugin/` (GitHub: `github.com/lowcache/noctalia-claude-plugin`).
 - **Repository:** Plugin is now its own git repo with independent history and MCP shim. Pushed to GitHub 2026-06-26.
 - **Pulse widget:** `bell-ringing` glyph in **top bar `center`**. States: `idle` (robot), `turn_start` (brain), `tool_start` (wrench), `needs_attention` (bell-ringing, red), `turn_end` (bell-ringing, primary). All animated via `onFrameTick`. **Icon update (2026-06-26):** `turn_end` changed from checkmark to bell (persists until next prompt, signals "awaiting your next message").
 - **Session hooks (wired 2026-06-25):** Merged into `~/.claude/settings.json`; pulse driven by SessionStart→idle, UserPromptSubmit→turn_start, PreToolUse(*)→tool_start, PostToolUse→turn_start, Notification→needs_attention, Stop→turn_end. All commands resilient to noctalia being offline.
@@ -291,3 +291,7 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
 ### Cargo-Installed Tools (2026-07-31)
 
 - **lonkero 3.5.0 (2026-07-31):** CLI tool. Installed via `RUSTFLAGS="-C link-arg=-Wl,-rpath,/run/current-system/sw/share/nix-ld/lib" nix-shell -p pkg-config openssl --run 'cargo install lonkero'`. Uses persistent RPATH to `/run/current-system/sw/share/nix-ld/lib` for openssl linkage (supported by `programs.nix-ld.libraries` containing `openssl.out` at `nixos/configuration.nix:288`). Required clearing stale fish universal variable `OPENSSL_DIR` that had been set to `openssl-3.6.3-dev` (see mistakes.md #12). Runtime linking verified: `libssl.so.3 => /run/current-system/sw/share/nix-ld/lib/libssl.so.3`, `libcrypto.so.3 => /run/current-system/sw/share/nix-ld/lib/libcrypto.so.3`. Binary executes cleanly (`lonkero --version` confirms).
+
+### J-Space Skill — Trial Active (2026-08-19)
+
+Installed as a Claude Code skill for workspace reasoning on long-horizon tasks. Audited for conflicts with CLAUDE.md instructions; applied local edits: (1) house-rules block stating global instructions take precedence, (2) brevity clause rewritten to record pass internally rather than announce externally, (3) LEDGER_DIR made environment-configurable (defaults `.model/.jspace/` when `.model/` exists). Verified via verify_suite.py; controller smoke tests pass. User approval: trial run; discontinue if problems arise. Backups at `SKILL.md.bak.pre-houserules` and `scripts/jspace.py.bak.pre-houserules` in ~/.claude/skills/j-space/.

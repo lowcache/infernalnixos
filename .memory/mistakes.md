@@ -1,7 +1,7 @@
 ---
 type: mistakes
 project: Vol NixOS
-last_updated: 2026-08-15
+last_updated: 2026-08-19
 status: append-only
 ---
 
@@ -114,14 +114,6 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 * **Prevention Rule:** If GTK/Electron file pickers or portal Settings fail with `AccessDenied` / `Unable to open /proc/<pid>/root`, do NOT chase portal backends, icons, or `GTK_USE_PORTAL`. Reproduce with `gdbus call --session --dest org.freedesktop.portal.Desktop --object-path /org/freedesktop/portal/desktop --method org.freedesktop.portal.Settings.ReadAll '[]'`; if it errors, the app-id step is broken. Compare against `dbus-run-session -- <same call>`. If the daemon works and the live broker bus does not, set `services.dbus.implementation = "dbus"`.
 * **Rebuild caution:** Switching the dbus implementation restarts the message bus on `switch` and will tear down the running Wayland session (see Mistake #1). Apply via reboot, or run the rebuild detached (tmux / `systemd-run`).
 
-### 2026-08-07 — mcp-gateway 3.3.2 Silent `headers:` Drop on HTTP Backends
-
-**Symptom:** HTTP MCP backend configured with `headers:` block and Bearer token still returns 401. Direct curl with `Authorization: Bearer <token>` works (200); gateway-routed request with token both interpolated (`${VAR}`) and literal always 401.
-
-**Root cause:** mcp-gateway 3.3.2 accepts the `headers:` key in YAML, parses without error, and loads the backend — but never puts the headers on the wire. The YAML schema validation passes (config is well-formed), `doctor` reports the backend active, but the HTTP request is sent without the Authorization header. This is different from a parsing bug (which would error at load); it's a runtime no-op.
-
-**Prevention rule:** Do not assume that config keys accepted by a parser will be used by the runtime. Schema validation (YAML parse ✓) is not implementation verification (header injection ✓). When wiring auth, test with direct HTTP before committing to a gateway route. If the gateway route doesn't work, fall back to direct connection or a stdio shim.
-
 ### 2026-08-07 — Stale MCP Schema in `nixos/phone-agent/mcp-gateway.nix`
 
 **Symptom:** Module installs an example `gateway-peer.example.yaml` with `transport:`, `url:`, and `namespace:` keys. These are not valid mcp-gateway 3.3.2 schema. Running `mcp-gateway add --url http://… phone-agent` produces `http_url:`, `streamable_http:`, `protocol_version:`, `idle_timeout:`, `timeout:`.
@@ -153,3 +145,11 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 **Incident:** Wiki conversion (MkDocs → Hugo) took longer than expected because (1) Gemini was asked to assist and returned sample diffs instead of writing files, (2) the transformation is 100% deterministic (47 admonitions→GitHub alerts, 3 tab blocks→shortcodes, .md links→pretty URLs), so a script would have been faster and checkable.
 
 **Prevention rule:** Delegate research, audits, and open-ended analysis to tether/Gemini. Do NOT delegate deterministic text transformation (migrations, bulk rewrites, templating) — write a converter script (Python/sed/jq). It is faster (one pass, no round-trips), cheaper (fewer LLM tokens), and produces checkable diffs. A 27-page conversion is better scripted than delegated.
+
+### 2026-08-19 — mcp-config.json Obsolete Schema (gateway backend)
+
+**Symptom:** ~/.claude/mcp-config.json listed gateway MCP backend with old schema key `serverURL:` instead of current `type: "http"` + `url:`. File parsed without error but would fail or silently misinterpret if used as primary config.
+
+**Root cause:** File is old (predates schema revision) and not actively read by Claude Code (user-scope ~/.claude.json is the primary config). It accumulated technical debt and was never updated during schema migrations.
+
+**Prevention rule:** MCP schema evolves as tools and agents update. Config files should be validated against active schema when encountered, not just when errors occur. If a config file is only sometimes used (like mcp-config.json with explicit --mcp-config flag), audit it when touched and schedule re-check on tool updates. Use `claude mcp list` and gateway's `doctor` command to verify schemas before deployment.
