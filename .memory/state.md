@@ -1,7 +1,7 @@
 ---
 type: state
 project: Vol NixOS
-last_updated: 2026-08-19
+last_updated: 2026-08-21
 status: active
 ---
 
@@ -14,7 +14,7 @@ This file is the single source of truth for the active configuration, mapping, a
 ## 1. System & Hardware Profile
 
 * **Hostname:** `volnix` | **OS:** NixOS 26.11 (Zokor) | **Shell:** Fish (HM)
-* **Current generation:** system-221 (`/nix/store/a18ffz3c…-nixos-system-volnix-26.11.20260726.624af66`)
+* **Current generation:** system-238 (`/nix/store/fk85s3nrsmil8f8m136lvw0495sby5yg-nixos-system-volnix-26.11.20260805.b7c2ada`)
 * **Desktop:** niri (Wayland, sole WM, default session) + Noctalia v5 (C++ shell)
 * **Display:** Wayland native; XWayland via `xwayland-satellite` (`:0`, for xcb-only AppImages and Flatpak Qt5 apps; permanent startup pending).
 * **GPU:** Hybrid AMD HawkPoint2 iGPU + NVIDIA RTX 4050 Mobile dGPU.
@@ -44,6 +44,8 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 **Flatpak data (persisted 2026-06-22):** `/var/lib/flatpak` and `~/.local/share/flatpak` persisted (`hardware-configuration.nix:91`, `persist.nix:110`); Flatpak installs survive boot. Flathub remote added; `org.kde.krita` 5.3.2.1 (uninstalled 2026-06-22) and `org.gimp.GIMP` 3.2.4 installed. Host fonts (`~/.local/share/fonts`, 2772 files) mounted read-only into Flatpak sandboxes; access via `filesystems=host`.
 
 **Phone-agent ingest (2026-08-06):** Staged files from phone arrive at `~/ingest/staged/` (managed by phone-ingest-sync.timer). Delivered files moved to `~/ingest/delivered/` after hash verification.
+
+**Android tools (2026-08-21):** `~/Android` (Studio SDK, ~1.4 GB) and `~/.android` (config + AVD disk images) symlink to `~/Storage/`. System persistence: `/var/lib/waydroid` bind-mounted from `/persist/var/lib/waydroid` (images, ~2.4 GB). Both moved to avoid filling the 4 GB impermanence tmpfs root (see mistakes.md #13).
 
 ---
 
@@ -295,3 +297,11 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
 ### J-Space Skill — Trial Active (2026-08-19)
 
 Installed as a Claude Code skill for workspace reasoning on long-horizon tasks. Audited for conflicts with CLAUDE.md instructions; applied local edits: (1) house-rules block stating global instructions take precedence, (2) brevity clause rewritten to record pass internally rather than announce externally, (3) LEDGER_DIR made environment-configurable (defaults `.model/.jspace/` when `.model/` exists). Verified via verify_suite.py; controller smoke tests pass. User approval: trial run; discontinue if problems arise. Backups at `SKILL.md.bak.pre-houserules` and `scripts/jspace.py.bak.pre-houserules` in ~/.claude/skills/j-space/.
+
+### Waydroid — Android Container Runtime (2026-08-21, Persistence Configured)
+
+- **Status:** Enabled in `nixos/configuration.nix:395`. System persistence configured.
+- **Kernel support:** cachyos 7.1.5 includes `CONFIG_ANDROID_BINDER_IPC=y`, `CONFIG_ANDROID_BINDERFS=y`, binder registered in `/proc/filesystems`. No kernel work needed.
+- **Persistence:** `/var/lib/waydroid` bind-mounted from `/persist/var/lib/waydroid` (system persistence). `~/.Android` and `~/.android` symlink to `~/Storage/` (non-tmpfs, multi-GB) to prevent AVD disk images from filling root.
+- **Status (2026-08-21, post-move):** SDK moved to Storage (~1.4 GB freed, root 100% → 62%). Images still on tmpfs (2.4 GB) pending script execution. Script: `move-waydroid.sh` (pre-staging complete, awaits user run via sudo). **Blocking:** Run script **before** `make switch` — the switch activates persistence binds, which would shadow unpersisted data.
+- **Side note:** `home/pkgs.nix:203` installs `waydroid-nftables` (user package), but it wants to touch system firewall — likely not functional from user profile.
