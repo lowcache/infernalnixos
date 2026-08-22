@@ -9,7 +9,7 @@ status: active
 
 ---
 
-## COMPLETE (2026-08-03)
+## COMPLETE (2026-08-03 — 2026-08-21)
 
 ### Nix-on-Droid — Generation 5 Activated
 
@@ -18,18 +18,17 @@ status: active
 ✓ glibc-2.40-224 only in entire profile closure (zero glibc-2.42)
 ✓ Phone daily-usable; blog series unblocked
 
+### Waydroid Setup — Move Images to Persistent Storage (2026-08-21)
+
+✓ Persistence config updated in `nixos/hardware-configuration.nix` and `home/persist.nix`
+✓ Move script executed; `/var/lib/waydroid` relocated to `/persist/var/lib/waydroid`
+✓ Root tmpfs freed from 100% to 3% (99 MB / 4.0 GB available)
+✓ `~/Android` and `~/.android` symlinks resolve to `~/Storage/` via home-manager
+✓ Binds active; `waydroid status` reports initialized
+
 ---
 
 ## IN PROGRESS / AWAITING USER DECISION
-
-### Waydroid Setup — Move Images to Persistent Storage (2026-08-21 — BLOCKING make switch)
-
-**Status:** Persistence config updated in `nixos/hardware-configuration.nix` (system) and `home/persist.nix` (home-manager symlinks). `~/Android` and `~/.android` symlinks already in place on Storage. Existing waydroid images (2.4 GB) still on tmpfs root. Must move **before** `make switch` to prevent persistence bind from shadowing unpersisted data.
-
-- [ ] Run move-waydroid.sh script as root: `sudo /home/lowcache/Storage/tmp/claude/claude-1001/-home-lowcache--nix-config/795fcdf8-1786-45f3-acbc-dfcf007f0114/scratchpad/move-waydroid.sh`
-- [ ] Verify `/persist/var/lib/waydroid` contains images and tmpfs root returns to ~1.6 GB (target: 62% or less)
-- [ ] Run `make switch` to activate system persistence and home-manager symlinks
-- [ ] Verify `~/Android` and `~/.android` remain accessible post-switch
 
 ### Phone-Agent MCP Activation (2026-08-07 — Pending User Action)
 

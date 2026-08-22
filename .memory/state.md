@@ -45,7 +45,7 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 
 **Phone-agent ingest (2026-08-06):** Staged files from phone arrive at `~/ingest/staged/` (managed by phone-ingest-sync.timer). Delivered files moved to `~/ingest/delivered/` after hash verification.
 
-**Android tools (2026-08-21):** `~/Android` (Studio SDK, ~1.4 GB) and `~/.android` (config + AVD disk images) symlink to `~/Storage/`. System persistence: `/var/lib/waydroid` bind-mounted from `/persist/var/lib/waydroid` (images, ~2.4 GB). Both moved to avoid filling the 4 GB impermanence tmpfs root (see mistakes.md #13).
+**Android tools (2026-08-21 — Persistence Activated):** `~/Android` (Studio SDK) and `~/.android` (config) symlink to `~/Storage/` via home-manager out-of-store; `/var/lib/waydroid` bind-mounted from `/persist/var/lib/waydroid` (system persistence). Move completed 2026-08-21; root tmpfs freed from 100% to 3% (99 MB / 4.0 GB available). Binds active post-switch. See mistakes.md #13 for incident details and prevention rules.
 
 ---
 
@@ -298,10 +298,9 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
 
 Installed as a Claude Code skill for workspace reasoning on long-horizon tasks. Audited for conflicts with CLAUDE.md instructions; applied local edits: (1) house-rules block stating global instructions take precedence, (2) brevity clause rewritten to record pass internally rather than announce externally, (3) LEDGER_DIR made environment-configurable (defaults `.model/.jspace/` when `.model/` exists). Verified via verify_suite.py; controller smoke tests pass. User approval: trial run; discontinue if problems arise. Backups at `SKILL.md.bak.pre-houserules` and `scripts/jspace.py.bak.pre-houserules` in ~/.claude/skills/j-space/.
 
-### Waydroid — Android Container Runtime (2026-08-21, Persistence Configured)
+### Waydroid — Android Container Runtime (2026-08-21, Persistence Activated)
 
 - **Status:** Enabled in `nixos/configuration.nix:395`. System persistence configured.
 - **Kernel support:** cachyos 7.1.5 includes `CONFIG_ANDROID_BINDER_IPC=y`, `CONFIG_ANDROID_BINDERFS=y`, binder registered in `/proc/filesystems`. No kernel work needed.
 - **Persistence:** `/var/lib/waydroid` bind-mounted from `/persist/var/lib/waydroid` (system persistence). `~/.Android` and `~/.android` symlink to `~/Storage/` (non-tmpfs, multi-GB) to prevent AVD disk images from filling root.
-- **Status (2026-08-21, post-move):** SDK moved to Storage (~1.4 GB freed, root 100% → 62%). Images still on tmpfs (2.4 GB) pending script execution. Script: `move-waydroid.sh` (pre-staging complete, awaits user run via sudo). **Blocking:** Run script **before** `make switch` — the switch activates persistence binds, which would shadow unpersisted data.
-- **Side note:** `home/pkgs.nix:203` installs `waydroid-nftables` (user package), but it wants to touch system firewall — likely not functional from user profile.
+- **Status (2026-08-21, move completed):** SDK moved to Storage; `/var/lib/waydroid` persisted to `/persist/var/lib/waydroid`; root tmpfs freed from 100% to 3%. Binds active. `waydroid status` reports `Session: STOPPED, Vendor type: MAINLINE` (initialized, ready for first use). Kernel: cachyos 7.1.5 has `CONFIG_ANDROID_BINDER_IPC=y` + `CONFIG_ANDROID_BINDERFS=y`, no additional work needed.
