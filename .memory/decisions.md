@@ -1,7 +1,7 @@
 ---
 type: decisions
 project: Vol NixOS
-last_updated: 2026-08-15
+last_updated: 2026-08-21
 status: active
 ---
 
@@ -420,3 +420,24 @@ This file catalogs the active, canonical design decisions and system configurati
 * **Build shape:** `build.sh` is single source of truth; used by both `make build` and Workers Builds CI. Pagefind post-build for search.
 * **Load-bearing gotchas (E25DX):** Four traps discovered during migration (see state.md §8); all cost real time but produce no build error. Documented to prevent future regressions.
 * **Process note:** Conversion was scripted (27 pages, 47 admonitions→alerts, 3 tab blocks→shortcodes, .md links→pretty URLs); delegation would have been slower for deterministic text transformation.
+
+---
+
+## 34. Waydroid Hardware-Backed Attestation Ceiling — Payment Apps Unsupported (2026-08-21)
+
+* **Decision:** Waydroid structurally cannot run apps requiring hardware-backed attestation (STRONG integrity tier). This is an unfixable architectural limit, not a configuration defect.
+
+* **Why:** Payment apps (Cash App, Venmo, banking) and competitive-game anti-cheat use Android's TEE (Trusted Execution Environment) — a hardware cryptographic chip on the phone's SoC — to sign device-authenticity proofs that cannot be forged. Waydroid is a Linux container on a laptop with no TEE. Hardware attestation requires real cryptographic hardware; it cannot be spoofed or bypassed via software (unlike BASIC/DEVICE tier, which Magisk + PlayIntegrityFix defeat). The ceiling is structural.
+
+* **Technical detail:** Android's Play Integrity API has tiers:
+  - **BASIC / DEVICE integrity:** Software-level checks (artifact presence, qemu markers, root binaries). Defeatable via Magisk + PlayIntegrityFix modules.
+  - **STRONG integrity:** Hardware-backed cryptographic attestation. Not defeatable. Requires a physical phone with a real TEE.
+
+* **Scope of unsupported apps:** Payment processors, corporate security policies, competitive game anti-cheat. All require STRONG tier.
+
+* **Realistic alternatives:**
+  1. Physical Android phone for payment-app access.
+  2. Web interfaces (cash.app browser version) for partial functionality.
+  3. Waydroid remains useful for dev/test, ARM apps with libhoudini, and apps doing only software-level checks.
+
+* **Why this decision matters:** Prevents future agents from attempting impossible workarounds (wasting time on increasingly-sophisticated Magisk modules). Couples to Decision #27 (ceiling markers) — this is a *structural* ceiling, not deferred debt. Honest scoping of what waydroid solves.
