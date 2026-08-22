@@ -9,9 +9,9 @@ status: active
 
 ---
 
-## COMPLETE (2026-08-03 — 2026-08-21)
+## COMPLETE
 
-### Nix-on-Droid — Generation 5 Activated
+### Nix-on-Droid — Generation 5 Activated (2026-08-03)
 
 ✓ proot unpack bug fixed (2026-08-03, commit d4f2968)
 ✓ rtk 0.44.0, mcp-gateway 3.3.2, termux-am built natively on phone
@@ -20,22 +20,25 @@ status: active
 
 ### Waydroid Setup — Move Images to Persistent Storage (2026-08-21)
 
-✓ Persistence config updated in `nixos/hardware-configuration.nix` and `home/persist.nix`
-✓ Move script executed; `/var/lib/waydroid` relocated to `/persist/var/lib/waydroid`
-✓ Root tmpfs freed from 100% to 3% (99 MB / 4.0 GB available)
-✓ `~/Android` and `~/.android` symlinks resolve to `~/Storage/` via home-manager
-✓ Binds active; `waydroid status` reports initialized
+✓ Ran move-waydroid.sh script; `/persist/var/lib/waydroid` contains system images
+✓ Ran `make switch` to activate system persistence binds and home-manager symlinks
+✓ tmpfs root decreased from 100% → 3% (99 M / 4.0 G); `/persist` usage at 46% (140 G free)
+✓ `~/Android` and `~/.android` symlinks on Storage remain accessible and working
+✓ GAPPS images downloaded and initialized (system.img 2462.4 M, vendor.img 535.5 M)
+✓ Android session RUNNING, container RUNNING, DHCP lease obtained (IP 192.168.240.112)
+✓ Device registered for Play Store certification (Android ID retrieved and registered at google.com/android/uncertified)
+✓ Certification propagation in progress; awaiting Play Store sign-in verification
 
 ---
 
 ## IN PROGRESS / AWAITING USER DECISION
 
-### Phone-Agent MCP Activation (2026-08-07 — Pending User Action)
+### Phone-Agent MCP Activation (2026-08-07 — Claude Code Restart Pending)
 
-**Status:** Phone-agent wired to Claude Code via HTTP (`.model/.claude/.mcp.json`). Token exported from sops secrets in `home/shell.nix`. Configuration ready. **Awaiting `make switch` to activate.**
+**Status:** Phone-agent wired to Claude Code via HTTP (`.model/.claude/.mcp.json`). Token exported from sops secrets in `home/shell.nix`. Configuration ready. **`make switch` completed 2026-08-21.** MCP server is now running and should be accessible; Claude Code session must be restarted to connect.
 
-- [ ] Run `make switch` to activate phone-agent MCP in Claude Code
-- [ ] Restart Claude Code session (MCP servers read at startup)
+- [x] Run `make switch` to activate phone-agent MCP in Claude Code (completed 2026-08-21)
+- [ ] Restart Claude Code session (MCP servers read at session startup)
 - [ ] Verify phone-agent tools are accessible (should appear in MCP list)
 - [ ] (Optional) Clean up or drop `nixos/phone-agent/mcp-gateway.nix` (example uses outdated schema; gateway route failed auth test)
 

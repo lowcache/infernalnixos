@@ -45,7 +45,9 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 
 **Phone-agent ingest (2026-08-06):** Staged files from phone arrive at `~/ingest/staged/` (managed by phone-ingest-sync.timer). Delivered files moved to `~/ingest/delivered/` after hash verification.
 
-**Android tools (2026-08-21 — Persistence Activated):** `~/Android` (Studio SDK) and `~/.android` (config) symlink to `~/Storage/` via home-manager out-of-store; `/var/lib/waydroid` bind-mounted from `/persist/var/lib/waydroid` (system persistence). Move completed 2026-08-21; root tmpfs freed from 100% to 3% (99 MB / 4.0 GB available). Binds active post-switch. See mistakes.md #13 for incident details and prevention rules.
+**Android tools (2026-08-21):** `~/Android` (Studio SDK, ~1.4 GB) and `~/.android` (config + AVD disk images) symlink to `~/Storage/`. System persistence: `/var/lib/waydroid` bind-mounted from `/persist/var/lib/waydroid` (images, ~2.4 GB). Both moved to avoid filling the 4 GB impermanence tmpfs root (see mistakes.md #13).
+
+**Waydroid userdata (2026-08-21):** `~/.local/share/waydroid` (Android `/data` partition for installed apps) bind-mounted from `/persist/.local/share/waydroid` to persist app installs and data across reboots.
 
 ---
 
@@ -272,7 +274,7 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
 
 ---
 
-## 9. Application Status (2026-07-14, Updated 2026-07-31)
+## 9. Application Status (2026-07-14, Updated 2026-08-21)
 
 ### Krita 6.0.1 native + Font Gallery pykrita Plugin (2026-06-22 — User-Text Input, Implementation Validated)
 
@@ -298,9 +300,29 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
 
 Installed as a Claude Code skill for workspace reasoning on long-horizon tasks. Audited for conflicts with CLAUDE.md instructions; applied local edits: (1) house-rules block stating global instructions take precedence, (2) brevity clause rewritten to record pass internally rather than announce externally, (3) LEDGER_DIR made environment-configurable (defaults `.model/.jspace/` when `.model/` exists). Verified via verify_suite.py; controller smoke tests pass. User approval: trial run; discontinue if problems arise. Backups at `SKILL.md.bak.pre-houserules` and `scripts/jspace.py.bak.pre-houserules` in ~/.claude/skills/j-space/.
 
-### Waydroid — Android Container Runtime (2026-08-21, Persistence Activated)
+### Waydroid — Android Container Runtime (2026-08-21, Fully Initialized & Operational)
 
-- **Status:** Enabled in `nixos/configuration.nix:395`. System persistence configured.
-- **Kernel support:** cachyos 7.1.5 includes `CONFIG_ANDROID_BINDER_IPC=y`, `CONFIG_ANDROID_BINDERFS=y`, binder registered in `/proc/filesystems`. No kernel work needed.
-- **Persistence:** `/var/lib/waydroid` bind-mounted from `/persist/var/lib/waydroid` (system persistence). `~/.Android` and `~/.android` symlink to `~/Storage/` (non-tmpfs, multi-GB) to prevent AVD disk images from filling root.
-- **Status (2026-08-21, move completed):** SDK moved to Storage; `/var/lib/waydroid` persisted to `/persist/var/lib/waydroid`; root tmpfs freed from 100% to 3%. Binds active. `waydroid status` reports `Session: STOPPED, Vendor type: MAINLINE` (initialized, ready for first use). Kernel: cachyos 7.1.5 has `CONFIG_ANDROID_BINDER_IPC=y` + `CONFIG_ANDROID_BINDERFS=y`, no additional work needed.
+* **Status:** Fully operational with GAPPS images (Google Play Services enabled).
+* **Kernel support:** cachyos 7.1.5 includes `CONFIG_ANDROID_BINDER_IPC=y`, `CONFIG_ANDROID_BINDERFS=y`, binder registered in `/proc/filesystems`. No kernel work needed.
+* **Persistence (2026-08-21, Fully Active):**
+  * `/var/lib/waydroid` bind-mounted from `/persist/var/lib/waydroid` (system images, configuration). Data persists across reboots.
+  * `~/.local/share/waydroid` (Android `/data` partition for installed apps) bind-mounted from `/persist/.local/share/waydroid` (home-manager impermanence). All app installs and data survive reboots.
+  * `~/.Android` and `~/.android` (SDK and emulator config) symlink to `~/Storage/` (persistent NVMe storage).
+  * tmpfs root stable at **3%** (99 M / 4.0 G) — down from 100% before persistence setup.
+* **Images & Initialization (2026-08-21):**
+  * **Variant:** GAPPS (includes Google Play Services, Play Store, Google apps). Re-initialized via `sudo waydroid init -f -s GAPPS` after persistence binds were activated.
+  * **System image:** 2462.4 M (GAPPS LineageOS payload).
+  * **Vendor image:** 535.5 M (MAINLINE, Waydroid standard vendor).
+  * **LXC rootfs:** Unpacked; `/var/lib/waydroid/lxc/waydroid/` directory present.
+* **Session & Networking (2026-08-21):**
+  * **Session:** RUNNING (user `lowcache`, container running).
+  * **Container:** RUNNING (graphics composer `/vendor/bin/hw/android.hardware.graphics.composer@2.1-service` active).
+  * **Networking:** DHCP lease obtained (IP `192.168.240.112`). Egress verified; dnsmasq bound, DNS accessible from inside Android.
+  * **Display:** Wayland-native (`wayland-1`); `waydroid show-full-ui` maps window.
+* **Play Store & Certification (2026-08-21):**
+  * GAPPS images include Play Store and Google Play Services, but are not Protect-certified (uncertified device build).
+  * **Device registration:** Android ID retrieved via `sudo waydroid shell -- sh -c "sqlite3 /data/data/*/*/gservices.db 'select value from main where name = \"android_id\";'"` and registered at `https://www.google.com/android/uncertified`. Certification propagation in progress (user awaiting Play Store sign-in test).
+  * Expected behavior post-propagation: Play Store sign-in succeeds; apps installable from Play Store.
+* **Architectural notes:**
+  * Plain `waydroid` package (nixos system service) is sufficient — `waydroid-nftables` variant was redundant (removed from `home/pkgs.nix` 2026-08-21; see mistakes.md). This host's `iptables` is `xtables-nft-multi`, so plain package's rules route through nftables anyway.
+  * No libhoudini/ARM translation layer installed yet (would enable ARM-only apps on x86_64 images). `waydroid-helper` (nixpkgs 0.2.9) + Magisk available if needed later.
