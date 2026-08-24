@@ -86,7 +86,6 @@ Thunderbird and Spotify config/state were not persisted across tmpfs-root wipe. 
 - [x] Run `make switch` to activate phone-agent MCP in Claude Code (completed 2026-08-21)
 - [ ] Restart Claude Code session (MCP servers read at session startup)
 - [ ] Verify phone-agent tools are accessible (should appear in MCP list)
-- [ ] (Optional) Clean up or drop `nixos/phone-agent/mcp-gateway.nix` (example uses outdated schema; gateway route failed auth test) — COMPLETED 2026-08-24, moved to archive
 
 ### Wire android-integration — Choose Strategy (2026-08-03 — USER DECISION PENDING)
 
@@ -108,6 +107,26 @@ Thunderbird and Spotify config/state were not persisted across tmpfs-root wipe. 
 ---
 
 ## BACKLOG / DEFERRED
+
+### MCP Server Evaluation — Cloudflare Official Tier + Third-Party Triage (2026-08-24 — Survey Complete)
+
+**Status:** MCP server landscape surveyed via tether (198 lines at `scratchpad/mcp-survey.md`). Results categorized and prioritized.
+
+**Findings:**
+- **Tier 1 (Cloudflare official, recommended):** 12 servers (Workers Builds, Observability, GraphQL, DNS Analytics, Cloudflare API, Docs, Radar, Browser Run, Logpush, Audit Logs, AI Gateway, Bindings). All require `http_url:` / `streamable_http:` config in gateway.yaml (not `command:`, since these are remote stdio endpoints). Workers Builds connects directly to your open CI todo.
+- **Tier 2 (SEO, third-party OAuth-required):** GSC (7 implementations; recommend safe MIT read-only version), GA4, Bing. Require OAuth grant to your Search Console + analytics accounts.
+- **Tier 3 (Other high-value third-party):** Sentry (official remote, free with account), Stripe (official, monetization-coupled), CVE MCP (free, NVD+CISA+GitHub Advisories, local uvx), SAST MCP (local Semgrep/Bandit/Trivy wrapper).
+
+**Caution:** Survey lists Postgres as "Official + Active" in upstream servers repo; this is likely stale (most reference servers were archived). Verify before using.
+
+**Security constraint:** Each MCP server credential grant expands trust surface. MCPS Audit ([razashariff/mcps-audit](https://github.com/razashariff/mcps-audit)) scans MCP configs against OWASP MCP Top 10. Before expanding beyond current 8 backends, run audit on `.model/.claude/.mcp.json` + `gateway.yaml`.
+
+**Next steps:**
+- [ ] Run MCPS Audit on existing 8 backends; resolve any medium/high findings before expansion
+- [ ] Prioritize Cloudflare Workers Builds + Observability (aligns with wiki/deployment CI todo)
+- [ ] Conditional: Activate Sentry (free, error/trace querying) + CVE MCP (security scanning)
+- [ ] Defer: Stripe MCP (monetization not yet live), full GSC/GA4 suite (lower priority than core tooling)
+- [ ] Archive `scratchpad/mcp-survey.md` post-implementation (reference only, not durable)
 
 ### Wiki — Polish and CI Integration (2026-08-15, partially done)
 
