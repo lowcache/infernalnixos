@@ -198,7 +198,7 @@ This file catalogs the active, canonical design decisions and system configurati
 
 ---
 
-## 21. Native Krita 6.0.2.1 + Font Gallery pykrita Plugin (Amended 2026-08-24 — SVG Text Engine Fixed)
+## 21. Native Krita 6.0.2.1 + Font Gallery pykrita Plugin (Amended 2026-08-24 — SVG Text Engine Fixed & Plugin Refactored)
 
 * **Original decision (2026-06-21):** Keep native Krita 6.0.1 with Font Gallery pykrita plugin as the text-tool font browser workaround.
 
@@ -208,15 +208,13 @@ This file catalogs the active, canonical design decisions and system configurati
 
 * **Amendment 3 (2026-08-24 — SVG Text Engine FIXED):** Testing confirms Krita 6.0.2.1 (current nixpkgs version, since 2026-08-16) does NOT exhibit the err=84 glyph crash. FreeType 0x54 = `FT_Err_Invalid_Stream_Read` — Krita 6.0.1 had a text-processing bug that triggered this; 6.0.2+ ships the fix (upstream 2026-05-27). **The rasterize-to-paint-layer workaround is now obsolete.** SVG `<text>` shapes render correctly and are genuinely editable vectors. Empirical verification: 5 font families, zero render errors, no crashes, PNGs visually confirmed.
 
+* **Amendment 4 (2026-08-24 — Font Gallery Plugin Refactored to Native SVG, Deferred Work Complete):** `_insert_sample` now builds native SVG shapes (`doc.createVectorLayer()` + `addShapesFromSvg()`) instead of rasterizing via QPainter/QImage. Pure `build_text_svg()` function (testable without Qt/Krita) emits SVG `<text>` with proper XML escaping and multi-line as `<tspan>`. Verified end-to-end via headless test harness (`<scratchpad>/ktest/` — Xvfb + isolated XDG dirs); 4/4 test cases passed (XML metacharacters, multi-line, round-trip), zero crashes. Test harness reusable for future plugin work. Still open: on-canvas GUI text tool (Python API only, not yet GUI-tested); Krita 6.0.3 (upstream PR #546550, not yet merged).
+
 * **Separate defect (2026-08-24):** `Shape.remove()` in the Python API SEGVs on 6.0.2.1 (crashes in `Document::document()`, not text-specific). Avoid in pykrita plugins. Unrelated to text rendering.
 
 * **Why keep Krita 6:** Canvas superior for stylus/tablet (Weylus, native Wayland). G'MIC patch keeps filters usable.
 
-* **Next step (user deferred):** Refactor Font Gallery plugin to use native SVG shapes (`doc.createVectorLayer() + addShapesFromSvg()`) instead of rasterize workaround (no longer necessary, but not yet implemented). Keep the 3966-font browser UI — that is the plugin's real value.
-
-* **Installation (2026-08-24):** Only **Nix** `pkgs.krita` (6.0.2.1) with patched G'MIC plugin (Flatpak uninstalled 2026-06-22). SVG text now works; avoid `Shape.remove()` calls.
-
-* **Fallback options (if ever needed):** GIMP 3.2.4 (Flatpak) or 3.0.8 native (Pango/fontconfig, proven at 2000+ fonts).
+* **Installation (2026-08-24):** Only **Nix** `pkgs.krita` (6.0.2.1) with patched G'MIC plugin (Flatpak uninstalled 2026-06-22). Swap location moved to NVMe: `kritarc:291 swaplocation=~/Storage/tmp/krita-swap` (prevents tmpfs SIGBUS; see mistakes.md). SVG text now works; avoid `Shape.remove()` calls. Fallback: GIMP 3.2.4 (Flatpak) or 3.0.8 native.
 
 ---
 

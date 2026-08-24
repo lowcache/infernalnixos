@@ -35,6 +35,23 @@ status: active
 ✓ 5 font families tested; zero render errors, no crashes, empirical evidence captured
 ✓ Rasterize-to-paint-layer workaround now obsolete
 
+### Krita Font Gallery Plugin — Refactor to Native SVG Shapes (2026-08-24)
+
+✓ Refactored `_insert_sample` to use native SVG shapes (`doc.createVectorLayer()` + `addShapesFromSvg()`)
+✓ Pure `build_text_svg()` function created (testable, XML-escaping included)
+✓ Verified end-to-end: 4/4 test cases (metacharacters, multi-line, round-trip)
+✓ Headless test harness created at `<scratchpad>/ktest/` (Xvfb + isolated XDG) — reusable for future Krita work
+✓ Zero crashes; visual inspection confirmed correct rendering
+
+Still open: on-canvas GUI text tool (Python API only, not yet tested in actual Krita UI)
+
+### Krita Swap Location — Moved to NVMe (2026-08-24)
+
+✓ Identified root cause of July SIGBUS crashes: `kritarc:291 swaplocation=/tmp` with 10 GB request on 4 GB tmpfs
+✓ Changed `swaplocation=~/Storage/tmp/krita-swap` (NVMe persistent, 269 GB free)
+✓ Crash-free since fix; zero crashes post-2026-08-24
+✓ Prevention rule added: mistakes.md entry documents the defect and fix
+
 ---
 
 ## IN PROGRESS / AWAITING USER DECISION
@@ -68,14 +85,6 @@ status: active
 ---
 
 ## BACKLOG / DEFERRED
-
-### Krita Font Gallery Plugin — Refactor to Native SVG Shapes (Deferred Polish)
-
-**Status:** Verified (2026-08-24): SVG text engine works on Krita 6.0.2.1; rasterize workaround no longer needed. Current path still functional but no longer necessary.
-
-- [ ] Refactor `_insert_sample` to use native SVG shapes (`doc.createVectorLayer() + addShapesFromSvg()`)
-- [ ] Test: type text, double-click font, verify editable vector layer appears
-- [ ] Nice-to-have; current rasterize path is still functional but no longer necessary
 
 ### Wiki — Hugo Activation Complete, SEO Fixes Live, CI & Polish Pending (2026-08-15, updated 2026-08-23)
 
