@@ -44,7 +44,7 @@ let
         pkg: "${pkg}/lib/qt-6/plugins:${pkg}/lib/plugins"
       ) qtDependencies;
       # Wayland session vars. XDG_CURRENT_DESKTOP / XDG_SESSION_DESKTOP are deliberately
-      # NOT hardcoded here: thefor X11 apps under niri niri session self-declares its identity
+      # NOT hardcoded here: the niri session self-declares its identity
       # (`niri-session` exports XDG_CURRENT_DESKTOP=niri itself).
       XDG_SESSION_TYPE = "wayland";
       # redundant? QT_QPA_PLATFORM is hardcoded under the krita wrapper in pkgs.nix line ~45
