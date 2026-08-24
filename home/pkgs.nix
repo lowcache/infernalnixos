@@ -169,11 +169,14 @@
           markitdown-mcp
           playwright-mcp
           context7-mcp
-          mcp-server-sequential-thinking
+          # sequential-thinking removed 2026-08-24: unused, and it collides with
+          # mcp-server-filesystem in buildEnv (both are packaged from the same
+          # @modelcontextprotocol/servers monorepo and each ships dist/lib.js).
+          # Dropping it lets filesystem in at normal priority, no lib.lowPrio needed.
+          mcp-server-filesystem
           open-websearch
           mcp-server-fetch
           llmfit
-          # mcp-server-filesystem
           rtk
           claude-code
           pkgs.llm-agents.ccstatusline

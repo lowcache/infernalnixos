@@ -55,6 +55,9 @@
         # consumed by the phone-agent MCP server in .model/.claude/.mcp.json
         test -r /run/secrets/phone_agent_token
         and set -gx PHONE_AGENT_TOKEN (cat /run/secrets/phone_agent_token)
+        # apify
+        test -r /run/secrets/apify_api_key
+        and set -gx APIFY_API_KEY (cat /run/secrets/apify_api_key)
       '';
       shellAbbrs = {
         # Anonymous mode (P5-T3): arm/disarm egress via the net-gate Tor VM.

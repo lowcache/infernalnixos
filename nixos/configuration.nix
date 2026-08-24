@@ -291,6 +291,9 @@
         path = "/home/${username}/.config/phone-agent/token";
         mode = "0400";
       };
+      apify_api_key = {
+        owner = username;
+      };
     };
   };
   programs = {
