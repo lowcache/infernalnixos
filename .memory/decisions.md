@@ -443,3 +443,19 @@ This file catalogs the active, canonical design decisions and system configurati
   3. Waydroid remains useful for dev/test, ARM apps with libhoudini, and apps doing only software-level checks.
 
 * **Why this decision matters:** Prevents future agents from attempting impossible workarounds (wasting time on increasingly-sophisticated Magisk modules). Couples to Decision #27 (ceiling markers) — this is a *structural* ceiling, not deferred debt. Honest scoping of what waydroid solves.
+
+---
+
+## 35. Phone-Agent MCP Isolation — Intentional Non-Gateway Architecture (2026-08-24)
+
+* **Decision:** Phone-agent MCP server operates independently, NOT fronted by mcp-gateway, as a deliberate architectural choice.
+
+* **Why:** Two reasons:
+  1. **Incompatibility:** The module's example gateway config used deprecated schema (`transport:`, `url:`, `namespace:` vs. actual `http_url:`, `streamable_http:`, `protocol_version:`, etc.; gateway auth test also failed).
+  2. **Architectural preference:** Even if compatible, phone-agent is deliberately isolated from the gateway. It is a standalone server, like noctalia.mcp (the other gateway exception).
+
+* **Implementation:** Removed `nixos/phone-agent/mcp-gateway.nix` entirely (it did only two things: emit a broken example and an unconditional warning). Left a comment in `default.nix` explaining the removal so it doesn't get "restored" by future tidying.
+
+* **Scope:** Phone-agent remains wired directly to Claude Code via `.model/.claude/.mcp.json` (HTTP transport). No gateway involvement.
+
+* **Similar precedent:** noctalia.mcp (noctalia shell) is also a gateway exception, managed independently. This decision confirms the pattern: not every MCP server must go through the gateway.

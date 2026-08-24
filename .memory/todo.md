@@ -52,17 +52,35 @@ status: active
 ✓ Covered: swap hazard + fix, text engine timeline, plugin refactoring, G'MIC patch, testing harness
 ✓ Build clean: 31 pages, 47 internal links validated
 
+### Phone-Agent MCP Gateway Config Removed (2026-08-24 — STAGED)
+
+✓ Removed `nixos/phone-agent/mcp-gateway.nix` (example used deprecated schema; separation preferred)
+✓ Left explanatory comment in `default.nix` to prevent restoration
+✓ Confirmed `config.warnings` → 0 (was 1)
+✓ Full system still evaluates (`system.build.toplevel.drvPath` succeeds)
+✓ Closes todo item: "(Optional) Clean up or drop nixos/phone-agent/mcp-gateway.nix"
+
 ---
 
 ## IN PROGRESS / AWAITING ACTION
 
-### Krita Swap Directory Persistence (2026-08-24 — BLOCKING CONFIG FORMALIZATION)
+### Krita Swap Directory Persistence (2026-08-24 — STAGED, READY FOR ACTIVATION)
 
-The swap directory `~/Storage/tmp/krita-swap` was created imperatively (manual mkdir) and works in runtime. It is referenced in the out-of-store `kritarc` symlink (~/Storage/krita-master/kritarc, user-mutable). However, it lives under a directory named `tmp` with no lifecycle declaration—if any sweep process cleans `~/Storage/tmp/*`, the swap dir vanishes and Krita reverts to SIGBUS hazard (mistakes.md 2026-08-24).
+Declaration complete and staged (added to `home/default.nix` activation.ensureScratchDirs).
+Imperatively tested and working; formal activation pending `make switch`.
 
-- [ ] Declare `~/Storage/tmp/krita-swap` in `home/persist.nix` to ensure durability (or use `home.activation` if `persist.nix` doesn't support directories)
-- [ ] Apply via `make switch` to formalize the fix (moves from "imperative workaround" to "declared state")
+- [x] Declare swap directory in activation script (done, staged)
+- [ ] Apply via `make switch` to formalize (batched with other staged changes)
 - [ ] Verify swap location still resolves post-rebuild
+
+### Thunderbird + Spotify Persistence (2026-08-24 — STAGED, READY FOR ACTIVATION)
+
+Persistence declarations staged:
+- Spotify config → `/persist` (pre-seeded from live session; 32 K, non-growing)
+- Thunderbird → `~/Storage/thunderbird` symlink (mail growth handled via Storage; target dir created; no collision risk)
+
+- [x] Declare persistence (done, staged)
+- [ ] Apply via `make switch` (batched with other staged changes)
 
 ### Blog Post: "The workaround that outlived its bug" (Krita post — Outline Ready 2026-08-24)
 
@@ -72,14 +90,30 @@ The swap directory `~/Storage/tmp/krita-swap` was created imperatively (manual m
 - [ ] Cross-check cited numbers against decisions.md #21, mistakes.md 2026-08-24, state.md §9 (Krita section)
 - [ ] Publish (remove `draft: true`, then `cd volnixos-blog && make build && make deploy`)
 
+### MCP Server Expansion — Cloudflare + GSC + Workflow Servers (2026-08-24 — RESEARCH IN PROGRESS)
+
+Token burn now sustainable; surveying MCP servers for:
+- Cloudflare Workers observability/deployment (17 official servers identified)
+- Google Search Console integration
+- Blog/content workflow servers
+- Complementary domain-specific tooling
+
+Research underway; consolidating recommendations for batch activation.
+
+- [ ] Verify Cloudflare API MCP server (D1, KV, Durable Objects, Workers)
+- [ ] Identify Google Search Console MCP server (if published)
+- [ ] Check for blog/Hugo MCP servers
+- [ ] Consolidate recommendations: scope/benefit/complexity per server
+- [ ] Batch-add to gateway.yaml when research complete
+
 ### Phone-Agent MCP Activation (2026-08-07 — Claude Code Restart Pending)
 
 **Status:** Phone-agent wired to Claude Code via HTTP (`.model/.claude/.mcp.json`). Token exported from sops secrets in `home/shell.nix`. Configuration ready. **`make switch` completed 2026-08-21.** MCP server is now running and should be accessible; Claude Code session must be restarted to connect.
 
 - [x] Run `make switch` to activate phone-agent MCP in Claude Code (completed 2026-08-21)
+- [x] Clean up phone-agent mcp-gateway.nix (removed 2026-08-24, staged)
 - [ ] Restart Claude Code session (MCP servers read at session startup)
 - [ ] Verify phone-agent tools are accessible (should appear in MCP list)
-- [ ] (Optional) Clean up or drop `nixos/phone-agent/mcp-gateway.nix` (example uses outdated schema; gateway route failed auth test)
 
 ### Wire android-integration — Choose Strategy (2026-08-03 — USER DECISION PENDING)
 
