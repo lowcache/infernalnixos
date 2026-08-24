@@ -294,6 +294,9 @@
       apify_api_key = {
         owner = username;
       };
+      gsc_service_account = {
+        owner = username;
+      };
     };
   };
   programs = {
