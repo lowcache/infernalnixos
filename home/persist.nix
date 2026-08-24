@@ -103,6 +103,13 @@
             ".foundry"
             ".ZAP"
             ".java"
+            # mcp-gateway runtime state, NOT config (~/.config/mcp-gateway is
+            # persisted separately). Holds oauth/ with the dynamically-registered
+            # client_id and refresh tokens for remote backends like Cloudflare.
+            # Unpersisted it is wiped with the tmpfs root and every reboot forces
+            # a fresh browser authorization. Also holds transparency logs and
+            # identity grants.
+            ".mcp-gateway"
           ];
           config = [
             ".config/dconf"

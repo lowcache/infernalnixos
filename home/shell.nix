@@ -58,6 +58,12 @@
         # apify
         test -r /run/secrets/apify_api_key
         and set -gx APIFY_API_KEY (cat /run/secrets/apify_api_key)
+        # Buttondown volatile
+        test -r /run/secrets/buttondown_api_key_volatiletestimony
+        and set -gx BUTTONDOWN_API_KEY_VOLATILE_TESTIMONY (cat /run/secrets/buttondown_api_key_volatiletestimony)
+        # Buttondown hotelevangelism
+        test -r /run/secrets/buttondown_api_key_hotelevangelism
+        and set -gx BUTTONDOWN_API_KEY_HOTELEVANGELISM (cat /run/secrets/buttondown_api_key_hotelevangelism)
       '';
       shellAbbrs = {
         # Anonymous mode (P5-T3): arm/disarm egress via the net-gate Tor VM.
