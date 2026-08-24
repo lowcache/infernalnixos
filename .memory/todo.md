@@ -37,20 +37,13 @@ status: active
 
 ### Krita Font Gallery Plugin — Refactor to Native SVG Shapes (2026-08-24)
 
-✓ Refactored `_insert_sample` to use native SVG shapes (`doc.createVectorLayer()` + `addShapesFromSvg()`)
-✓ Pure `build_text_svg()` function created (testable, XML-escaping included)
-✓ Verified end-to-end: 4/4 test cases (metacharacters, multi-line, round-trip)
-✓ Headless test harness created at `<scratchpad>/ktest/` (Xvfb + isolated XDG) — reusable for future Krita work
-✓ Zero crashes; visual inspection confirmed correct rendering
-
-Still open: on-canvas GUI text tool (Python API only, not yet tested in actual Krita UI)
-
-### Krita Swap Location — Moved to NVMe (2026-08-24)
-
-✓ Identified root cause of July SIGBUS crashes: `kritarc:291 swaplocation=/tmp` with 10 GB request on 4 GB tmpfs
-✓ Changed `swaplocation=~/Storage/tmp/krita-swap` (NVMe persistent, 269 GB free)
-✓ Crash-free since fix; zero crashes post-2026-08-24
-✓ Prevention rule added: mistakes.md entry documents the defect and fix
+✓ Refactored `_insert_sample` to insert native editable SVG text shapes via `createVectorLayer() + addShapesFromSvg()`
+✓ Replaced QPainter/QImage/`setPixelData` rasterize path with pure `build_text_svg()` function (independently testable)
+✓ XML escaping verified (metacharacters render literally; space entities used for whitespace)
+✓ Multi-line text verified (one `<tspan>` per line; vertical advance correct)
+✓ End-to-end tested in isolated harness (`<scratchpad>/ktest/`, Xvfb-driven Krita 6.0.2.1); 4/4 cases pass
+✓ Krita swap file moved from `/tmp` (4 GB tmpfs) to `~/Storage/tmp/krita-swap` (269 GB NVMe, 2026-08-24) to prevent SIGBUS crashes
+- [ ] Interactive on-canvas text tool (GUI, not engine) — human verification pending (~10 min)
 
 ---
 
