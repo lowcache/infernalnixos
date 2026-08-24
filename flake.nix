@@ -123,7 +123,7 @@
               (import ./nixos/overlays/ollama.nix)
             ];
           }
-          ./nixos/configuration.nix
+          ./nixos
           ./nixos/hardware-configuration.nix
           inputs.lanzaboote.nixosModules.lanzaboote
           inputs.impermanence.nixosModules.impermanence
