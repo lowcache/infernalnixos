@@ -14,8 +14,7 @@ This file is the single source of truth for the active configuration, mapping, a
 ## 1. System & Hardware Profile
 
 * **Hostname:** `volnix` | **OS:** NixOS 26.11 (Zokor) | **Shell:** Fish (HM)
-* **Current generation:** system-247 (verified 2026-08-24; store path: `readlink /run/current-system`)
-* **git status:** `nixos/host-secrets.yaml` modified, not committed (sops secret rotation state pending push)
+* **Current generation:** system-247 (`/nix/store/…-nixos-system-volnix-26.11.20260824.…`)
 * **Desktop:** niri (Wayland, sole WM, default session) + Noctalia v5 (C++ shell)
 * **Display:** Wayland native; XWayland via `xwayland-satellite` (`:0`, for xcb-only AppImages and Flatpak Qt5 apps; permanent startup pending).
 * **GPU:** Hybrid AMD HawkPoint2 iGPU + NVIDIA RTX 4050 Mobile dGPU.
@@ -32,7 +31,7 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 
 **Persisted home directories (not repo-tracked):** `~/.codex`, `~/.gemini` (Gemini/Antigravity agent state; moved from `dots/gemini` to persisted real directory via home-manager impermanence 2026-07-24).
 
-**Krita:** Native `~/.config/kritarc`, `~/.config/kritadisplayrc`, `~/.local/share/krita` → `~/Storage/krita-master/`. Pykrita plugins live at `~/Storage/krita-master/krita/pykrita/`. Swap location: `~/Storage/tmp/krita-swap` (persistent NVMe backing, prevents SIGBUS crashes on impermanence tmpfs, 2026-08-24, LIVE).
+**Krita:** Native `~/.config/kritarc`, `~/.config/kritadisplayrc`, `~/.local/share/krita` → `~/Storage/krita-master/`. Pykrita plugins live at `~/Storage/krita-master/krita/pykrita/`. Swap location: `~/Storage/tmp/krita-swap` (persistent NVMe, 269 GB free; prevents SIGBUS crashes from mmap-based caching on impermanence tmpfs). Swap directory persistence LIVE in gen 247 via `home.activation.ensureScratchDirs` (see mistakes.md 2026-08-24, decisions.md #36).
 
 **AI outputs:** `~/Pictures/fromAi/outputs` → `~/Storage/ai-generation/fooocus/outputs`.
 
@@ -50,9 +49,11 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 
 **Waydroid userdata (2026-08-21):** `~/.local/share/waydroid` bind-mounted from `/persist/.local/share/waydroid` to persist app installs/data across reboots.
 
-**Spotify config (2026-08-24 — LIVE, verified 2026-08-24):** `~/.config/spotify` persistence activated via impermanence bind-mount (bounded 32 KB config, lives in `/persist`). Seed from prior session verified.
+**Spotify config (2026-08-24 — LIVE, verified gen 247):** `~/.config/spotify` persistence via impermanence bind-mount (bounded 32 KB config, lives in `/persist`). Verified active via findmnt.
 
-**Thunderbird profile (2026-08-24 — LIVE, verified 2026-08-24):** Symlink target `~/Storage/thunderbird` persisted; `home.file` mkOutOfStoreSymlink active in `home/persist.nix`. Chain verified: `~/.thunderbird → Storage/thunderbird` (user-owned, mail/profile data persisted).
+**Thunderbird profile (2026-08-24 — LIVE, verified gen 247):** Symlink target `~/Storage/thunderbird` live; `home.file` mkOutOfStoreSymlink active. Symlink chain verified: `~/.thunderbird → home-manager-files/.thunderbird → hm_thunderbird → /home/lowcache/Storage/thunderbird`. Email/profile data persisted across tmpfs-root wipe.
+
+**Secrets (2026-06-09 rules, 2026-08-24 state):** Encrypted sops-nix credentials in `nixos/secrets.yaml`, persisted agent/tool state in `/persist`. `nixos/host-secrets.yaml` has uncommitted modifications (2026-08-24) tracking secret rotation state — commit before major branches.
 
 ---
 
@@ -87,6 +88,8 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 * **TMPDIR split (2026-06-17):** User → `~/Storage/tmp`; daemon → `/nix/tmp`; Makefile `REBUILD_TMPDIR := $(HOME)/Storage/tmp`. Rationale: decisions.md #13.
 
 * **Build fallback (2026-06-24):** Makefile `switch` carries `--option fallback true` — substituter `attic.xuyh0120.win/lantian` 307-redirects NAR fetches to a host with an expired TLS cert; fallback compiles from source instead of halting the build. Revert condition: once upstream cert is renewed, remove the flag (or migrate to permanent `nix.settings.fallback = true`).
+
+* **statix lint failure (2026-08-24):** `nix flake check` fails at statix lint gate on `flake.nix:177-178` (assignment vs inherit). Trivial fixup (low priority). Host and droid targets evaluate clean; only the lint gate blocks `make check`.
 
 ---
 
@@ -156,7 +159,7 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 
 ## 9. Application Status
 
-**Krita 6.0.2.1 + Font Gallery pykrita Plugin (SVG Text Engine, Native Shapes, 2026-08-24):** Native Krita (Nix build; Flatpak uninstalled 2026-06-22) with Font Gallery pykrita plugin providing a 3966-font browser UI. Krita 6.0.1 crashed on SVG text insertion (FreeType glyph rendering bug, upstream fix 2026-05-27); 6.0.2.1 (current nixpkgs version) fixed this — SVG `<text>` shapes now render correctly and are fully editable vectors. Full technical narrative: decisions.md #21. Font Gallery plugin refactored (2026-08-24) to insert native editable SVG text shapes via `createVectorLayer() + addShapesFromSvg()`, replacing the rasterize-to-paint-layer workaround (obsolete post-6.0.2). Plugin tested end-to-end in isolated harness; XML escaping and multi-line layout verified correct. Caveat: `Shape.remove()` in the Python API SEGVs on 6.0.2.1 (separate defect); avoid in plugins. Swap file location moved from `/tmp` (4 GB tmpfs root) to `~/Storage/tmp/krita-swap` (269 GB NVMe, 2026-08-24, LIVE) to prevent SIGBUS crashes from mmap-based caching on tmpfs (see mistakes.md 2026-08-24). Testing harness at `<scratchpad>/ktest/` available for headless verification. G'MIC plugin patched and bundled (`overrides/gmic-qt-filtersview-nullptr-contextmenu.patch`). Fallback: GIMP 3.2.4 (Flatpak) or 3.0.8 native. Interactive on-canvas text tool (GUI) remains unverified.
+**Krita 6.0.2.1 + Font Gallery pykrita Plugin (SVG Text Engine, Native Shapes, 2026-08-24):** Native Krita (Nix build; Flatpak uninstalled 2026-06-22) with Font Gallery pykrita plugin providing a 3966-font browser UI. Krita 6.0.1 crashed on SVG text insertion (FreeType glyph rendering bug, upstream fix 2026-05-27); 6.0.2.1 (current nixpkgs version) fixed this — SVG `<text>` shapes now render correctly and are fully editable vectors. Full technical narrative: decisions.md #21. Font Gallery plugin refactored (2026-08-24) to insert native editable SVG text shapes via `createVectorLayer() + addShapesFromSvg()`, replacing the rasterize-to-paint-layer workaround (obsolete post-6.0.2). Plugin tested end-to-end in isolated harness; XML escaping and multi-line layout verified correct. Caveat: `Shape.remove()` in the Python API SEGVs on 6.0.2.1 (separate defect); avoid in plugins. Swap file location: `~/Storage/tmp/krita-swap` (persistent NVMe, 269 GB free; prevents SIGBUS crashes from mmap-based caching on impermanence tmpfs). Swap directory persistence LIVE in gen 247 via `home.activation.ensureScratchDirs` (see mistakes.md 2026-08-24, decisions.md #36). Testing harness at `<scratchpad>/ktest/` available for headless verification. G'MIC plugin patched and bundled (`overrides/gmic-qt-filtersview-nullptr-contextmenu.patch`). Fallback: GIMP 3.2.4 (Flatpak) or 3.0.8 native. Interactive on-canvas text tool (GUI) remains unverified.
 
 **Color Scheme — Ayu Green:** Live and synced across Noctalia bar, kitty, starship. Theme file `dots/color-engine/themes/ayu_green.json` (35 tokens, 77 roles). Palette: lime `#AAD94C`, gold `#E6B450`, cyan `#39BAE6`, navy base `#1F2430`.
 
@@ -177,7 +180,7 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
   - **Content tools:** markitdown (1 tool, local), open-websearch (6 tools, free Brave API)
   - **Utilities:** filesystem (14 tools, local), noctalia MCP shim (8 tools, stdio, not via gateway)
   - **Playwright:** browser automation (23 tools via managed service, requires auth)
-
+  
 * **GSC Integration (2026-08-24 — Live and Verified):**
   - Service account: `cache-poor-blogs@dogwood-envoy-506516-e3.iam.gserviceaccount.com`
   - Properties connected: `sc-domain:infernalcode.com` (siteFullUser), `sc-domain:hotelevangelism.blog` (siteFullUser)

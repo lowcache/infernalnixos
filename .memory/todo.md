@@ -64,21 +64,17 @@ status: active
 ✓ Service account email added as user to both Search Console properties (infernalcode.com, hotelevangelism.blog) with siteFullUser permissions
 ✓ Gateway backend enabled and verified: `gsc` returns 8 tools, `list_sites` returns both properties, queries return real data, index_inspect confirms indexing
 
-### Krita Swap Directory Persistence (2026-08-24)
+### Krita Swap Directory Persistence (2026-08-24 — LIVE in gen 247)
 
-✓ Swap directory `~/Storage/tmp/krita-swap` prevents SIGBUS crashes from mmap-based caching on tmpfs
-✓ Declared durability via activation script: `$HOME/Storage/tmp/krita-swap` added to `home.activation.ensureScratchDirs` in `home/default.nix` (2026-08-24)
-✓ Activated in generation 247 (verified 2026-08-24)
-✓ Verified: Krita renders without SIGBUS; swap location resolves post-rebuild
+✓ Swap directory persistence declared via activation script: `$HOME/Storage/tmp/krita-swap` in `home.activation.ensureScratchDirs`
+✓ Activated in gen 247; verified LIVE via findmnt and frame cache presence
+✓ Prevents SIGBUS crashes from mmap-based caching on impermanence tmpfs
 
-### Thunderbird + Spotify Persistence (2026-08-24)
+### Thunderbird + Spotify Persistence (2026-08-24 — LIVE in gen 247)
 
-✓ Spotify config persistence: `".config/spotify"` added to impermanence bind-mount in `home/persist.nix` (2026-08-24)
-✓ Spotify persisted state seeded from live tmpfs session (2026-08-24)
-✓ Thunderbird persistence: symlink target `~/Storage/thunderbird` created; `home.file` mkOutOfStoreSymlink active in `home/persist.nix` (2026-08-24)
-✓ Thunderbird target pre-created: `$HOME/Storage/thunderbird` added to `home.activation.ensureScratchDirs` (2026-08-24)
-✓ Both activated in generation 247 (verified 2026-08-24)
-✓ Verified: symlink chain `~/.thunderbird → Storage/thunderbird` live; Spotify config bind-mount verified via findmnt
+✓ Spotify config persistence via impermanence bind-mount; verified LIVE via findmnt
+✓ Thunderbird persistence via Storage symlink (`~/.thunderbird → /home/lowcache/Storage/thunderbird`); symlink chain verified correct and LIVE
+✓ Both mechanisms activated in gen 247; email/profile data and Spotify login persisted across tmpfs-root wipe
 
 ---
 
@@ -105,25 +101,15 @@ status: active
 
 ## BACKLOG / DEFERRED
 
-### Flake Lint Gate — Fix statix Assignment (2026-08-24)
+### Fix statix Lint on flake.nix:177-178 (2026-08-24 — Low Priority)
 
-**Issue:** `make check` fails at statix lint gate: `[04] Assignment instead of inherit from` on `flake.nix:177-178` (`extraSpecialArgs = { nix-on-droid = ... }`, `home-manager-path = ...`).
+**Issue:** `nix flake check` fails at statix gate: "Assignment instead of inherit from" on lines 177-178 (`extraSpecialArgs = { nix-on-droid = ... }`, `home-manager-path = ...`).
 
-**Fix options:**
-1. Rewrite as `inherit (inputs) nix-on-droid;` and equivalent for home-manager-path.
-2. Add statix ignore annotation to assignments.
+**Status:** Trivial fixup (convert assignments to inherit). Host and droid targets evaluate clean; only the lint gate blocks `make check`.
 
-- [ ] Choose approach and apply fix
-- [ ] Verify `make check` passes
-
-### Git Hygiene — Commit `nixos/host-secrets.yaml` (2026-08-24)
-
-**Status:** `nixos/host-secrets.yaml` modified in worktree, not committed (sops secret rotation state pending push).
-
-- [ ] Review changes (sops rotation or config update?)
-- [ ] `git add nixos/host-secrets.yaml`
-- [ ] Commit with descriptive message
-- [ ] Verify no further uncommitted changes in the repo
+- [ ] Rewrite as `inherit (inputs) nix-on-droid;` and equivalent for home-manager-path
+- [ ] Run `nix flake check` to confirm gate passes
+- [ ] Commit
 
 ### Wiki SEO Optimization — Noctalia Title & Meta-Description (Identified 2026-08-24, High ROI)
 
