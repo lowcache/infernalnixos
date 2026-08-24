@@ -1,7 +1,7 @@
 ---
 type: todo
 project: Vol NixOS
-last_updated: 2026-08-21
+last_updated: 2026-08-24
 status: active
 ---
 
@@ -63,13 +63,19 @@ status: active
 
 ## BACKLOG / DEFERRED
 
-### Wiki — Hugo Activation Complete, CI & Polish Pending (2026-08-15)
+### Wiki — Hugo Activation Complete, SEO Fixes Live, CI & Polish Pending (2026-08-15, updated 2026-08-23)
 
 - [x] Migrate MkDocs → Hugo (27 pages, 2026-08-15)
 - [x] Deploy to independent repo `lowcache/volnixos-wiki`
+- [x] Fix `layouts/robots.txt` override blocking Bing/DuckDuckGo (2026-08-23, see mistakes.md)
+- [x] Submit wiki sitemap to GSC — never submitted before; 30/30 discovered same day (2026-08-23)
+- [x] Refresh stale blog sitemap in GSC — 39 → 50 discovered (2026-08-23)
+- [x] Place first two inbound links to the wiki: NixOS Wiki `Noctalia_Shell` page (Configuration section sourced to upstream `home-module.nix`, plus See also) and nix-on-droid issue #480 comment (2026-08-23)
 - [ ] Connect Workers Builds CI (set command `./build.sh`, var `HUGO_VERSION=0.164.0`)
 - [ ] Convert home page to native data-driven layout (currently markdown, should be hero/card-grid yaml)
 - [ ] Visual overhaul: port Material palette to E25DX, center content (currently left-aligned)
+- [ ] Re-check GSC Page Indexing report ~2026-08-30: confirm whether the 40 "Crawled – currently not indexed" URLs (spiked 2026-08-17, post MkDocs→Hugo port) are draining out — recovery signal, not yet confirmed
+- [ ] If the nix-on-droid #480 reporter confirms the same proot `_defaultUnpack` bug as `.nix-config`'s fix, open an upstream PR contributing `prootUnpack` (decisions.md #32) rather than leaving it as a local backport
 
 ### Noctalia Bar — Dual Wrap-Around Layout (2026-06-22 — LIVE, CAPTURE PENDING)
 

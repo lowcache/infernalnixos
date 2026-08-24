@@ -1,7 +1,7 @@
 ---
 type: mistakes
 project: Vol NixOS
-last_updated: 2026-08-21
+last_updated: 2026-08-24
 status: append-only
 ---
 
@@ -114,20 +114,6 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 * **Prevention Rule:** If GTK/Electron file pickers or portal Settings fail with `AccessDenied` / `Unable to open /proc/<pid>/root`, do NOT chase portal backends, icons, or `GTK_USE_PORTAL`. Reproduce with `gdbus call --session --dest org.freedesktop.portal.Desktop --object-path /org/freedesktop/portal/desktop --method org.freedesktop.portal.Settings.ReadAll '[]'`; if it errors, the app-id step is broken. Compare against `dbus-run-session -- <same call>`. If the daemon works and the live broker bus does not, set `services.dbus.implementation = "dbus"`.
 * **Rebuild caution:** Switching the dbus implementation restarts the message bus on `switch` and will tear down the running Wayland session (see Mistake #1). Apply via reboot, or run the rebuild detached (tmux / `systemd-run`).
 
-### 2026-08-15 — Wiki Toolchain Migrations Cost Real Time — Script Deterministic Changes
-
-**Incident:** Wiki conversion (MkDocs → Hugo) took longer than expected because (1) Gemini was asked to assist and returned sample diffs instead of writing files, (2) the transformation is 100% deterministic (47 admonitions→GitHub alerts, 3 tab blocks→shortcodes, .md links→pretty URLs), so a script would have been faster and checkable.
-
-**Prevention rule:** Delegate research, audits, and open-ended analysis to tether/Gemini. Do NOT delegate deterministic text transformation (migrations, bulk rewrites, templating) — write a converter script (Python/sed/jq). It is faster (one pass, no round-trips), cheaper (fewer LLM tokens), and produces checkable diffs. A 27-page conversion is better scripted than delegated.
-
-### 2026-08-19 — mcp-config.json Obsolete Schema (gateway backend)
-
-**Symptom:** ~/.claude/mcp-config.json listed gateway MCP backend with old schema key `serverURL:` instead of current `type: "http"` + `url:`. File parsed without error but would fail or silently misinterpret if used as primary config.
-
-**Root cause:** File is old (predates schema revision) and not actively read by Claude Code (user-scope ~/.claude.json is the primary config). It accumulated technical debt and was never updated during schema migrations.
-
-**Prevention rule:** MCP schema evolves as tools and agents update. Config files should be validated against active schema when encountered, not just when errors occur. If a config file is only sometimes used (like mcp-config.json with explicit --mcp-config flag), audit it when touched and schedule re-check on tool updates. Use `claude mcp list` and gateway's `doctor` command to verify schemas before deployment.
-
 ### 13. Waydroid Images + Android Studio SDK Filled Impermanence tmpfs Root (2026-08-21)
 
 * **Incident (2026-08-21):** User added `virtualisation.waydroid.enable = true` and reported "everything went to shit" (various services failing, unrelated breakage).
@@ -140,3 +126,11 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 * **Symptom:** User's `waydroid` CLI and system service (`waydroid-container`) running different builds of the same package (1.6.3). `which waydroid` resolved to `jp7gx2f…-waydroid-nftables` (HM profile), systemd service used `f33fs2i…-waydroid` (plain). Both produced identical behavior on this host (iptables rules route through nftables anyway, host not firewall-specific), but the split created divergence risk if variants ever differ in features or bugs.
 * **Root cause:** `home/pkgs.nix` included `waydroid-nftables` while `nixos/configuration.nix` enabled `virtualisation.waydroid` (plain package in system service). Home manager's `/etc/profiles/per-user/lowcache/bin` is searched before `/run/current-system/sw/bin` on PATH due to HM's `--profiles` ordering, causing the variant to shadow the system package. This is a *packaging mistake*, not a user-configuration problem — installing a package variant into a user profile when the system service has the base package is an anti-pattern that silently diverges CLI and service behavior.
 * **Prevention rule:** When a package has variant builds (`*-nftables`, `*-minimal`, `*-full`, etc.) and a NixOS service module provides that base package, do NOT install the variant into a user profile — it will shadow the system package on PATH and cause divergence. If the variant is actually needed, use the NixOS module's configuration option instead (e.g., `virtualisation.waydroid.package = pkgs.waydroid-nftables;`). Diagnostic: `readlink -f $(which X)` vs `readlink -f /run/current-system/sw/bin/X` — if they differ, you have shadowing. For closures: `nix-store -q --requisites` on both paths to detect feature divergence.
+
+### 2026-08-23 — E25DX Theme robots.txt Blocks Non-Google Crawlers by Default
+
+**Symptom:** wiki.infernalcode.com was fully invisible to Bing and DuckDuckGo (bingbot/DuckDuckBot); only Google, Yandex, Baidu, and Apple could crawl it.
+
+**Root cause:** `layouts/robots.txt` in the E25DX Hugo theme module hardcodes `Allow: /` only for Googlebot, YandexBot, baiduspider, and Applebot, then emits a `User-agent: *` group that lists a per-page `Disallow:` for every page (Hugo `range .Pages`) and terminates with a bare `Disallow: /`. Any crawler not in the named allowlist falls into `*` and is blocked from the entire site. This produces no build error — Hugo renders the template successfully; the defect is only visible by reading the generated `public/robots.txt` or testing against a non-Google user agent.
+
+**Prevention rule:** When adopting a Hugo theme module, always render and read the generated `robots.txt` (and any other content-negotiated output: sitemap.xml, humans.txt) rather than trusting that a themed default is crawler-neutral. Override via a local `layouts/robots.txt` in the site repo (Hugo's own layout takes precedence over the module's) rather than patching or forking the theme.

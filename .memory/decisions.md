@@ -1,7 +1,7 @@
 ---
 type: decisions
 project: Vol NixOS
-last_updated: 2026-08-21
+last_updated: 2026-08-24
 status: active
 ---
 
@@ -418,7 +418,7 @@ This file catalogs the active, canonical design decisions and system configurati
 * **Decision:** Migrate wiki from MkDocs to Hugo (0.164.0) + E25DX theme. Host in separate independent repo (`lowcache/volnixos-wiki`) rather than symlinked into `.nix-config`.
 * **Why:** Hugo + Module-based themes decouple docs toolchain from system config; E25DX provides modern Material-inspired design out-of-box. Separate repo allows independent versioning and cleaner build process.
 * **Build shape:** `build.sh` is single source of truth; used by both `make build` and Workers Builds CI. Pagefind post-build for search.
-* **Load-bearing gotchas (E25DX):** Four traps discovered during migration (see state.md §8); all cost real time but produce no build error. Documented to prevent future regressions.
+* **Load-bearing gotchas (E25DX):** Five traps discovered during migration (see state.md §8); all cost real time but produce no build error. Documented to prevent future regressions.
 * **Process note:** Conversion was scripted (27 pages, 47 admonitions→alerts, 3 tab blocks→shortcodes, .md links→pretty URLs); delegation would have been slower for deterministic text transformation.
 
 ---

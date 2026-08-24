@@ -1,7 +1,7 @@
 ---
 type: state
 project: Vol NixOS
-last_updated: 2026-08-21
+last_updated: 2026-08-24
 status: active
 ---
 
@@ -35,229 +35,103 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 
 **AI outputs:** `~/Pictures/fromAi/outputs` → `~/Storage/ai-generation/fooocus/outputs`.
 
-**Imperative nix-env profiles (2026-07-27):** `~/.local/state/nix/profiles` persisted to `persist.nix` (canonical store where `nix-env -iA nixos.<pkg>` writes `profile-N-link` + `channels` generation + manifest). This allows session-scoped binary installs to survive the tmpfs wipe. The compat symlink `~/.nix-profile → ~/.local/state/nix/profiles/profile` is recreated declaratively via `home.file` with `force = true` at each activation, ensuring `~/.nix-profile/bin` hits PATH immediately after boot without needing a prior nix command. Caveat: `nix-env -iA nixos.*` requires the `nixos` channel; since `channels` generation is persisted alongside profiles, it should carry over — confirm `nix-channel --list` post-boot if installs can't resolve the channel.
+**Imperative nix-env profiles (2026-07-27):** `~/.local/state/nix/profiles` persisted to `persist.nix` (canonical store where `nix-env -iA nixos.<pkg>` writes `profile-N-link` + `channels` generation + manifest). Compat symlink `~/.nix-profile → ~/.local/state/nix/profiles/profile` recreated declaratively via `home.file` with `force = true` at each activation. Caveat: `nix-env -iA nixos.*` requires the `nixos` channel; confirm `nix-channel --list` post-boot if installs can't resolve it. Rationale: decisions.md #30.
 
 **Cache enforcement (active 2026-06-17):** `xdg.cacheHome = "$HOME/Storage/.cache"`; `TMPDIR`, `PIP_CACHE_DIR`, `CLAUDE_CODE_TMPDIR` → `~/Storage/tmp`. `.cache/llmfit`, `.cache/noctalia` persisted.
 
-**Quarantined fonts (2026-06-21):** Corrupt font `NoracleNerdFont-Regular.otf` (truncated cmap/OS/2 tables, crashed Krita 6.0.1 text tool) moved to `~/Storage/tmp/quarantined-fonts/`. `fc-cache -f` rebuilt.
+**Quarantined fonts (2026-06-21):** Corrupt font `NoracleNerdFont-Regular.otf` moved to `~/Storage/tmp/quarantined-fonts/`. `fc-cache -f` rebuilt.
 
-**Flatpak data (persisted 2026-06-22):** `/var/lib/flatpak` and `~/.local/share/flatpak` persisted (`hardware-configuration.nix:91`, `persist.nix:110`); Flatpak installs survive boot. Flathub remote added; `org.kde.krita` 5.3.2.1 (uninstalled 2026-06-22) and `org.gimp.GIMP` 3.2.4 installed. Host fonts (`~/.local/share/fonts`, 2772 files) mounted read-only into Flatpak sandboxes; access via `filesystems=host`.
+**Flatpak data (persisted 2026-06-22):** `/var/lib/flatpak` and `~/.local/share/flatpak` persisted (`hardware-configuration.nix:91`, `persist.nix:110`). Flathub remote added; `org.gimp.GIMP` 3.2.4 installed. Host fonts (`~/.local/share/fonts`, 2772 files) mounted read-only into Flatpak sandboxes via `filesystems=host`.
 
 **Phone-agent ingest (2026-08-06):** Staged files from phone arrive at `~/ingest/staged/` (managed by phone-ingest-sync.timer). Delivered files moved to `~/ingest/delivered/` after hash verification.
 
-**Android tools (2026-08-21):** `~/Android` (Studio SDK, ~1.4 GB) and `~/.android` (config + AVD disk images) symlink to `~/Storage/`. System persistence: `/var/lib/waydroid` bind-mounted from `/persist/var/lib/waydroid` (images, ~2.4 GB). Both moved to avoid filling the 4 GB impermanence tmpfs root (see mistakes.md #13).
+**Android tools (2026-08-21):** `~/Android` (Studio SDK, ~1.4 GB) and `~/.android` symlink to `~/Storage/`. `/var/lib/waydroid` bind-mounted from `/persist/var/lib/waydroid` (~2.4 GB). Both moved to avoid filling the 4 GB impermanence tmpfs root (mistakes.md #13).
 
-**Waydroid userdata (2026-08-21):** `~/.local/share/waydroid` (Android `/data` partition for installed apps) bind-mounted from `/persist/.local/share/waydroid` to persist app installs and data across reboots.
+**Waydroid userdata (2026-08-21):** `~/.local/share/waydroid` bind-mounted from `/persist/.local/share/waydroid` to persist app installs/data across reboots.
 
 ---
 
 ## 3. MicroVM Guest Network (2026-08-06 — Confirmed Working)
 
 * **net-gate (Tor relay):** Host `vm-netgate` → `192.168.100.1`; guest → `192.168.100.2`. Tor `9040`/DNS `5353`/SOCKS `9050`.
-* **tailscale (Tailnet access):** Host `vm-tailscale` → `192.168.101.1`; guest → `192.168.101.2`. Service `microvm@tailscale` active (autostart enabled, status confirmed 2026-08-06 21:02:09). Guest runs `tailscaled` with auth-key from `/persist/var/lib/tailscale-vm/authkey`, reaches tailnet at guest IP `100.66.249.117`. Host accesses tailnet via static route `100.64.0.0/10 via 192.168.101.2 dev vm-tailscale` (host is **not** a tailnet node itself; routes through the VM). All routes active; guest reachable on tailnet IP (verified HTTP 200 on guest health endpoint 2026-08-06). **Start/restart:** `sudo systemctl start microvm@tailscale` (or stop/restart). Do not use `make run-tailscale` while unit is active (will fight over tap/socket).
+* **tailscale (Tailnet access):** Host `vm-tailscale` → `192.168.101.1`; guest → `192.168.101.2`. Service `microvm@tailscale` active (autostart enabled). Guest runs `tailscaled` with auth-key from `/persist/var/lib/tailscale-vm/authkey`, tailnet IP `100.66.249.117`. Host reaches tailnet via static route `100.64.0.0/10 via 192.168.101.2 dev vm-tailscale` (host itself is not a tailnet node). **Start/restart:** `sudo systemctl start microvm@tailscale`. Do not use `make run-tailscale` while unit is active (fights over tap/socket).
 * **VM tap interfaces** `unmanaged` in NetworkManager.
 
 ---
 
 ## 4. Active Workarounds
 
-* **`make switch-detached` PATH Fix (2026-07-28 — FIXED):** Transient systemd units inherit minimal DefaultEnvironment PATH (dosfstools/mtools/e2fsprogs/util-linux/systemd only; no `git`). When lix's flake fetcher tried to exec `git` for input fetch, it failed silently with "exit code 254" (spawn error). Fix: Makefile target now passes `--setenv=PATH=/run/current-system/sw/bin:/run/wrappers/bin` to `systemd-run`, providing git and system binaries to the unit. Verified end-to-end 2026-07-28.
+* **`make switch-detached` PATH Fix (2026-07-28 — FIXED):** Transient systemd units inherit minimal PATH (no `git`), breaking lix's flake fetcher. Fix: Makefile target passes `--setenv=PATH=/run/current-system/sw/bin:/run/wrappers/bin` to `systemd-run`. Verified 2026-07-28.
 
-* **Krita 6.0.1 G'MIC Plugin Null-Pointer Crash (2026-07-14 — VERIFIED WORKING):** G'MIC-Qt filter tree was segfaulting on first right-click or stylus long-press in the filter list. Root cause: `GmicQt::FiltersView::onCustomContextMenu` calls `QObject::deleteLater()` on context-menu pointers the constructor left as `nullptr` — any context-menu event triggered the crash. Bug present in vanyossi/gmic v3.7.4.1 (upstream still has it as of 2026-07-14). **Fix applied and verified 2026-07-14:** `overrides/gmic-qt-filtersview-nullptr-contextmenu.patch` (null guards around both `deleteLater()` calls); `home/pkgs.nix` defines `krita-plugin-gmic-patched` with the patch applied, and `krita-wrapped` overrides `pkgs.krita` to bundle the patched gmic (override inside wrapper to avoid buildEnv conflicts). Build completed successfully; user tested right-click context menu — opens without crash. Patch verified working.
+* **Krita G'MIC Plugin Crash — FIXED & VERIFIED (2026-07-14):** Patched via `overrides/gmic-qt-filtersview-nullptr-contextmenu.patch`; applied through `krita-plugin-gmic-patched` in `home/pkgs.nix`, bundled into `krita-wrapped`. Full root-cause narrative: decisions.md #21.
 
-* **Ollama Pinned to 0.31.1 (2026-07-28):** `nixos/overlays/ollama.nix` pins `ollama-cuda` to pre-update nixpkgs rev `d407951` (evaluates to exact `/nix/store/yglxp77…-ollama-0.31.1` currently running) via `builtins.fetchTarball`. Upstream 0.32.3 fails to build on current nixpkgs: setup-cuda-hook exports `CUDAToolkit_ROOT` as semicolon-joined lib list (cudart/cublas/cccl), omitting nvcc; 0.32.3's new llama.cpp configure step trusts that env var, finds no nvcc, aborts with "CUDA Toolkit not found" at ggml-cuda/CMakeLists.txt:268 (~40 min into compile). Overlay avoids 40-minute rebuilds with zero behavior change. Revert condition: retry 0.32.x+ on next flake update.
+* **Ollama Pinned to 0.31.1 (2026-07-28):** `nixos/overlays/ollama.nix` pins `ollama-cuda` to pre-update nixpkgs rev `d407951`. Upstream 0.32.3 fails to build (CUDA Toolkit not found via setup-cuda-hook). Revert condition: retry 0.32.x+ on next flake update.
 
-* **Flake-Update Regression: pandas-stubs & niri (2026-07-28 — OVERLAYS IN PLACE):** `nix flake update` exposed two independent build failures. (1) `python3.14-pandas-stubs` 3.0.3 fails check phase: pytest >= 9.1.1 promotes `PytestRemovedIn10Warning` to hard error at collection; package sets `filterwarnings=error` in pyproject.toml, so all 8 collection errors abort the build. Transitive dep of `markitdown`/`pdfplumber` in HM path. Fix: `nixos/overlays/pandas-stubs.nix` downgrades warning via `PYTEST_ADDOPTS="-W ignore::pytest.PytestRemovedIn10Warning"` override; suite now passes (3151 passed, 5 skipped). (2) `niri 26.04` fails to build: vendor crate `libdisplay-info-sys 0.3.0` caps C library at `< 0.4.0`; this nixpkgs commit bumped `libdisplay-info` to 0.4.0, causing CMake to reject it ("Requested 'libdisplay-info < 0.4.0' but version of libdisplay-info is 0.4.0"). Fix: `nixos/overlays/niri.nix` pins `libdisplay-info 0.3.0` for niri (cache hit from cache.nixos.org, no rebuild). Both overlays verified working 2026-07-28. Revert conditions in overlay headers for each future flake update.
+* **Flake-Update Overlays Active (2026-07-28):** `nixos/overlays/pandas-stubs.nix` (pytest 9.1.1 promotes a warning to a hard error under `filterwarnings=error`; overlay sets `PYTEST_ADDOPTS="-W ignore::pytest.PytestRemovedIn10Warning"`) and `nixos/overlays/niri.nix` (pins `libdisplay-info` to 0.3.0; niri 26.04's vendored `libdisplay-info-sys` caps at `<0.4.0`, nixpkgs bumped past it). Both cache-hit, no rebuild cost. Revert conditions documented in each overlay header; full incident detail archived (see archive_entries).
 
-* **Krita 6.0.1 (2026-06-22):** Font Gallery pykrita plugin uses Qt rasterization (SVG text crashed err=84). With user-text input, multi-line rendering validated standalone; layer insertion proven. Pending: restart Nix Krita, type text, double-click font, verify no crash and raster layer appears.
+* **XWayland Satellite (2026-06-23):** `xwayland-satellite :0` running for Flatpak Qt5 apps and xcb-only AppImages (e.g. FireAlpaca). Manual-start only — permanent `spawn-at-startup` wiring still open (todo.md).
 
-* **Krita dual installation (2026-06-22):** Nix Krita only; Flatpak uninstalled (crashed SIGABRT on launch, created confusion).
+* **Portal AccessDenied — FIXED (2026-06-17):** `services.dbus.implementation = lib.mkForce "dbus";` (xdg-portal 1.20.4 pidfd bug). Full root cause: mistakes.md #10.
 
-* **XWayland (2026-06-23):** `xwayland-satellite :0` running for **both** Flatpak Qt5 apps (xcb plugin) **and** xcb-only AppImages (e.g., FireAlpaca 2.16.0). Manual test successful 2026-06-23 (FireAlpaca launches cleanly with `DISPLAY=:0 QT_QPA_PLATFORM=xcb`). Requires permanent startup: `spawn-at-startup "xwayland-satellite" ":0"` in `dots/niri/config.kdl` (pending implementation).
-
-* **Portal AccessDenied (2026-06-10, fixed 2026-06-17):** `services.dbus.implementation = lib.mkForce "dbus"` (xdg-portal 1.20.4 pidfd bug, flatpak#1953). File pickers work.
-
-* **XDG FileChooser Portal Routing (2026-06-19):** Gnome backend advertises `FileChooser` but doesn't implement it. Fix: `xdg.configFile` routes `org.freedesktop.impl.portal.FileChooser=gtk` (durable). Runtime file removed before switch.
+* **XDG FileChooser Portal Routing (2026-06-19):** Gnome backend advertises `FileChooser` but doesn't implement it; `xdg.configFile` routes `org.freedesktop.impl.portal.FileChooser=gtk` (durable, declarative).
 
 * **Ollama VRAM/RTD3 (2026-06-17):** `OLLAMA_KEEP_ALIVE=5m`, `OLLAMA_KV_CACHE_TYPE=q8_0`, `OLLAMA_MAX_LOADED_MODELS=1`.
 
-* **Playwright MCP (2026-06-15):** `scripts/playwright-mcp-nix` pins nix chromium. Pending gateway restart (kill+revive).
+* **Playwright MCP (2026-06-15):** `scripts/playwright-mcp-nix` pins nix chromium.
 
-* **TMPDIR split (2026-06-17):** User → `~/Storage/tmp`; daemon → `/nix/tmp`; Makefile `REBUILD_TMPDIR := $(HOME)/Storage/tmp`.
+* **TMPDIR split (2026-06-17):** User → `~/Storage/tmp`; daemon → `/nix/tmp`; Makefile `REBUILD_TMPDIR := $(HOME)/Storage/tmp`. Rationale: decisions.md #13.
 
-* **Build fallback (2026-06-24):** Makefile `switch` carries `--option fallback true` to work around expired TLS cert on lantian cachy-kernel substituter. Substituter `https://attic.xuyh0120.win/lantian` serves `nix-cache-info` directly (valid cert), but 307-redirects NAR fetches to `us-central-1.telnyxstorage.com` with expired cert. Default behavior (fallback=false) halts build; fallback enables source compilation for affected packages instead. **Revert condition:** Once cert is renewed upstream, remove Makefile flag or migrate to permanent `nix.settings.fallback = true` in `nixos/configuration.nix` (superior home for resilience default). **Verification (2026-06-24):** Local clock, CA bundles (nss-cacert-3.123), and source hosts verified clean — pure upstream server-side issue. Optional: report cert expiry to github.com/xddxdd/nix-cachyos-kernel.
+* **Build fallback (2026-06-24):** Makefile `switch` carries `--option fallback true` — substituter `attic.xuyh0120.win/lantian` 307-redirects NAR fetches to a host with an expired TLS cert; fallback compiles from source instead of halting the build. Revert condition: once upstream cert is renewed, remove the flag (or migrate to permanent `nix.settings.fallback = true`).
 
 ---
 
 ## 5. Phone-Agent File Transfer (2026-08-06 — Confirmed Working, Pull-Only by Design)
 
-**Status:** Phone-agent subsystem supports **phone → laptop pull-only** file transfer via `phone-ingest-sync` subsystem. Confirmed working 2026-08-06.
+**Mechanics:** Phone stages a file (Termux hooks or manual placement) → `phone-ingest-sync.timer` (every 2 min) → `phone-agent phone.ingest.fetch` pulls it → lands in `~/ingest/staged/`, sha256-verified, moved to `~/ingest/delivered/`.
 
-**Mechanics:**
-* User stages file on phone (Android share sheet → Termux hooks spool via `termux-url-opener`/`termux-file-editor`, or manual placement in phone's ingest directory).
-* `phone-ingest-sync.timer` fires every 2 minutes, calls `phone-agent phone.ingest.fetch` to pull staged files.
-* Downloaded files land at `~/ingest/staged/`, verified against sha256, moved to `~/ingest/delivered/` after verification (automatic, prevents duplicates).
-* **Current state (2026-08-06, 2h38m after boot):** Timer active and working (last run ~45s ago, exit 0); `/home/lowcache/ingest/staged/` empty (no files staged on phone currently); phone reachable at 100.101.229.9 via Tailscale (HTTP 200 on health endpoint).
+**Manual triggers:** `systemctl --user start phone-ingest-sync.service` (immediate pull); `phone-agent phone.ingest.list '{"limit":50}'` / `phone-agent phone.ingest.fetch '{"name":"file.pdf","delete_after":true}'` (hand-invoke; caller must decode base64 + verify sha256 itself).
 
-**Available tools:** All 34 phone-agent tools implement phone → laptop only by design (phone never initiates; returning data in the response IS the delivery). Key ingest tools: `phone.ingest.list` (list staged files with name/size/sha256), `phone.ingest.fetch` (download file, returns content_b64), `phone.capture.share` (receive Android share sheet content via termux hooks), `phone.queue.deliver` (queue management).
-
-**Manual triggering:**
-* Immediate pull: `systemctl --user start phone-ingest-sync.service`
-* Hand-invoke: `phone-agent phone.ingest.list '{"limit":50}'` (list files); `phone-agent phone.ingest.fetch '{"name":"file.pdf","delete_after":true}'` (download with automatic cleanup). Caller must manually decode base64 and verify sha256 if invoking directly.
-
-**Limitation: Laptop → phone transfer NOT natively supported.** All 34 tools are pull-only. Workaround: Use `phone.system.termux_exec` or `phone.system.rish` to have the phone `curl` the file from the host. Requires (1) DNAT entry in `nixos/vms.nix:225` to forward inbound port to host, (2) systemd socket/http.server on host to serve the file. Not yet implemented.
-
-**Note on Taildrop:** Tailscale's native file transfer (`tailscale file cp`, `tailscale file get`) is also phone → laptop only and not exposed in the web UI. Web UI supports connect/disconnect/exit-node selection only, not file transfer.
+**Limitation:** All 34 phone-agent tools are phone→laptop only. Laptop→phone needs `phone.system.termux_exec`/`rish` to have the phone `curl` from the host — requires a DNAT entry (`nixos/vms.nix:225`) plus a host HTTP server. Not implemented. Tailscale Taildrop is likewise phone→laptop only; the web UI has no file-transfer surface.
 
 ---
 
-## 6. Nix-on-Droid — Aarch64 Android Target (2026-08-03 — GENERATION 5 ACTIVATED & VERIFIED LIVE)
+## 6. Nix-on-Droid — Aarch64 Android Target (Generation 5 Live, Verified 2026-08-03)
 
-**Architecture:** `nixOnDroidConfigurations.default` in the existing volnixos flake. One `flake.lock`, evaluated on volnix but built on the phone. Portable Home Manager layer (`home/common/`) shared with desktop.
+**Architecture:** `nixOnDroidConfigurations.default` in the volnixos flake (one `flake.lock`); portable `home/common/` HM layer shared with desktop. `nixpkgs-droid`/`home-manager-droid` pinned to `nixos-25.11` (glibc 2.40) — desktop stays on unstable (glibc 2.42). Full root-cause narrative for the glibc 2.42 TCGETS2 regression and the proot `_defaultUnpack` chmod bug: decisions.md #31, #32.
 
-**Two Root Causes Identified & Fixed (2026-08-02 — 2026-08-03):**
+**Live state (verified 2026-08-03):** rtk 0.44.0, mcp-gateway 3.3.2, opencode 1.1.14, claude 2.1.140, codex 0.92.0 — all glibc-2.40-224, zero glibc-2.42 in the runtime closure. `tty` returns `/dev/pts/0`; claude-code's full Ink/React TUI renders correctly on-device (the linchpin test). Phone is daily-usable.
 
-1. **glibc 2.42 TCGETS2 Regression (Solved via nixos-25.11 Pin):** glibc 2.42 reimplemented `isatty()`/`tcgetattr()` to issue the `TCGETS2` ioctl (termios2, for arbitrary baud rates). Android's SELinux allowlist for `untrusted_app` permits `TCGETS` but not `TCGETS2`, so every glibc-2.42 binary receives `EACCES` and reports "not a terminal". Interactive shells start in non-interactive mode with no prompt, appearing hung. **Fix:** Pin nix-on-droid's package set to `nixos-25.11` (glibc 2.40, pre-regression) via separate `inputs.nixpkgs-droid` and `inputs.home-manager-droid` (both following release-25.11). Commits `5270d12 + 871c6d9`. Desktop volnix remains on unstable (glibc 2.42) unaffected.
+**Nerd Font fix:** `droid/default.nix` sets `terminal.font` to JetBrainsMono Nerd Font, installed as `~/.termux/font.ttf` on activation.
 
-2. **proot `cp -pr` chmod Failure on Directory-Source Derivations (Solved via prootUnpack Override):** Every directory-source derivation (`fetchFromGitHub`, `fetchzip`, etc.) failed with `cp: setting permissions for 'source': No such file or directory` during unpack. Root cause: nixpkgs' `_defaultUnpack` uses `cp -pr --reflink=auto`; cp creates the destination directory then chmods it to preserve source mode. Under proot (ptrace-based sandbox), chmod returns `ENOENT` even though the directory exists — proot denies ownership/mode operations on directories it creates. **Fix:** `droid/backports.nix` provides `prootUnpack` override that pre-creates the destination, copies *contents* with `cp -r --no-preserve=mode,ownership $src/. $dest/`, then `chmod -R u+w $dest` to take the no-copy branch (required pairing). Verified: rtk 0.44.0, mcp-gateway 3.3.2, and termux-am all build natively on phone; both link glibc-2.40-224 (zero glibc-2.42 in runtime closure). Commit `d4f2968`.
+**Host-specific layers:** volnix keeps `home/shell.nix` + `home/pkgs.nix` (nixos-unstable). droid has `droid/home.nix` + `droid/agents.nix` + `droid/backports.nix` (rtk, mcp-gateway, `prootUnpack` override; nixos-25.11).
 
-**Generation 5 Status (2026-08-03, Verified Live & Cold-Start):**
+**Makefile targets:** `make droid-check` / `droid-plan` / `droid-switch`.
 
-```
-tty              /dev/pts/0
-rtk              0.44.0
-mcp-gateway      3.3.2
-opencode         1.1.14
-claude           2.1.140 (Claude Code)
-codex            0.92.0
-glibc (all)      2.40-224 only
-```
-
-Activation successful end-to-end. Phone boots to working fish shell; Home Manager activates fully. Shared `home/common/` layer (fish, aliases, git, micro, CLI tools) ported byte-identical to desktop. 820 packages installed; all agents operational. Terminal interactivity restored (`tty` returns `/dev/pts/0`). **Critical test verified (2026-08-03):** claude-code's full Ink/React TUI renders on phone terminal — splash art in color, live input line, selectable text, OAuth prompt accessible. This test was the linchpin (the exact program class TCGETS2 was strangling); it passes. **Phone is now daily-usable and a practical justification for nix-on-droid effort.**
-
-**Host-specific layers:**
-- **volnix** keeps `home/shell.nix` (niri/Noctalia integration, systemd units, sops-nix secrets), `home/pkgs.nix` (build toolchains node/go/pandoc, dev runners, ripgrep-all) — evaluates against nixos-unstable (glibc 2.42).
-- **droid** has `droid/home.nix` (nix-on-droid module configuration) + `droid/agents.nix` (claude-code/codex/opencode; 25.11-compatible, llm-agents set removed) + `droid/backports.nix` (rtk, mcp-gateway, prootUnpack override) — evaluates against nixos-25.11 (glibc 2.40).
-
-**Phone-agent MCP unchanged:** nix-on-droid is not Termux. It is a separate Android package (`com.termux.nix`) with its own sandbox — not an authorized caller of Termux:API. Phone-agent MCP server stays in Termux and is accessed over the network (Tailscale loopback or local network) exactly as before. nix-on-droid provides the declarative dev environment **alongside** Termux, not replacing it.
-
-**Nerd Font Fix (2026-08-03, Commit 030bea2):** nix-on-droid's built-in terminal font lacks Nerd Font glyphs. `droid/default.nix` sets `terminal.font = pkgs.nerd-fonts.jetbrains-mono + "/share/fonts/truetype/NerdFonts/JetBrainsMonoNerdFont-Regular.ttf"`, installing the file as `~/.termux/font.ttf` on activation.
-
-**Makefile targets:** `make droid-check` (evaluate HM layer), `make droid-plan` (dry-run closure size), `make droid-switch` (build and activate on phone via adb).
-
-**Still open (user decision pending):**
-- **android-integration:** `termux-am` now builds successfully (proot unpack fix applied). Two wiring options: (1) `disabledModules` upstream's `android-integration.nix`, ship patched copy with `prootUnpack`. Full feature set (termux-open-url, termux-wake-lock), but track upstream drift. (2) ~5-line `writeShellScriptBin "xdg-open"` calling termux-am. Gets OAuth's browser opening; skips wake-lock and setup-storage.
-- **gemini on phone:** `gemini-cli` 0.25.2 present in nixos-25.11. `antigravity-cli` absent. Does tether require antigravity specifically, or will it work with 0.25.2?
+**Still open:** android-integration wiring choice (disabledModules patched copy vs. minimal `xdg-open` shim); whether tether needs `antigravity-cli` or gemini-cli 0.25.2 suffices on droid. See todo.md.
 
 ---
 
-## 7. Niri Compositor + Noctalia v5 — PRIMARY DESKTOP (2026-06-17, Sole WM as of 2026-06-28)
+## 7. Niri Compositor + Noctalia v5 — PRIMARY DESKTOP
 
-**Status (2026-06-28):** niri + Noctalia v5 are the **only** desktop. Hyprland + ii/quickshell removed (see commit ee2efb4). niri is the default session launched by greetd/tuigreet.
+**Status:** niri + Noctalia v5 are the sole desktop (Hyprland + ii/quickshell fully removed, commit ee2efb4). niri is the default greetd/tuigreet session. 191 keybinds, `center-focused-column "on-overflow"`, `#B4FF00` focus-ring, starship `force=true`, compositor-aware Krita.
 
-**Phase 1 (2026-06-17):** Fully installed. Noctalia bar, wallpaper picker, 191 keybinds, touchpad toggle (F10), `center-focused-column "on-overflow"`, `#B4FF00` focus-ring, starship `force=true`, compositor-aware Krita. Rebuild verified; clean re-login confirmed.
+**Noctalia v5 plugin API (locked, verified against source rev 623210223c):** `[[panel]]` entry kind + full `ui.*` control exposure (input/scroll/select/slider/toggle) shipped upstream 2026-06-25; our fork branch is superseded/archived (decisions.md #23). IPC: `noctalia msg plugin <id> all <event> [payload]`; bar widget table is `barWidget.*`; theme commands are `color-scheme-set <source> <name>`; `runInTerminal(cmd)` takes one string via `/bin/sh -c`.
 
-**Upstream Work (2026-06-24, Verified 2026-06-25):** Upstream `noctalia-dev/noctalia` shipped major plugin work (commit `918add87c` + follow-ups): **`[[panel]]` entry kind restored**; **`ui.input`, `ui.scroll`, `ui.select`, `ui.slider`, `ui.toggle` exposed** to plugins; panels inherit `keyboardMode = OnDemand` (typeable text-input out-of-box). Flake.lock updated to `623210223c` (2026-06-25 UTC, 5.0.0 release). Fork branch `lowcache/noctalia:plugin-ui-input` (our exposure work) is **superseded** — archived, no PR needed. Issue #3137 closed.
+**Workspace navigation (2026-06-20):** `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+Shift+Left/Right` move focused column to adjacent workspaces.
 
-**Plugin Architecture — Verified & Locked (2026-06-25):** IPC verified against noctalia source: `noctalia msg plugin lowcache/claude:pulse all <event>` dispatches to `onIpc(event, payload)` in bar widget. No data-return limitation from plugins. Three-nerve foundation (perceive + act + pulse) has **zero C++ fork requirement**:
-- **Perceive:** MCP shim queries system directly (`niri msg`, `playerctl`, `/sys`); noctalia IPC used only for noctalia-internal state (secondary).
-- **Act:** `noctalia msg <target> <action>` request/response works as-is (action path proven).
-- **Pulse:** claude Stop-hook → `noctalia msg plugin lowcache/claude:pulse all <event>` → plugin animates via `onFrameTick`. Frame-tick animation confirmed working.
+**Quake terminal (2026-06-25, live):** `kitten quick-access-terminal` (wlr-layer-shell singleton) — niri only spawns the script, kitty owns window/geometry via remote control on `unix:/run/user/1001/kitty-quake`. Keybinds: `Mod+Return` toggle, `Mod+Shift+Return` position, `Mod+Alt+Return` height, `Mod+Ctrl+Return` aspect (`dots/niri/config.kdl:136-139`). Focus policy `on-demand` (not `exclusive`, which blocked compositor keybinds). Cold-start socket bug fixed (`sock()` helper now ends `|| true` under `set -euo pipefail`). Architecture rationale: decisions.md #16. Gotchas: kitty conf has no trailing `#` comments; orphaned `.kitty-wrapped` processes hold the abstract socket (kill by pid). Full narrative archived (see archive_entries).
 
-**Plugin Scaffold (2026-06-25, Rewritten):** Ground-truth API verified against noctalia source (rev 623210223c). Key fixes:
-- Bar widget table: `barWidget.*` (not `widget.*`)
-- IPC dispatch: `noctalia msg plugin lowcache/claude:pulse all <event> [payload]`
-- onIpc signature: two args `(event, payload)` (not one)
-- Theme commands: `color-scheme-set <source> <name>` (not `theme-set`)
-- Glyphs: Tabler icon names (robot, brain, message-dots, tool, bell-ringing, circle-check, alert-triangle verified)
-- `runInTerminal(cmd)` takes one string; all run via `/bin/sh -c <string>`
-- `noctalia.notify` works (luau-only, no generic notify IPC)
+**Bar — dual wrap-around L-frame (2026-06-22, live, NOT yet committed to git — user-deferred):** Top bar (full width) + left bar (full height) join at top-left corner via `reserve_space = true` on both, squared seam corners, rounded outer corners. Ayu Green palette (`#AAD94C` lime primary, `#E6B450` gold secondary) unified across bar/kitty/starship via `dots/color-engine/apply_theme.py`. Backup: `~/.local/state/noctalia/settings.toml.bak.20260622-112626`. Next: capture to `dots/noctalia/config.toml` and commit (deferred, see todo.md). Full technical-constraints narrative archived (see archive_entries).
 
-**Philosophy (2026-06-24, Locked):** Shell as Claude's **desktop senses + actuators**, not chat UI reimplementation. Design NEW v5 plugins inspired by v4 (not ports) that add native value. Comprehensive design doc at decisions.md #24-26.
+**Claude Code Companion Plugin (2026-06-26, V1 live):** `~/.local/share/noctalia/plugins/claude` → `~/CodeRepo/claude-companion/noctalia-claude-plugin/` (own repo, `github.com/lowcache/noctalia-claude-plugin`). Pulse widget (`bell-ringing` glyph, top bar center) driven by Claude session hooks (SessionStart/UserPromptSubmit/PreToolUse/PostToolUse/Notification/Stop, merged into `~/.claude/settings.json`). MCP shim registered at `~/.nix-config/.mcp.json` (stdio): `get_window`, `get_workspace`, `get_media`, `get_shell_state`, `notify`, `set_theme_mode`, `set_color_scheme`, `remember`. Launcher `/cc` runs one-shot `claude` invocations via `runInTerminal`. Design philosophy (shell as senses/actuators, not a chat-UI port): decisions.md #24. Full verification narrative archived (see archive_entries).
 
-### Workspace Navigation (2026-06-20)
-Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+Shift+Left/Right` move focused column to adjacent workspaces. Tested; helpful for organizing VM windows.
+**Plugin token optimization (2026-06-25):** 14 of 18 installed Claude Code plugins disabled to cut per-turn system-prompt overhead; 4 enabled (`nix-dev`, `devenv`, `feature-dev`, `impeccable`). Reversible via `claude plugin enable <name>@<marketplace>`.
 
-### Quake Terminal — FIXED, Cold-Start Socket Bug (2026-06-25)
-
-**Architecture:** niri only **spawns** shell script. kitty owns all window logic via wlr-layer-shell singleton + remote control.
-- `kitten quick-access-terminal` → singleton; `--single-instance --instance-group quick-access --toggle-visibility`.
-- Listen socket: `unix:/run/user/1001/kitty-quake` (kitty appends PID).
-- Toggle (preserves geometry): `kitten @ --to unix:<sock> resize-os-window --action=toggle-visibility`.
-- Live geometry: `kitten @ --to unix:<sock> resize-os-window --action=os-panel --incremental edge=<edge> lines=<N>`.
-
-**Files in place (2026-06-18):** `dots/kitty/quick-access-terminal.conf`, `dots/niri/scripts/quake.sh`.
-
-**Keybind wiring (CONFIRMED LIVE):** `Mod+Return` = toggle | `Mod+Shift+Return` = position | `Mod+Alt+Return` = height | `Mod+Ctrl+Return` = aspect. Wired in `dots/niri/config.kdl:136-139`.
-
-**Focus policy (2026-06-20):** Set to `on-demand` in `quick-access-terminal.conf` to allow niri keybinds to fire while panel open. Previously `exclusive` monopolized keyboard and blocked compositor keybinds.
-
-**Cold-start bug FIXED (2026-06-25):** `sock()` helper returned non-zero when no socket existed (terminal not yet running), triggering `set -e` abort under `set -euo pipefail` before the script could `launch`. The panel could only work if already running. On this tmpfs-root system, `/run` is wiped each boot → socket always gone at startup → first keypress always failed. Root cause: query that can legitimately return empty (glob, ls, grep) made fatal. Fix: `sock()` ends in `|| true`. Verified: cold launch, toggle, geometry changes all work with state persisting. No rebuild needed (script is live symlink).
-
-**Critical gotchas:** (1) Kitty conf does NOT support trailing `#` comments — own-line only. (2) Orphaned `.kitty-wrapped` processes hold abstract socket → kill by pid.
-
-### Noctalia v5 Bar — Dual Wrap-Around Layout (Top+Left L-Frame, 2026-06-22 — COMPLETE, LIVE)
-
-**Status (2026-06-22, live):** Dual wrap-around bar design **fully styled and live in runtime state** `~/.local/state/noctalia/settings.toml`, **now on Ayu Green custom palette**. Validated, hot-reloaded, user-approved ("awesome"). Replaces prior bottom-island 3-capsule layout. **NOT yet committed to git** (user-deferred; lower priority).
-
-**Design:** A **top horizontal bar** (full width, owns top edge + outer corners) + a **left vertical bar** (full height, owns left edge + outer corners) that **join at a right angle in the top-left corner**, reading as one continuous L-frame.
-
-**Layout (locked):**
-- `[bar.top]`: position=top, full width. Widgets: empty start · **clock centered** · `tray · network · volume · battery · control-center` at end. Outer corners rounded (16); seam corner squared (radius_bottom_left=0) to fuse with left bar.
-- `[bar.side]`: position=left, full height. Widgets: `launcher · workspaces` at start · `cpu · gpu_usage · ram · gpu_temp · cputemp` at end. Outer corners rounded (16); seam corner squared (radius_bottom_right=0) to meet top bar flush.
-- Both bars: `reserve_space = true`, forcing exclusive layout zones (left bar's zone pushes top bar's left edge to its right; bars join without gap). Both `layer="top"`.
-
-**Styling (2026-06-22, COMPLETE):**
-- **Colors:** Muted green text + gold icons via **Ayu Green palette** (primary `#AAD94C` lime, secondary `#E6B450` gold via theme roles `color="primary"` + `icon_color="secondary"`). Unified across bar/kitty/starship. Theme-coherent, not garish.
-- **Presence strategy:** Shadow + no border. Border at seam breaks continuity; shadow alone defines the bar on dark wallpaper (acceptable tradeoff for seamless L-join).
-- **Widget configuration solution (VERIFIED):** Widget config is global per **type** (`[widget.temp]` affects all `temp` instances), BUT Noctalia supports **per-instance overrides** via named instances + `type=` key. Applied: left bar now has both `temp` (GPU) and `cputemp` (CPU temperature) via `[widget.cputemp] type="sysmon" stat="cpu_temp"`. Valid `sysmon` stats (probed): `cpu_usage`, `cpu_temp`, `gpu_usage`, `gpu_temp` only (NOT ram/disk/network).
-- **Technical constraints discovered (for future ref):** (1) No per-bar background-color key; bar surface bound to theme's `surface` role. (2) Can't recolor theme roles from settings.toml on builtin themes — requires custom palette. (3) `reserve_space` is the operative key for multi-bar layout. (4) Daemon reserializes settings.toml on GUI edits; hand-edits + `noctalia msg config-reload` work, but GUI can clobber.
-- **Theme Sync Note:** Noctalia includes `kitty` and `starship` in its template management, so it auto-generates theme-specific config blocks (`~/.config/kitty/current-theme.conf`, starship colors) when switching themes. The color-engine also writes to these targets; Noctalia's template blocks take precedence (included after). This auto-sync keeps bar/kitty/starship aligned without manual edit.
-
-**Backups:** `~/.local/state/noctalia/settings.toml.bak.20260622-112626` (final dual wrap-around + muted accents). Reversible via `cp` + `noctalia msg config-reload`.
-
-**Design rationale:** Matches the exo (Material 3 shell) wrap-around bar aesthetic — a continuous visual frame (L-shaped bar wrapping the screen corner). Noctalia natively supports multiple bars on different edges + per-corner radius, so the look is achievable without a separate widget framework.
-
-**Next:** Capture runtime state to `dots/noctalia/config.toml`, commit to git (user-deferred).
-
-### Claude Code Companion Plugin (2026-06-25 — V1 Live, 2026-06-26 Icon & Roadmap Update)
-
-**Status (2026-06-26):** V1 live and verified. Pulse widget animating in top bar. MCP shim and launcher hardened against crash vectors via independent review (tether/Gemini). **Perceive + Act + Pulse all verified end-to-end; MCP robustness validated.**
-
-**Live state:**
-- **Plugin path:** Symlink `~/.local/share/noctalia/plugins/claude` → `~/CodeRepo/claude-companion/noctalia-claude-plugin/` (GitHub: `github.com/lowcache/noctalia-claude-plugin`).
-- **Repository:** Plugin is now its own git repo with independent history and MCP shim. Pushed to GitHub 2026-06-26.
-- **Pulse widget:** `bell-ringing` glyph in **top bar `center`**. States: `idle` (robot), `turn_start` (brain), `tool_start` (wrench), `needs_attention` (bell-ringing, red), `turn_end` (bell-ringing, primary). All animated via `onFrameTick`. **Icon update (2026-06-26):** `turn_end` changed from checkmark to bell (persists until next prompt, signals "awaiting your next message").
-- **Session hooks (wired 2026-06-25):** Merged into `~/.claude/settings.json`; pulse driven by SessionStart→idle, UserPromptSubmit→turn_start, PreToolUse(*)→tool_start, PostToolUse→turn_start, Notification→needs_attention, Stop→turn_end. All commands resilient to noctalia being offline.
-- **MCP shim:** Registered at project scope in `~/.nix-config/.mcp.json` (stdio, python3 shim/noctalia-mcp.py). **Handshake verified and approved 2026-06-25**. Tools: `get_window`, `get_workspace`, `get_media`, `get_shell_state`, `notify`, `set_theme_mode`, `set_color_scheme`, **`remember`** (2026-06-26, writes to global inbox). **Live test (2026-06-25 + 2026-06-26):** `get_window` returned focused kitty task, `get_workspace` returned eDP-1 1920×1200, `get_shell_state` returned JSON, `notify` fired desktop toast, `remember` wrote durable notes to `~/.memory/inbox/`.
-- **Launcher `/cc`:** One-shot `claude` invocations via `runInTerminal` (real TUI with full fidelity, not chat emulation).
-- **Reversibility:** Settings backup at `~/.local/state/noctalia/settings.toml.bak.20260625-092856.preplugin`.
-
-**Verified perceive/act/pulse chain (2026-06-25):**
-- **Perceive:** `get_window` + `get_workspace` + `get_shell_state` returned live environment data mid-session.
-- **Act:** `notify` fired a desktop toast successfully ("MCP shim live — perceive + act confirmed").
-- **Pulse:** SessionStart + UserPromptSubmit hooks both returned `ok: dispatched 2`, confirming session-state tracking active.
-
-**Plugin Memory (2026-06-26):** `~/CodeRepo/noctalia-claude-plugin/.memory/` scaffolded and registered via `memd init`. Contains clean state/decisions/mistakes/todo/inbox. Memd auto-discovers new projects; index lists it with live status.
-
-**2026-06-26 Review & Hardening:** Independent (tether/Gemini, flash-high, 52s) review of MCP shim and launcher code found 6 issues; fixes applied and verified.
-
-### Claude Code Plugins — Token Optimization (2026-06-25)
-
-**Cleanup (2026-06-25):** Disabled 14 of 18 installed plugins to reduce per-turn token overhead (unused skills were injected into system prompt every message, competing for context). Disabled groups: crypto/Web3 (6), redundant Nix (5), frontend design (2), rust-skills (1). Remaining enabled (4): `nix-dev`, `devenv`, `feature-dev`, `impeccable`.
-
-**Impact:** Savings visible on next session (hooks/settings take effect at session start). Fully reversible: `claude plugin enable <name>@<marketplace>` restores any disabled plugin. Also removed `rtk hook claude` from `PreToolUse` hooks in settings.json (simplification).
-
-### Noctalia Scratchpad Plugin (2026-06-24 — Active)
-
-- **Status:** Desktop widget + launcher provider for note-taking. Live-installed at `~/.local/share/noctalia/plugins/scratchpad/`.
-- **Capabilities:** Add notes, delete, clear all, desktop widget with input field.
-- **Architecture:** Shares state via `noctalia.state` + `notes.json`; launcher provider and desktop widget synchronized.
-- **UI controls:** `ui.input`, `ui.scroll` — both newly exposed to plugins (Layer 1 complete 2026-06-24).
+**Scratchpad plugin (2026-06-24, active):** Note-taking widget + launcher provider at `~/.local/share/noctalia/plugins/scratchpad/`, shares state via `noctalia.state` + `notes.json`.
 
 ---
 
-## 8. Documentation Platform — Hugo + E25DX (2026-08-15, Live)
+## 8. Documentation Platform — Hugo + E25DX (2026-08-15, Live; SEO fix 2026-08-23)
 
 * **Status:** Wiki migrated from MkDocs to Hugo (0.164.0) + E25DX theme (Hugo Module).
 * **Repository:** Independent repo at `~/CodeRepo/blogs/wiki` (main pushed), published as `lowcache/volnixos-wiki`. No longer symlinked into `.nix-config`.
@@ -269,60 +143,22 @@ Added move-column-to-workspace keybinds: `Mod+Shift+Page_Up/Down` and `Ctrl+Mod+
   3. Sidebar navigation driven by presence flag `data/en/<section>/sidebar.yaml` (contents ignored; removal omits sidebar).
   4. Mermaid requires custom renderer at `layouts/_markup/render-codeblock-mermaid.html` (theme ships no third-party JS).
   5. Goldmark does not render markdown inside `<div markdown>` — rewrite as HTML.
-* **Stylesheet:** Material legacy preserved at `assets/css/mkdocs-legacy-extra.css` (input to visual pass; does not apply as-is).
-* **Outstanding:** Workers Builds CI wiring, home page data-driven conversion, visual overhaul (palette port + centring).
+  6. **`layouts/robots.txt` blocks non-Google crawlers by default (found 2026-08-23).** Theme template emits `Allow: /` for Googlebot/YandexBot/baiduspider/Applebot only, then a `User-agent: *` group with a per-page `Disallow:` for every page plus a trailing `Disallow: /`. bingbot and DuckDuckBot fell into the `*` group and were fully blocked. Fixed via a local `layouts/robots.txt` override (flat `Allow: /` for `*`, explicit `Sitemap:` line); committed, deployed, verified live (`Disallow` count for the `*` group: 31 → 0). Source: `$GOMODCACHE/github.com/dumindu/E25DX@.../layouts/robots.txt`. Mistake logged: see mistakes.md.
+* **GSC deindexing incident (2026-08-16/17 → monitoring through ~2026-08-30):** `infernalcode.com` (Domain property, covers `wiki.infernalcode.com`) showed a spike from ~5 to 40 pages in "Crawled – currently not indexed" beginning ~2026-08-17, within 48h of the MkDocs→Hugo port. Google's own URL Inspection reported crawl allowed, fetch successful, indexing allowed, canonical clean — no technical fault found; content grew ~39% in the port and exactly one URL moved. [UNVERIFIED] causal mechanism — correlation with the port is the only evidence. Wiki sitemap had **never been submitted** in GSC — submitted 2026-08-23, 30/30 discovered same day. Blog sitemap (stale since 2026-08-02 at 39 URLs) refreshed to 50. GSC account note: the property lives under `lowcache.dev@gmail.com` (GSC user `/u/5/`), not the Chrome default-active `drawpdeadredd@gmail.com` — check the active account first if GSC appears empty.
+* **Outstanding:** Workers Builds CI wiring, home page data-driven conversion, visual overhaul (palette port + centring), GSC Page Indexing recovery check (~2026-08-30, see todo.md).
 
 ---
 
-## 9. Application Status (2026-07-14, Updated 2026-08-21)
+## 9. Application Status
 
-### Krita 6.0.1 native + Font Gallery pykrita Plugin (2026-06-22 — User-Text Input, Implementation Validated)
+**Krita 6.0.1 + Font Gallery pykrita plugin:** Only the Nix build is in use (`pkgs.krita`, patched G'MIC bundled — see §4). Flatpak uninstalled 2026-06-22 (SIGABRT on launch). Font Gallery (`~/Storage/krita-master/krita/pykrita/font_gallery/`) rasterizes text via Qt `QPainter.drawText` (bypasses Krita's broken SVG text engine, err=84). Supports user-typed multi-line text + size spinbox (8–600pt). Output is a **raster image**, not editable vector text — retype and double-click for a fresh layer. Full root-cause/decision narrative: decisions.md #21. Outstanding: end-to-end UI test (todo.md).
 
-- **Status:** Font Gallery pykrita plugin at `~/Storage/krita-master/krita/pykrita/font_gallery/` uses **Qt rasterization** (SVG text-shape insertion crashed Krita 6.0.1 err=84; Qt path bypasses this entirely). **Enhanced (2026-06-22):** Plugin now supports **user-typed text input** (QLineEdit + size spinbox, 8–600 pt, default 96). Implementation syntax-validated; multi-line rendering validated standalone (819×346 ARGB32, 37328 opaque pixels); layer insertion proven working via prior sample-text test on canvas.
-- **Files:** `font_gallery.desktop` + `font_gallery/{__init__.py,font_gallery.py}`. Targets PyQt6 (Krita 6 is Qt6); uses scoped `DockWidgetFactoryBase.DockPosition.DockRight` enum.
-- **Krita Installation (2026-06-22):** **Nix** `/nix/store/...-krita-unwrapped-6.0.1` — loads cleanly, Font Gallery plugin active. **Flatpak** — uninstalled (was crashing SIGABRT on launch; removed to avoid PATH conflicts). Plugin only available in Nix build.
-- **Limitation (honest):** Output is a **raster image**, not editable vector text. To change wording, retype and double-click again for a fresh layer.
+**GIMP:** `org.gimp.GIMP` 3.2.4 (Flatpak) installed as raster-text fallback.
 
-### GIMP (fallback)
+**Color Scheme — Ayu Green:** Live and synced across Noctalia bar, kitty, starship. Theme file `dots/color-engine/themes/ayu_green.json` (35 tokens, 77 roles). Palette: lime `#AAD94C`, gold `#E6B450`, cyan `#39BAE6`, navy base `#1F2430`.
 
-- **Status:** `org.gimp.GIMP` 3.2.4 (Flatpak, stable) installed as fallback for text-on-raster work.
+**Cargo-installed tools:** `lonkero` 3.5.0 (2026-07-31) via `cargo install`, linked against `/run/current-system/sw/share/nix-ld/lib` (openssl) per `programs.nix-ld.libraries`; required clearing a stale fish universal var `OPENSSL_DIR` (mistakes.md #12).
 
-### Color Scheme — Ayu Green Unified (2026-06-22)
+**J-Space skill (2026-08-19, trial active):** Claude Code skill for workspace reasoning; locally patched for CLAUDE.md precedence + configurable `LEDGER_DIR`. Backups: `SKILL.md.bak.pre-houserules`, `scripts/jspace.py.bak.pre-houserules` in `~/.claude/skills/j-space/`. Discontinue if problems arise (user: trial run).
 
-- **Status:** Live and synced across Noctalia bar, kitty terminal, starship prompt.
-- **Theme file:** `dots/color-engine/themes/ayu_green.json` — validated (35 tokens, 77 roles). Palette: lime `#AAD94C`, gold `#E6B450`, cyan `#39BAE6`, navy base `#1F2430`.
-
-### Cargo-Installed Tools (2026-07-31)
-
-- **lonkero 3.5.0 (2026-07-31):** CLI tool. Installed via `RUSTFLAGS="-C link-arg=-Wl,-rpath,/run/current-system/sw/share/nix-ld/lib" nix-shell -p pkg-config openssl --run 'cargo install lonkero'`. Uses persistent RPATH to `/run/current-system/sw/share/nix-ld/lib` for openssl linkage (supported by `programs.nix-ld.libraries` containing `openssl.out` at `nixos/configuration.nix:288`). Required clearing stale fish universal variable `OPENSSL_DIR` that had been set to `openssl-3.6.3-dev` (see mistakes.md #12). Runtime linking verified: `libssl.so.3 => /run/current-system/sw/share/nix-ld/lib/libssl.so.3`, `libcrypto.so.3 => /run/current-system/sw/share/nix-ld/lib/libcrypto.so.3`. Binary executes cleanly (`lonkero --version` confirms).
-
-### J-Space Skill — Trial Active (2026-08-19)
-
-Installed as a Claude Code skill for workspace reasoning on long-horizon tasks. Audited for conflicts with CLAUDE.md instructions; applied local edits: (1) house-rules block stating global instructions take precedence, (2) brevity clause rewritten to record pass internally rather than announce externally, (3) LEDGER_DIR made environment-configurable (defaults `.model/.jspace/` when `.model/` exists). Verified via verify_suite.py; controller smoke tests pass. User approval: trial run; discontinue if problems arise. Backups at `SKILL.md.bak.pre-houserules` and `scripts/jspace.py.bak.pre-houserules` in ~/.claude/skills/j-space/.
-
-### Waydroid — Android Container Runtime (2026-08-21, Fully Initialized & Operational)
-
-* **Status:** Fully operational with GAPPS images (Google Play Services enabled).
-* **Kernel support:** cachyos 7.1.5 includes `CONFIG_ANDROID_BINDER_IPC=y`, `CONFIG_ANDROID_BINDERFS=y`, binder registered in `/proc/filesystems`. No kernel work needed.
-* **Persistence (2026-08-21, Fully Active):**
-  * `/var/lib/waydroid` bind-mounted from `/persist/var/lib/waydroid` (system images, configuration). Data persists across reboots.
-  * `~/.local/share/waydroid` (Android `/data` partition for installed apps) bind-mounted from `/persist/.local/share/waydroid` (home-manager impermanence). All app installs and data survive reboots.
-  * `~/.Android` and `~/.android` (SDK and emulator config) symlink to `~/Storage/` (persistent NVMe storage).
-  * tmpfs root stable at **3%** (99 M / 4.0 G) — down from 100% before persistence setup.
-* **Images & Initialization (2026-08-21):**
-  * **Variant:** GAPPS (includes Google Play Services, Play Store, Google apps). Re-initialized via `sudo waydroid init -f -s GAPPS` after persistence binds were activated.
-  * **System image:** 2462.4 M (GAPPS LineageOS payload).
-  * **Vendor image:** 535.5 M (MAINLINE, Waydroid standard vendor).
-  * **LXC rootfs:** Unpacked; `/var/lib/waydroid/lxc/waydroid/` directory present.
-* **Session & Networking (2026-08-21):**
-  * **Session:** RUNNING (user `lowcache`, container running).
-  * **Container:** RUNNING (graphics composer `/vendor/bin/hw/android.hardware.graphics.composer@2.1-service` active).
-  * **Networking:** DHCP lease obtained (IP `192.168.240.112`). Egress verified; dnsmasq bound, DNS accessible from inside Android.
-  * **Display:** Wayland-native (`wayland-1`); `waydroid show-full-ui` maps window.
-* **Play Store & Certification (2026-08-21):**
-  * GAPPS images include Play Store and Google Play Services, but are not Protect-certified (uncertified device build).
-  * **Device registration:** Android ID retrieved via `sudo waydroid shell -- sh -c "sqlite3 /data/data/*/*/gservices.db 'select value from main where name = \"android_id\";'"` and registered at `https://www.google.com/android/uncertified`. Certification propagation in progress (user awaiting Play Store sign-in test).
-  * Expected behavior post-propagation: Play Store sign-in succeeds; apps installable from Play Store.
-* **Architectural notes:**
-  * Plain `waydroid` package (nixos system service) is sufficient — `waydroid-nftables` variant was redundant (removed from `home/pkgs.nix` 2026-08-21; see mistakes.md). This host's `iptables` is `xtables-nft-multi`, so plain package's rules route through nftables anyway.
-  * No libhoudini/ARM translation layer installed yet (would enable ARM-only apps on x86_64 images). `waydroid-helper` (nixpkgs 0.2.9) + Magisk available if needed later.
+**Waydroid — Android container (2026-08-21, fully operational, GAPPS):** Session + container RUNNING, DHCP lease obtained, GAPPS images (system 2462.4M, vendor 535.5M). Persistence: `/var/lib/waydroid` and `~/.local/share/waydroid` both bind-mounted from `/persist`; `~/.Android`/`~/.android` symlinked to `~/Storage/`. tmpfs root stable at 3% (down from 100% before persistence — mistakes.md #13). Device registered for Play Store certification at google.com/android/uncertified; propagation in progress. Plain `waydroid` package in use, not `waydroid-nftables` (removed 2026-08-21 — was shadowing the system package on PATH, mistakes.md 2026-08-21 entry). **Structural ceiling:** hardware-backed (STRONG-tier) attestation apps (payment, banking, anti-cheat) cannot run under Waydroid — no TEE in a Linux container; not fixable (decisions.md #34). Full setup narrative archived (see archive_entries).
