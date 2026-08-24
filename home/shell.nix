@@ -49,7 +49,7 @@
         # New key template:
         # test -r /run/secrets/{api_key_name}
         # and set -gx {API_KEY_NAME} (cat /run/secrets/{api_key_name})
-        
+
         # Gemini API key — decrypted at runtime by sops-nix to /run/secrets/gemini_api_key
         test -r /run/secrets/gemini_api_key
         and set -gx GEMINI_API_KEY (cat /run/secrets/gemini_api_key)

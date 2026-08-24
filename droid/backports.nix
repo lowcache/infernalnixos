@@ -120,7 +120,7 @@ in
   );
   termux-tools = prootUnpack (
     final.callPackage "${nix-on-droid-src}/pkgs/android-integration/termux-tools.nix" {
-      termux-am = final.termux-am;
+      inherit (final) termux-am;
     }
   );
 }

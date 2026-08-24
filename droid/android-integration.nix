@@ -7,7 +7,12 @@
 # the overlay overrides take effect.
 #
 # Upstream is disabled via disabledModules in droid/default.nix.
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   cfg = config.android-integration;
