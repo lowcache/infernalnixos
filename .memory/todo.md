@@ -29,14 +29,11 @@ status: active
 ✓ Device registered for Play Store certification (Android ID retrieved and registered at google.com/android/uncertified)
 ✓ Certification propagation in progress; awaiting Play Store sign-in verification
 
-### Krita 6.0.2.1 Font Gallery Plugin — SVG Text Engine Verified (2026-08-24)
+### Krita SVG Text Engine — Verified Fixed on 6.0.2.1 (2026-08-24)
 
-✓ Isolated harness testing (Xvfb + Qt6, real 3966-font set) confirmed SVG text insertion works without crashes on 6.0.2.1
-✓ Five font families tested (default, DejaVu Sans, Liberation Sans, JetBrainsMono Nerd Font, Noto Color Emoji) — all rendered correctly
-✓ Zero "Failed to render glyph" errors across full 3966-font set
-✓ Resulting KoSvgTextShapeID is genuinely editable vector text (not raster)
-✓ Upstream fix: Krita 6.0.2 (27 May 2026) shipped text crash prevention; err=84 was 6.0.1-specific
-✓ Control test confirmed `Shape.remove()` generic bug in Python API (crashes on plain rect too)
+✓ Verified (2026-08-24): SVG text engine works on Krita 6.0.2.1; FreeType glyph crash from 6.0.1 is fixed
+✓ 5 font families tested; zero render errors, no crashes, empirical evidence captured
+✓ Rasterize-to-paint-layer workaround now obsolete
 
 ---
 
@@ -71,6 +68,14 @@ status: active
 ---
 
 ## BACKLOG / DEFERRED
+
+### Krita Font Gallery Plugin — Refactor to Native SVG Shapes (Deferred Polish)
+
+**Status:** Verified (2026-08-24): SVG text engine works on Krita 6.0.2.1; rasterize workaround no longer needed. Current path still functional but no longer necessary.
+
+- [ ] Refactor `_insert_sample` to use native SVG shapes (`doc.createVectorLayer() + addShapesFromSvg()`)
+- [ ] Test: type text, double-click font, verify editable vector layer appears
+- [ ] Nice-to-have; current rasterize path is still functional but no longer necessary
 
 ### Wiki — Hugo Activation Complete, SEO Fixes Live, CI & Polish Pending (2026-08-15, updated 2026-08-23)
 
