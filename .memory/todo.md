@@ -29,6 +29,15 @@ status: active
 ✓ Device registered for Play Store certification (Android ID retrieved and registered at google.com/android/uncertified)
 ✓ Certification propagation in progress; awaiting Play Store sign-in verification
 
+### Krita 6.0.2.1 Font Gallery Plugin — SVG Text Engine Verified (2026-08-24)
+
+✓ Isolated harness testing (Xvfb + Qt6, real 3966-font set) confirmed SVG text insertion works without crashes on 6.0.2.1
+✓ Five font families tested (default, DejaVu Sans, Liberation Sans, JetBrainsMono Nerd Font, Noto Color Emoji) — all rendered correctly
+✓ Zero "Failed to render glyph" errors across full 3966-font set
+✓ Resulting KoSvgTextShapeID is genuinely editable vector text (not raster)
+✓ Upstream fix: Krita 6.0.2 (27 May 2026) shipped text crash prevention; err=84 was 6.0.1-specific
+✓ Control test confirmed `Shape.remove()` generic bug in Python API (crashes on plain rect too)
+
 ---
 
 ## IN PROGRESS / AWAITING USER DECISION
@@ -93,12 +102,6 @@ status: active
 
 - [ ] Add `spawn-at-startup "xwayland-satellite" ":0"` to `dots/niri/config.kdl`
 - [ ] Test: launch FireAlpaca without manual `:0` start
-
-### Krita 6.0.1 Font Gallery Plugin — End-to-End Test (2026-06-22)
-
-- [ ] Restart Nix Krita cleanly
-- [ ] Type text in Font Gallery docker input box
-- [ ] Double-click font; verify no crash and raster layer appears
 
 ### SessionEnd Hook — Work-Routing (2026-06-18)
 
