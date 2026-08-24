@@ -31,7 +31,7 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 
 **Persisted home directories (not repo-tracked):** `~/.codex`, `~/.gemini` (Gemini/Antigravity agent state; moved from `dots/gemini` to persisted real directory via home-manager impermanence 2026-07-24).
 
-**Krita:** Native `~/.config/kritarc`, `~/.config/kritadisplayrc`, `~/.local/share/krita` → `~/Storage/krita-master/`. Pykrita plugins live at `~/Storage/krita-master/krita/pykrita/`.
+**Krita:** Native `~/.config/kritarc`, `~/.config/kritadisplayrc`, `~/.local/share/krita` → `~/Storage/krita-master/`. Pykrita plugins live at `~/Storage/krita-master/krita/pykrita/`. Swap location: `~/Storage/tmp/krita-swap` (persistent NVMe backing, prevents SIGBUS crashes on impermanence tmpfs, 2026-08-24).
 
 **AI outputs:** `~/Pictures/fromAi/outputs` → `~/Storage/ai-generation/fooocus/outputs`.
 
@@ -48,6 +48,10 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 **Android tools (2026-08-21):** `~/Android` (Studio SDK, ~1.4 GB) and `~/.android` symlink to `~/Storage/`. `/var/lib/waydroid` bind-mounted from `/persist/var/lib/waydroid` (~2.4 GB). Both moved to avoid filling the 4 GB impermanence tmpfs root (mistakes.md #13).
 
 **Waydroid userdata (2026-08-21):** `~/.local/share/waydroid` bind-mounted from `/persist/.local/share/waydroid` to persist app installs/data across reboots.
+
+**Spotify config (2026-08-24):** `~/.config/spotify` persistence activated via impermanence bind-mount (bounded 32 KB config, lives in `/persist`). Seed from prior session verified.
+
+**Thunderbird profile (2026-08-24 — staged, not yet activated):** Symlink target `~/Storage/thunderbird` created; `home.file` mkOutOfStoreSymlink wired in `home/persist.nix`. Pre-create via `home.activation.ensureScratchDirs` to avoid tmpfs wipe losing email/profile data.
 
 ---
 
@@ -160,3 +164,27 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 **J-Space skill (2026-08-19, trial active):** Claude Code skill for workspace reasoning; locally patched for CLAUDE.md precedence + configurable `LEDGER_DIR`. Backups: `SKILL.md.bak.pre-houserules`, `scripts/jspace.py.bak.pre-houserules` in `~/.claude/skills/j-space/`. Discontinue if problems arise (user: trial run).
 
 **Waydroid — Android container (2026-08-21, fully operational, GAPPS):** Session + container RUNNING, DHCP lease obtained, GAPPS images (system 2462.4M, vendor 535.5M). Persistence: `/var/lib/waydroid` and `~/.local/share/waydroid` both bind-mounted from `/persist`; `~/.Android`/`~/.android` symlinked to `~/Storage/`. tmpfs root stable at 3% (down from 100% before persistence — mistakes.md #13). Device registered for Play Store certification at google.com/android/uncertified; propagation in progress. Plain `waydroid` package in use, not `waydroid-nftables` (removed 2026-08-21 — was shadowing the system package on PATH, mistakes.md 2026-08-21 entry). **Structural ceiling:** hardware-backed (STRONG-tier) attestation apps (payment, banking, anti-cheat) cannot run under Waydroid — no TEE in a Linux container; not fixable (decisions.md #34). Full setup narrative archived (see archive_entries).
+
+---
+
+## 10. MCP Gateway Backends and Remote Services (2026-08-24)
+
+* **Status:** 11 backends live, 109 tools total. Gateway auto-loads backend configs from `~/.config/mcp-gateway/gateway.yaml` at startup; backends are read once per gateway launch.
+* **Backend list (2026-08-24):**
+  - **Cloudflare:** cloudflare-builds (6 tools, OAuth to your Builds dashboard), cloudflare-docs (2 tools, static)
+  - **External APIs:** gsc (Google Search Console, 8 tools, service-account auth verified 2026-08-24), github (44 tools, PAT auth), context7 (2 tools)
+  - **Content tools:** markitdown (1 tool, local), open-websearch (6 tools, free Brave API)
+  - **Utilities:** filesystem (14 tools, local), noctalia MCP shim (8 tools, stdio, not via gateway)
+  - **Playwright:** browser automation (23 tools via managed service, requires auth)
+  
+* **GSC Integration (2026-08-24 — Live and Verified):**
+  - Service account: `cache-poor-blogs@dogwood-envoy-506516-e3.iam.gserviceaccount.com`
+  - Properties connected: `sc-domain:infernalcode.com` (siteFullUser), `sc-domain:hotelevangelism.blog` (siteFullUser)
+  - Tools available: `list_sites`, `search_analytics`, `index_inspect`, `list_sitemaps`, `get_sitemaps_report`, `list_crawl_issues`, `get_crawl_issue_report`, `detect_quick_wins`
+  - Verification complete: `list_sites` returns both properties, `search_analytics` queries return real data, `index_inspect` confirms pages indexed and crawled
+  - **Important:** Search analytics data in memory is NOT maintained — it stales rapidly. Use `gsc/search_analytics` at query time for fresh data. Refresh as needed; do not restate cached measurements. Benchmark: infernalcode.com 868 impressions / 5 clicks (2026-07-25 to 2026-08-21, all from wiki), hotelevangelism.blog 5 impressions / 0 clicks (indexed 2026-08-19, page 2 position 2).
+  - **Opportunity identified:** infernalcode.com `/desktop/noctalia/` has 701 impressions at position 9.29 with 0.43% CTR (should be ~1.5-2.5% at that position). Title/meta-description rewrite could yield 3-4× more clicks without ranking change.
+
+* **Hot-reload behavior:** Gateway does not hot-reload backend configs (SIGHUP has no effect; confirmed via prior Sentry dashboard offline during config test). Restart required: `systemctl --user restart mcp-gateway`.
+
+* **Outstanding security item:** GitHub PAT in `~/.config/systemd/user/mcp-gateway.service` is plaintext (should move to sops secrets once gateway supports `sops-nix` credential injection — currently not implemented).

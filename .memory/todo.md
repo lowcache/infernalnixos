@@ -52,6 +52,18 @@ status: active
 ✓ Covered: swap hazard + fix, text engine timeline, plugin refactoring, G'MIC patch, testing harness
 ✓ Build clean: 31 pages, 47 internal links validated
 
+### Phone-Agent MCP Activation (2026-08-07 — Complete, Verified 2026-08-24)
+
+✓ Run `make switch` to activate phone-agent MCP in Claude Code (completed 2026-08-21)
+✓ Claude Code session restarted (happened between 2026-08-21 and 2026-08-24)
+✓ phone-agent tools verified accessible: gateway lists phone-agent tools, GSC invocations successful in same session, all 11 backends respond
+
+### GSC MCP Backend Wiring (2026-08-24 — Complete, Verified Live)
+
+✓ Service account JSON added to sops secrets (`gsc_service_account`, 2395 bytes, type service_account, valid JSON)
+✓ Service account email added as user to both Search Console properties (infernalcode.com, hotelevangelism.blog) with siteFullUser permissions
+✓ Gateway backend enabled and verified: `gsc` returns 8 tools, `list_sites` returns both properties, queries return real data, index_inspect confirms indexing
+
 ---
 
 ## IN PROGRESS / AWAITING ACTION
@@ -79,14 +91,6 @@ Thunderbird and Spotify config/state were not persisted across tmpfs-root wipe. 
 
 **Persistence split rationale (decisions.md #36):** Spotify uses impermanence (bounded 32 KB config), Thunderbird uses Storage symlink (unbounded mail stores + caches). The split prevents mount/symlink collisions that would cause silent shadowing.
 
-### Phone-Agent MCP Activation (2026-08-07 — Claude Code Restart Pending)
-
-**Status:** Phone-agent wired to Claude Code via HTTP (`.model/.claude/.mcp.json`). Token exported from sops secrets in `home/shell.nix`. Configuration ready. **`make switch` completed 2026-08-21.** MCP server is now running and should be accessible; Claude Code session must be restarted to connect.
-
-- [x] Run `make switch` to activate phone-agent MCP in Claude Code (completed 2026-08-21)
-- [ ] Restart Claude Code session (MCP servers read at session startup)
-- [ ] Verify phone-agent tools are accessible (should appear in MCP list)
-
 ### Wire android-integration — Choose Strategy (2026-08-03 — USER DECISION PENDING)
 
 **Status:** termux-am builds successfully. Two approaches:
@@ -108,24 +112,55 @@ Thunderbird and Spotify config/state were not persisted across tmpfs-root wipe. 
 
 ## BACKLOG / DEFERRED
 
-### MCP Server Evaluation — Cloudflare Official Tier + Third-Party Triage (2026-08-24 — Survey Complete)
+### Wiki SEO Optimization — Noctalia Title & Meta-Description (Identified 2026-08-24, High ROI)
 
-**Status:** MCP server landscape surveyed via tether (198 lines at `scratchpad/mcp-survey.md`). Results categorized and prioritized.
+**Context:** GSC shows noctalia page has 701 impressions at position 9.29 with only 0.43% CTR (should be ~1.5-2.5% at that position). Title and meta-description are likely misaligned with search intent. Rewrite alone could yield 3-4× more clicks without changing ranking — highest-leverage SEO work available.
+
+**Discovery:** Measured via GSC `search_analytics` (infernalcode.com domain property, 2026-07-25 to 2026-08-21 window).
+
+- [ ] Analyze current title and meta-description for alignment with top search queries
+- [ ] Rewrite title and meta to better match user intent (40-60 chars title, 140-160 char meta)
+- [ ] Publish change to wiki
+- [ ] Monitor CTR recovery via `gsc/search_analytics` over next 2-3 weeks
+
+### Hotelevangelism Blog Post Series & Social Promotion Research (2026-08-24 — BACKLOG)
+
+**Context:** User plans to write blog posts for hotelevangelism. GSC integration now enables discovery-based outreach (finding open questions that existing content answers). Two tracks: content production + promotional channel research.
+
+**Content track:**
+- [ ] Write blog post(s) for hotelevangelism
+- [ ] Publish to ~/CodeRepo/blogs/ (hotelevangelism.blog)
+
+**Promotion research + execution:**
+- [ ] Identify relevant subreddits and HN threads where hotelevangelism content answers open questions
+- [ ] Use `reddit-research-mcp` (semantic search: 20k+ subreddits) or `hackernews-mcp` (ask_hn filter) to find threads
+- [ ] Craft response posts framed as answering the specific question (not bare link-drops; outreach strategy proven to work per blogs/CLAUDE.md)
+- [ ] Post responses with citations to the wiki/blog
+
+**Constraint:** Avoid bare promotional link-drops (reddit/HN ban for this). Frame as answering open questions. Proven approach: "outreach framed as answering an open question works" (noted in blogs/CLAUDE.md).
+
+**MCP servers:**
+- `reddit-research-mcp` (king-of-the-grackles/reddit-research-mcp): semantic search + citation
+- `hackernews-mcp` (cyanheads/hn-mcp-server): Algolia full-text search, `ask_hn` filter, no auth
+
+### MCP Server Evaluation — Cloudflare Official Tier + Third-Party Triage (2026-08-24 — Survey Complete, Partial Activation)
+
+**Status:** MCP server landscape surveyed via tether (198 lines at `scratchpad/mcp-survey.md`). Results categorized and prioritized. GSC (Tier 1, Cloudflare official) is now live and verified.
 
 **Findings:**
-- **Tier 1 (Cloudflare official, recommended):** 12 servers (Workers Builds, Observability, GraphQL, DNS Analytics, Cloudflare API, Docs, Radar, Browser Run, Logpush, Audit Logs, AI Gateway, Bindings). All require `http_url:` / `streamable_http:` config in gateway.yaml (not `command:`, since these are remote stdio endpoints). Workers Builds connects directly to your open CI todo.
-- **Tier 2 (SEO, third-party OAuth-required):** GSC (7 implementations; recommend safe MIT read-only version), GA4, Bing. Require OAuth grant to your Search Console + analytics accounts.
+- **Tier 1 (Cloudflare official, recommended):** 12 servers (Workers Builds, Observability, GraphQL, DNS Analytics, Cloudflare API, Docs, Radar, Browser Run, Logpush, Audit Logs, AI Gateway, Bindings). All require `http_url:` / `streamable_http:` config in gateway.yaml (not `command:`, since these are remote stdio endpoints). Workers Builds connects directly to your open CI todo. GSC verified live (2026-08-24).
+- **Tier 2 (SEO, third-party OAuth-required):** GSC (activated 2026-08-24), GA4, Bing. Require OAuth grant to your Search Console + analytics accounts.
 - **Tier 3 (Other high-value third-party):** Sentry (official remote, free with account), Stripe (official, monetization-coupled), CVE MCP (free, NVD+CISA+GitHub Advisories, local uvx), SAST MCP (local Semgrep/Bandit/Trivy wrapper).
 
 **Caution:** Survey lists Postgres as "Official + Active" in upstream servers repo; this is likely stale (most reference servers were archived). Verify before using.
 
-**Security constraint:** Each MCP server credential grant expands trust surface. MCPS Audit ([razashariff/mcps-audit](https://github.com/razashariff/mcps-audit)) scans MCP configs against OWASP MCP Top 10. Before expanding beyond current 8 backends, run audit on `.model/.claude/.mcp.json` + `gateway.yaml`.
+**Security constraint:** Each MCP server credential grant expands trust surface. MCPS Audit ([razashariff/mcps-audit](https://github.com/razashariff/mcps-audit)) scans MCP configs against OWASP MCP Top 10. Before expanding beyond current 11 backends, run audit on `.model/.claude/.mcp.json` + `gateway.yaml`.
 
 **Next steps:**
-- [ ] Run MCPS Audit on existing 8 backends; resolve any medium/high findings before expansion
+- [ ] Run MCPS Audit on existing 11 backends; resolve any medium/high findings before expansion
 - [ ] Prioritize Cloudflare Workers Builds + Observability (aligns with wiki/deployment CI todo)
 - [ ] Conditional: Activate Sentry (free, error/trace querying) + CVE MCP (security scanning)
-- [ ] Defer: Stripe MCP (monetization not yet live), full GSC/GA4 suite (lower priority than core tooling)
+- [ ] Defer: Stripe MCP (monetization not yet live), full GSC/GA4 suite (SEO work now underway, additional analytics less urgent)
 - [ ] Archive `scratchpad/mcp-survey.md` post-implementation (reference only, not durable)
 
 ### Wiki — Polish and CI Integration (2026-08-15, partially done)
