@@ -45,9 +45,32 @@ status: active
 ✓ Krita swap file moved from `/tmp` (4 GB tmpfs) to `~/Storage/tmp/krita-swap` (269 GB NVMe, 2026-08-24) to prevent SIGBUS crashes
 - [ ] Interactive on-canvas text tool (GUI, not engine) — human verification pending (~10 min)
 
+### Wiki Documentation — Krita Page Published (2026-08-24)
+
+✓ Published `content/en/desktop/krita.md` (weight 40) to volnixos-wiki
+✓ Updated desktop section index to link the new page
+✓ Covered: swap hazard + fix, text engine timeline, plugin refactoring, G'MIC patch, testing harness
+✓ Build clean: 31 pages, 47 internal links validated
+
 ---
 
-## IN PROGRESS / AWAITING USER DECISION
+## IN PROGRESS / AWAITING ACTION
+
+### Krita Swap Directory Persistence (2026-08-24 — BLOCKING CONFIG FORMALIZATION)
+
+The swap directory `~/Storage/tmp/krita-swap` was created imperatively (manual mkdir) and works in runtime. It is referenced in the out-of-store `kritarc` symlink (~/Storage/krita-master/kritarc, user-mutable). However, it lives under a directory named `tmp` with no lifecycle declaration—if any sweep process cleans `~/Storage/tmp/*`, the swap dir vanishes and Krita reverts to SIGBUS hazard (mistakes.md 2026-08-24).
+
+- [ ] Declare `~/Storage/tmp/krita-swap` in `home/persist.nix` to ensure durability (or use `home.activation` if `persist.nix` doesn't support directories)
+- [ ] Apply via `make switch` to formalize the fix (moves from "imperative workaround" to "declared state")
+- [ ] Verify swap location still resolves post-rebuild
+
+### Blog Post: "The workaround that outlived its bug" (Krita post — Outline Ready 2026-08-24)
+
+**Status:** Outline complete at `volnixos-blog/content/posts/drafts/krita-on-a-volatile-root.md` with `draft: true`. Comprehensive beat structure, verified citations, angle: one story covering both the swap SIGBUS hazard and the philosophical cost of undeclared state on an impermanence system.
+
+- [ ] Write full body (user authoring)
+- [ ] Cross-check cited numbers against decisions.md #21, mistakes.md 2026-08-24, state.md §9 (Krita section)
+- [ ] Publish (remove `draft: true`, then `cd volnixos-blog && make build && make deploy`)
 
 ### Phone-Agent MCP Activation (2026-08-07 — Claude Code Restart Pending)
 
