@@ -9,7 +9,13 @@ let
 in
 {
   imports = [
-    ./mcp-gateway.nix
+    # ./mcp-gateway.nix intentionally removed (2026-08-24). It existed only to
+    # ship a gateway-peer.example.yaml and an unconditional warning telling the
+    # operator to register phone-agent as an mcp-gateway backend. That example
+    # used a stale schema (transport:/url:/namespace: are not valid mcp-gateway
+    # 3.3.2 keys) and the gateway route failed its auth test. phone-agent is
+    # deliberately kept as a standalone MCP server, not fronted by the gateway,
+    # so there is nothing to register and no warning to emit.
     ./ingest-sync.nix
     ./ingest-watcher.nix
     ./proximity.nix
