@@ -45,25 +45,27 @@
         test -d $HOME/Storage/tmp; or mkdir -p $HOME/Storage/tmp
         set -gx TMPDIR $HOME/Storage/tmp
 
+        # --== SOPS protected API key exposure ==--
+        # New key template:
+        # test -r /run/secrets/{api_key_name}
+        # and set -gx {API_KEY_NAME} (cat /run/secrets/{api_key_name})
+        
         # Gemini API key — decrypted at runtime by sops-nix to /run/secrets/gemini_api_key
         test -r /run/secrets/gemini_api_key
         and set -gx GEMINI_API_KEY (cat /run/secrets/gemini_api_key)
+
         # Github token - sops-nix to /run/secrets/github_token
         test -r /run/secrets/github_token
         and set -gx GITHUB_TOKEN (cat /run/secrets/github_token)
+
         # Phone-agent bearer token - sops-nix to /run/secrets/phone_agent_token;
         # consumed by the phone-agent MCP server in .model/.claude/.mcp.json
         test -r /run/secrets/phone_agent_token
         and set -gx PHONE_AGENT_TOKEN (cat /run/secrets/phone_agent_token)
+
         # apify
         test -r /run/secrets/apify_api_key
         and set -gx APIFY_API_KEY (cat /run/secrets/apify_api_key)
-        # Buttondown volatile
-        test -r /run/secrets/buttondown_api_key_volatiletestimony
-        and set -gx BUTTONDOWN_API_KEY_VOLATILE_TESTIMONY (cat /run/secrets/buttondown_api_key_volatiletestimony)
-        # Buttondown hotelevangelism
-        test -r /run/secrets/buttondown_api_key_hotelevangelism
-        and set -gx BUTTONDOWN_API_KEY_HOTELEVANGELISM (cat /run/secrets/buttondown_api_key_hotelevangelism)
       '';
       shellAbbrs = {
         # Anonymous mode (P5-T3): arm/disarm egress via the net-gate Tor VM.
