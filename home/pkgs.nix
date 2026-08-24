@@ -199,8 +199,15 @@
           apksigner
           flying-carpet
           genymotion
-          #waydroid
-          waydroid-nftables
+          # waydroid itself comes from virtualisation.waydroid.enable
+          # (nixos/configuration.nix). Do NOT add it here: waydroid-nftables
+          # ships its own `waydroid` binary, and the HM profile shadows
+          # /run/current-system on PATH, so the CLI and the container service
+          # end up different builds. This host's iptables is xtables-nft-multi
+          # already, so the plain package's rules land in nftables regardless.
+          # If waydroid networking ever misbehaves, set
+          # `virtualisation.waydroid.package = pkgs.waydroid-nftables;` rather
+          # than reinstating a user-profile copy.
           apksigcopier
           apkeditor
           avbroot

@@ -99,8 +99,18 @@ in
     enableNixpkgsReleaseCheck = false;
     inherit sessionVariables;
     # Ensure the redirected scratch/cache roots exist before anything writes to them.
+    # krita-swap: Krita mmaps a tile swap file (kritarc maxSwapSize=10240, so up
+    # to 10G) at its own `swaplocation` key and does NOT read $TMPDIR, so the
+    # stock /tmp default put it on the 4G tmpfs root — where a full tmpfs leaves
+    # the mapped page unbackable and Krita dies with SIGBUS rather than SIGSEGV.
+    # kritarc now points here; this dir must exist or that fix silently regresses.
+    # Storage/thunderbird is not scratch: it is the mkOutOfStoreSymlink target
+    # for ~/.thunderbird (see home/persist.nix). A symlink pointing at a missing
+    # directory is worse than no symlink, since Thunderbird's own mkdir fails
+    # through a dangling link, so the target is created here.
     activation.ensureScratchDirs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      run mkdir -p "$HOME/Storage/tmp/claude" "$HOME/Storage/.cache/pip"
+      run mkdir -p "$HOME/Storage/tmp/claude" "$HOME/Storage/.cache/pip" \
+        "$HOME/Storage/tmp/krita-swap" "$HOME/Storage/thunderbird"
     '';
     pointerCursor = {
       enable = true;

@@ -79,6 +79,9 @@
       "/var/lib/flatpak"
       "/var/lib/sbctl"
       "/var/lib/microvm"
+      # waydroid images: ~2.4G of downloaded system/vendor img. Unpersisted it
+      # lands on the 4G tmpfs root and fills it (did, 2026-08-21).
+      "/var/lib/waydroid"
       "/var/lib/private/open-webui"
       "/etc/secureboot"
       "/etc/asusd"

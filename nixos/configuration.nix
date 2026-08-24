@@ -394,6 +394,7 @@
         };
       };
     };
+    waydroid.enable = true;
   };
 
   # Application Support

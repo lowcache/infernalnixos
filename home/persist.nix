@@ -46,6 +46,25 @@
         config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/krita-master/krita";
       "Pictures/fromAi/outputs".source =
         config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/ai-generation/fooocus/outputs";
+      # Android Studio SDK and AVD root. Both grow to multiple GB — the SDK
+      # alone was 1.4G and helped fill the 4G tmpfs root to 100% on 2026-08-21 —
+      # and both are re-downloadable, so they belong on the Storage volume
+      # rather than /persist. ~/.android/avd is where emulator disk images land.
+      "Android".source =
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/Android";
+      ".android".source =
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/.android";
+      # Thunderbird's profile root on Linux is ~/.thunderbird, NOT
+      # ~/.config/thunderbird: profiles.ini, account setup, filters, and the
+      # local mail stores all live here. Unpersisted it does not survive the
+      # tmpfs wipe and Thunderbird comes up factory-new every boot. Mail stores
+      # are the growth risk (IMAP caches grow without bound), so this goes to
+      # the Storage volume rather than the /persist list — and it must be one
+      # or the other, never both: impermanence bind-mounts refuse a non-canonical
+      # target, so a path cannot be a symlink AND a persisted directory.
+      # The Thunderbird cache already lands on Storage via XDG_CACHE_HOME.
+      ".thunderbird".source =
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Storage/thunderbird";
       # Non-hidden alias of the repo: antigravity (agy) rejects hidden paths as
       # workspace folders but does not resolve symlinks, mitigatef with workdir
       # ~/volnix to get full workspace registration.
@@ -83,6 +102,7 @@
             ".solc-select"
             ".foundry"
             ".ZAP"
+            ".java"
           ];
           config = [
             ".config/dconf"
@@ -92,6 +112,12 @@
             ".config/Google"
             ".config/BraveSoftware"
             ".config/micro"
+            # Spotify prefs plus the Users/ blob holding the logged-in session.
+            # 32K and it does not grow, so it belongs here rather than on
+            # Storage; the 6.4G audio cache already goes to ~/Storage/.cache
+            # because the client honours XDG_CACHE_HOME. Without this, every
+            # boot starts logged out.
+            ".config/spotify"
             ".config/mcp-gateway"
             ".config/systemd/user"
             ".config/sops"
@@ -118,6 +144,11 @@
             ".local/share/keyrings"
             ".local/share/Google"
             ".local/share/flatpak"
+            # Android /data for waydroid. The container mounts this as the
+            # userdata partition, so every installed app and its data lands
+            # here. Unpersisted it sits on the 4G tmpfs root and is both lost
+            # on reboot and a refill of the crash we hit 2026-08-21.
+            ".local/share/waydroid"
             ".local/share/applications"
             ".local/share/Antigravity-x64"
             ".local/share/Antigravity IDE"

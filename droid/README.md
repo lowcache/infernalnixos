@@ -77,12 +77,15 @@ nix-on-droid switch --flake github:lowcache/volnixos
 make droid-switch
 ```
 
-Skipping it does not fail fast. Nix warns `ignoring substitute ... because it's
-not signed by any of the keys`, silently falls back to building the llm-agents
-set from source, and dies minutes later on
+That step is vestigial as of 2026-08-03 and I am keeping it for the same reason I
+am keeping the substituter entry itself — see "Closure budget". What it used to
+prevent: skipping it did not fail fast. Nix warned `ignoring substitute ...
+because it's not signed by any of the keys`, silently fell back to building the
+llm-agents set from source, and died minutes later on
 `python3.14-sqlalchemy-bigquery` — whose tarball cannot be unpacked under proot
-(`tar: Cannot change mode ...`). The packages are all published and signed; the
-key just was not trusted yet.
+(`tar: Cannot change mode ...`). The packages were all published and signed; the
+key just was not trusted yet. The agent layer no longer installs any of them, so
+there is nothing left for that cache to serve.
 
 Both `make droid-check` and `nix-on-droid` itself pass `--impure`. That is not a
 workaround on our side: upstream references the bootstrap `proot-termux` binary
@@ -98,7 +101,14 @@ so it needs a real aarch64 builder. That is device state, not configuration.
 
 Package choices in `home/common/packages.nix` are constrained by what has an
 aarch64 substitute and by unpacked closure size — the phone has neither the CPU
-nor the storage to absorb a desktop closure. Measured at the current lock:
+nor the storage to absorb a desktop closure.
+
+**The MiB figures below are stale — treat them as historical.** Taken 2026-08-02;
+every row predates the tree it describes. `droid/agents.nix` changed 2026-08-03
+(dropped `llm-agents`, added `opencode`, `rtk`, `mcp-gateway`) and
+`home/common/` changed 2026-08-14. They are also laptop-measured, so the
+download/unpacked columns describe what volnix's store is missing, not what the
+phone would pull. Only an on-device run gives a comparable number.
 
 | | source builds | download | unpacked |
 |---|---|---|---|
@@ -106,14 +116,33 @@ nor the storage to absorb a desktop closure. Measured at the current lock:
 | `home/common` only | none | 54 MiB | 1329 MiB |
 | `home/common` + `droid/agents.nix` | none | 363 MiB | 4788 MiB |
 
+The derivation count *is* portable, because it comes from evaluation rather than
+from store contents. At the current lock, `make droid-plan` reports **104
+derivations to build**, and the shape is what it should be:
+
+| | count | |
+|---|---|---|
+| fish completions | 57 | glue |
+| home-manager session/activation glue | 25 | glue |
+| build-time helpers (`pythoncheck.sh`, cargo vendor utils, …) | ~14 | glue |
+| `rtk` 0.44.2, `mcp-gateway` 3.4.0 | 2 (+2 vendor) | the deliberate on-device Rust builds |
+| `claude-code` 2.1.140 | 1 | one npm derivation, cheap |
+
+No plain nixpkgs package appears in that list, which is the invariant to hold.
+If one does, the phone is about to compile it.
+
 Storage is not the binding constraint on a 512 GB device — build time and RAM
 are, which is why "zero source builds" is the number that matters. If you do
 want a lean phone, drop `./agents.nix` from the `imports` in `droid/home.nix`;
 nothing else depends on it.
 
-**The agent layer requires `cache.numtide.com`**, declared in
-`droid/default.nix`. Without it the `pkgs.llm-agents.*` packages have no
-substitute and the phone compiles every one of them. `nix.substituters` and
+`cache.numtide.com` is declared in `droid/default.nix` and currently serves
+nothing. It mattered when the agent layer installed the `pkgs.llm-agents.*` set:
+without it those packages had no substitute and the phone compiled every one of
+them. I dropped that set on 2026-08-03 (the 25.11 pin hashes differently from
+what numtide publishes, so nothing substituted anyway), which leaves the entry
+costing one extra 404 per substitution query. I am keeping it because it is
+correct and signed if the pin ever lifts. `nix.substituters` and
 `nix.trustedPublicKeys` are `listOf str`, so those entries append to
 nix-on-droid's own defaults rather than replacing them.
 
@@ -142,12 +171,55 @@ since Android permits 127.0.0.1 between apps). Nix-on-Droid sits alongside it as
 the declarative dev environment, not as a replacement host.
 
 The `android-integration.*` options are a different thing: they broadcast Android
-intents at Nix-on-Droid's *own* package, so `termux-open`, `termux-setup-storage`
-and `termux-wake-lock` would work without the Termux app being involved at all.
-They are currently **commented out** in `default.nix` — see the note there. Worth
-retrying now that nix-on-droid's nixpkgs is a release channel rather than our
-unstable, since that was why `termux-am` missed upstream's cachix and had to be
-built locally.
+intents at Nix-on-Droid's *own* package, so they work with the Termux app not
+installed at all. They are **on** as of 2026-08-03 — `xdg-open` (claude's OAuth
+browser flow), `termux-wake-lock` and `termux-wake-unlock`. See
+"Android integration" below for what it took.
+
+## Android integration
+
+`xdg-open`, `termux-wake-lock` and `termux-wake-unlock` are on, switched and
+running since 2026-08-03. Getting there took two fixes, and having only one of
+them looks exactly like having neither.
+
+Everything in the `android-integration` module needs `termux-am`, which is one of
+nix-on-droid's own packages rather than a nixpkgs one — cmake, built from source.
+Upstream publishes it on `nix-on-droid.cachix.org` but only against upstream's
+nixpkgs, so at the 25.11 pin the hash does not match and the phone has to compile
+it. It is a `fetchFromGitHub` source, so it hit the proot `_defaultUnpack` failure
+that `droid/backports.nix` documents at length: `cp` creates the destination
+directory and then chmods it, and proot returns ENOENT for that chmod. The
+`prootUnpack` override there fixes the build.
+
+That is not sufficient, and this is the part that cost me a second round.
+Upstream's `android-integration.nix` runs `pkgs.callPackage` on the
+`termux-am` / `termux-tools` derivation files **directly**, which never consults
+the overlay — so the patched packages get built and then ignored. `default.nix`
+therefore disables upstream's module and imports a local copy:
+
+```nix
+disabledModules = [ "${nix-on-droid}/modules/environment/android-integration.nix" ];
+imports = [ ./android-integration.nix ];
+```
+
+`droid/android-integration.nix` is upstream's module with identical options and
+identical implementation; the only change is that it reads `pkgs.termux-am` and
+`pkgs.termux-tools`. The `nix-on-droid` input reaches it through
+`extraSpecialArgs` in `flake.nix`, which is what makes that `disabledModules`
+path resolvable.
+
+Note that `termux-tools` is a single derivation with eight outputs (`out`,
+`setup_storage`, `open`, `open_url`, `reload_settings`, `wake_lock`,
+`wake_unlock`, `xdg_open`), so one `prootUnpack` override covers every shim, and
+the `.enable` flags only pick which outputs land in `environment.packages`.
+Enabling `xdg-open` already compiled the other five; switching them on later
+costs a symlink, not a build. `xdg_open` is itself a symlink to
+`$open/bin/termux-open`, so the `open` output is in the closure regardless.
+
+The cheap alternative I did not take was a five-line
+`writeShellScriptBin "xdg-open"` calling `termux-am`. That gets the OAuth flow
+and nothing else. The tradeoff for the full module is that it is a fork, and
+forks drift — re-sync it when upstream changes the option set.
 
 ## Debugging the phone from the laptop
 
