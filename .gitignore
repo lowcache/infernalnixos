@@ -85,3 +85,7 @@ pip-selfcheck.json
 
 # Log files created by default by the nohup command
 nohup.out
+
+# Runtime sockets some CLIs drop in cwd (e.g. tailscaled --socket ./tailscale.sock)
+*.sock
+*.sock.lock
