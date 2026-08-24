@@ -446,16 +446,23 @@ This file catalogs the active, canonical design decisions and system configurati
 
 ---
 
-## 35. Phone-Agent MCP Isolation — Intentional Non-Gateway Architecture (2026-08-24)
+## 35. Phone-Agent — Standalone MCP Server, Not Fronted by mcp-gateway (2026-08-24)
 
-* **Decision:** Phone-agent MCP server operates independently, NOT fronted by mcp-gateway, as a deliberate architectural choice.
+* **Decision:** phone-agent is a standalone MCP server and is NOT fronted by the `mcp-gateway`. The `nixos/phone-agent/mcp-gateway.nix` module was removed (2026-08-24); it contained only invalid examples and unconditional warnings.
 
-* **Why:** Two reasons:
-  1. **Incompatibility:** The module's example gateway config used deprecated schema (`transport:`, `url:`, `namespace:` vs. actual `http_url:`, `streamable_http:`, `protocol_version:`, etc.; gateway auth test also failed).
-  2. **Architectural preference:** Even if compatible, phone-agent is deliberately isolated from the gateway. It is a standalone server, like noctalia.mcp (the other gateway exception).
+* **Why:** Two independent reasons: (1) **Incompatible.** The module's `gateway-peer.example.yaml` used outdated mcp-gateway 3.3.2 schema; auth test failed. (2) **Architectural.** phone-agent serves a dedicated purpose (phone-specific file transfer + system calls) and does not benefit from gateway multiplexing. Consistent with established exceptions: the **Noctalia MCP shim at `.model/.claude/.mcp.json` also bypasses the gateway**, proving not every MCP server goes through it.
 
-* **Implementation:** Removed `nixos/phone-agent/mcp-gateway.nix` entirely (it did only two things: emit a broken example and an unconditional warning). Left a comment in `default.nix` explaining the removal so it doesn't get "restored" by future tidying.
+* **Implementation:** phone-agent runs as standalone stdio server registered in `.model/.claude/.mcp.json` with `type: stdio`. No gateway intermediary.
 
-* **Scope:** Phone-agent remains wired directly to Claude Code via `.model/.claude/.mcp.json` (HTTP transport). No gateway involvement.
+---
 
-* **Similar precedent:** noctalia.mcp (noctalia shell) is also a gateway exception, managed independently. This decision confirms the pattern: not every MCP server must go through the gateway.
+## 36. Persistence Strategy — Impermanence Bind-Mount vs. Storage Symlink Split (2026-08-24)
+
+* **Decision:** When persisting application state across tmpfs-root wipe, use a split strategy based on growth and lifecycle:
+  - **Small, bounded config (<100 MB, well-defined):** impermanence bind-mount into `/persist` (Spotify `~/.config/spotify`, 32 KB).
+  - **Large/unbounded data:** Storage symlink via `home.file` + `home.activation` pre-create (Thunderbird `~/.thunderbird`, mail stores + caches).
+  - **Never mix both for the same path:** impermanence refuses symlink targets (causes shadowing/collision).
+
+* **Why:** Bind-mounts are atomic, ideal for durable config. Symlinks are cheap, flexible for variable-size stores. Conflating them causes activation failures.
+
+* **Prevention rule:** Estimate growth curve. Stable config → impermanence. Growing data → symlink. Pre-seed impermanence targets from live tmpfs before switch. Pre-create symlink targets via `home.activation.ensureScratchDirs`.

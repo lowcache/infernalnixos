@@ -52,68 +52,41 @@ status: active
 ✓ Covered: swap hazard + fix, text engine timeline, plugin refactoring, G'MIC patch, testing harness
 ✓ Build clean: 31 pages, 47 internal links validated
 
-### Phone-Agent MCP Gateway Config Removed (2026-08-24 — STAGED)
-
-✓ Removed `nixos/phone-agent/mcp-gateway.nix` (example used deprecated schema; separation preferred)
-✓ Left explanatory comment in `default.nix` to prevent restoration
-✓ Confirmed `config.warnings` → 0 (was 1)
-✓ Full system still evaluates (`system.build.toplevel.drvPath` succeeds)
-✓ Closes todo item: "(Optional) Clean up or drop nixos/phone-agent/mcp-gateway.nix"
-
 ---
 
 ## IN PROGRESS / AWAITING ACTION
 
-### Krita Swap Directory Persistence (2026-08-24 — STAGED, READY FOR ACTIVATION)
+### Krita Swap Directory Persistence (2026-08-24 — IMPLEMENTATION STAGED, ACTIVATION PENDING)
 
-Declaration complete and staged (added to `home/default.nix` activation.ensureScratchDirs).
-Imperatively tested and working; formal activation pending `make switch`.
+The swap directory `~/Storage/tmp/krita-swap` prevents SIGBUS crashes from mmap-based caching on tmpfs (mistakes.md #13). Implementation was staged 2026-08-24 but not yet activated.
 
-- [x] Declare swap directory in activation script (done, staged)
-- [ ] Apply via `make switch` to formalize (batched with other staged changes)
-- [ ] Verify swap location still resolves post-rebuild
+- [x] Declare swap directory durability via activation script: added `$HOME/Storage/tmp/krita-swap` to `home.activation.ensureScratchDirs` in `home/default.nix` with explanatory comment (2026-08-24)
+- [ ] Run `make switch` to activate the declaration
+- [ ] Verify swap location still resolves post-rebuild and Krita renders without SIGBUS (batched with other pending changes)
 
-### Thunderbird + Spotify Persistence (2026-08-24 — STAGED, READY FOR ACTIVATION)
+**Note:** Implementation chose activation script over impermanence bind-mount because swap is temporary, unbounded-growth, and session-specific (not durable). The directory must simply exist on persistent backing storage, not be transactionally bound. See decisions.md #36 for persistence strategy rationale.
 
-Persistence declarations staged:
-- Spotify config → `/persist` (pre-seeded from live session; 32 K, non-growing)
-- Thunderbird → `~/Storage/thunderbird` symlink (mail growth handled via Storage; target dir created; no collision risk)
+### Thunderbird + Spotify Persistence (2026-08-24 — IMPLEMENTATION STAGED, ACTIVATION PENDING)
 
-- [x] Declare persistence (done, staged)
-- [ ] Apply via `make switch` (batched with other staged changes)
+Thunderbird and Spotify config/state were not persisted across tmpfs-root wipe. Both apps came up factory-new after reboot. Implementation was staged 2026-08-24 but not yet activated.
 
-### Blog Post: "The workaround that outlived its bug" (Krita post — Outline Ready 2026-08-24)
+- [x] Implement Spotify config persistence: added `".config/spotify"` to impermanence bind-mount list in `home/persist.nix` (2026-08-24)
+- [x] Pre-seed persisted state: copied live `~/.config/spotify` into `/persist/home/lowcache/.config/spotify` from tmpfs while Spotify not running (2026-08-24)
+- [x] Implement Thunderbird persistence: created symlink target `~/Storage/thunderbird` and `home.file` mkOutOfStoreSymlink in `home/persist.nix` (2026-08-24)
+- [x] Pre-create symlink target: added `$HOME/Storage/thunderbird` to `home.activation.ensureScratchDirs` (2026-08-24)
+- [ ] Run `make switch` to activate both declarations (batched with other pending changes)
+- [ ] Verify post-switch: Spotify stays logged in across reboot; Thunderbird profile persists; no activation collisions
 
-**Status:** Outline complete at `volnixos-blog/content/posts/drafts/krita-on-a-volatile-root.md` with `draft: true`. Comprehensive beat structure, verified citations, angle: one story covering both the swap SIGBUS hazard and the philosophical cost of undeclared state on an impermanence system.
-
-- [ ] Write full body (user authoring)
-- [ ] Cross-check cited numbers against decisions.md #21, mistakes.md 2026-08-24, state.md §9 (Krita section)
-- [ ] Publish (remove `draft: true`, then `cd volnixos-blog && make build && make deploy`)
-
-### MCP Server Expansion — Cloudflare + GSC + Workflow Servers (2026-08-24 — RESEARCH IN PROGRESS)
-
-Token burn now sustainable; surveying MCP servers for:
-- Cloudflare Workers observability/deployment (17 official servers identified)
-- Google Search Console integration
-- Blog/content workflow servers
-- Complementary domain-specific tooling
-
-Research underway; consolidating recommendations for batch activation.
-
-- [ ] Verify Cloudflare API MCP server (D1, KV, Durable Objects, Workers)
-- [ ] Identify Google Search Console MCP server (if published)
-- [ ] Check for blog/Hugo MCP servers
-- [ ] Consolidate recommendations: scope/benefit/complexity per server
-- [ ] Batch-add to gateway.yaml when research complete
+**Persistence split rationale (decisions.md #36):** Spotify uses impermanence (bounded 32 KB config), Thunderbird uses Storage symlink (unbounded mail stores + caches). The split prevents mount/symlink collisions that would cause silent shadowing.
 
 ### Phone-Agent MCP Activation (2026-08-07 — Claude Code Restart Pending)
 
 **Status:** Phone-agent wired to Claude Code via HTTP (`.model/.claude/.mcp.json`). Token exported from sops secrets in `home/shell.nix`. Configuration ready. **`make switch` completed 2026-08-21.** MCP server is now running and should be accessible; Claude Code session must be restarted to connect.
 
 - [x] Run `make switch` to activate phone-agent MCP in Claude Code (completed 2026-08-21)
-- [x] Clean up phone-agent mcp-gateway.nix (removed 2026-08-24, staged)
 - [ ] Restart Claude Code session (MCP servers read at session startup)
 - [ ] Verify phone-agent tools are accessible (should appear in MCP list)
+- [ ] (Optional) Clean up or drop `nixos/phone-agent/mcp-gateway.nix` (example uses outdated schema; gateway route failed auth test) — COMPLETED 2026-08-24, moved to archive
 
 ### Wire android-integration — Choose Strategy (2026-08-03 — USER DECISION PENDING)
 
@@ -136,31 +109,19 @@ Research underway; consolidating recommendations for batch activation.
 
 ## BACKLOG / DEFERRED
 
-### Wiki — Hugo Activation Complete, SEO Fixes Live, CI & Polish Pending (2026-08-15, updated 2026-08-23)
+### Wiki — Polish and CI Integration (2026-08-15, partially done)
 
-- [x] Migrate MkDocs → Hugo (27 pages, 2026-08-15)
-- [x] Deploy to independent repo `lowcache/volnixos-wiki`
-- [x] Fix `layouts/robots.txt` override blocking Bing/DuckDuckGo (2026-08-23, see mistakes.md)
-- [x] Submit wiki sitemap to GSC — never submitted before; 30/30 discovered same day (2026-08-23)
-- [x] Refresh stale blog sitemap in GSC — 39 → 50 discovered (2026-08-23)
-- [x] Place first two inbound links to the wiki: NixOS Wiki `Noctalia_Shell` page (Configuration section sourced to upstream `home-module.nix`, plus See also) and nix-on-droid issue #480 comment (2026-08-23)
 - [ ] Connect Workers Builds CI (set command `./build.sh`, var `HUGO_VERSION=0.164.0`)
 - [ ] Convert home page to native data-driven layout (currently markdown, should be hero/card-grid yaml)
 - [ ] Visual overhaul: port Material palette to E25DX, center content (currently left-aligned)
 - [ ] Re-check GSC Page Indexing report ~2026-08-30: confirm whether the 40 "Crawled – currently not indexed" URLs (spiked 2026-08-17, post MkDocs→Hugo port) are draining out — recovery signal, not yet confirmed
-- [ ] If the nix-on-droid #480 reporter confirms the same proot `_defaultUnpack` bug as `.nix-config`'s fix, open an upstream PR contributing `prootUnpack` (decisions.md #32) rather than leaving it as a local backport
+- [ ] If the nix-on-droid #480 reporter confirms the same proot `_defaultUnpack` bug, open an upstream PR contributing `prootUnpack` (decisions.md #32) rather than leaving it as a local backport
 
 ### Noctalia Bar — Dual Wrap-Around Layout (2026-06-22 — LIVE, CAPTURE PENDING)
 
 - [ ] Capture runtime state to `dots/noctalia/config.toml`
 - [ ] Commit Ayu Green color-engine theme
 - [ ] Commit regenerated dotfiles
-
-### Windows 11 VM — Installation In Progress
-
-- [ ] Verify VM accessible post-reboot (2026-07-09)
-- [ ] Complete OOBE (network/account setup)
-- [ ] Reach Windows desktop; verify graphics/audio/network
 
 ### XWayland Satellite Startup — Permanent niri Integration (2026-06-23)
 
@@ -181,3 +142,11 @@ Research underway; consolidating recommendations for batch activation.
 - [ ] MCP integration post (phone-agent Termux shim, Tailscale)
 - [ ] proot portability post (chmod denial & structural sandbox fix)
 - [ ] (Optional) Performance/runtime gotchas, troubleshooting recovery ladder
+
+### Blog Post: "The workaround that outlived its bug" (Krita post — Outline Ready 2026-08-24)
+
+**Status:** Outline complete at `volnixos-blog/content/posts/drafts/krita-on-a-volatile-root.md` with `draft: true`. Comprehensive beat structure, verified citations, angle: one story covering both the swap SIGBUS hazard and the philosophical cost of undeclared state on an impermanence system.
+
+- [ ] Write full body (user authoring)
+- [ ] Cross-check cited numbers against decisions.md #21, mistakes.md 2026-08-24, state.md §9 (Krita section)
+- [ ] Publish (remove `draft: true`, then `cd volnixos-blog && make build && make deploy`)
