@@ -1,7 +1,7 @@
 ---
 type: todo
 project: Vol NixOS
-last_updated: 2026-08-24
+last_updated: 2026-08-25
 status: active
 ---
 
@@ -76,9 +76,42 @@ status: active
 ✓ Thunderbird persistence via Storage symlink (`~/.thunderbird → /home/lowcache/Storage/thunderbird`); symlink chain verified correct and LIVE
 ✓ Both mechanisms activated in gen 247; email/profile data and Spotify login persisted across tmpfs-root wipe
 
+### Audio Module — Implemented, Built, Awaiting Activation (2026-08-25)
+
+✓ Created `nixos/modules/audio.nix` (146 lines, option-typed, vol.audio namespace)
+✓ Integrated into `nixos/modules/default.nix` imports
+✓ Merged repeated `vol.*` keys in `nixos/hosts/volnix.nix` into single `vol = { … }` block
+✓ `make check` exit 0; `make build` completed successfully
+✓ Verified in closure: wireplumber-extra-config generates three drop-in configs with correct codec/policy/parked-card rules
+✓ Codec support verified in closure: libfdk-aac (AAC), libldacBT (LDAC), libfreeaptx (aptX)
+- [ ] **Awaiting activation:** `make switch` to apply module to running system
+- [ ] Post-switch: `sed -i '/pci-0000_01_00.1/d; /pci-0000_66_00.1/d' ~/.local/state/wireplumber/default-profile && systemctl --user restart wireplumber` to apply parked-card rules
+
 ---
 
 ## IN PROGRESS / AWAITING ACTION
+
+### Audio Module Activation (2026-08-25 — USER DECISION PENDING)
+
+**Status:** Audio module is built and ready. Requires activation via `make switch` (will also apply unrelated theme formatting from dots/). Post-switch needs WirePlumber restart to apply parked-card rules.
+
+- [ ] User runs `make switch` to activate audio module
+- [ ] Post-switch: run WirePlumber restart + sed removal of stored pins
+- [ ] Verify: `wpctl status` shows two sinks (Realtek + headset), not seven; `pactl list short sinks` works
+
+### Plugin Attribution — Email Drafted, PR Staged (2026-08-25)
+
+**Status:** Two community-plugins PRs staged locally in `/home/lowcache/CodeRepo/claude-companion/community-plugins` on branches `attribution/opencode-companion` (commit db9fe8d) and `attribution/9router-control` (commit 10648ea). Email draft written to `scratchpad/weinguyen-email.txt`. Nothing pushed.
+
+**Sequence:** Email first at `weinguyen1224@gmail.com`, then PR if no response within ~1 week.
+
+- [ ] Review email draft at `scratchpad/weinguyen-email.txt`
+- [ ] Send email to weinguyen1224@gmail.com
+- [ ] If no response in ~1 week, push branches and open PRs against upstream/main
+  - PR 1: `attribution/opencode-companion` (4 lines: notice + Credits section + version bump)
+  - PR 2: `attribution/9router-control` (4 lines: notice + Credits section + version bump)
+- [ ] Note: repo policy is "One plugin per PR" (enforced by `enforce-pr-template` workflow)
+- [ ] Note: PR author can request changes before merge unless fix is broken or mechanical repo-wide change
 
 ### Wire android-integration — Choose Strategy (2026-08-03 — USER DECISION PENDING)
 

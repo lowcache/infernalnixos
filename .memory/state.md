@@ -1,7 +1,7 @@
 ---
 type: state
 project: Vol NixOS
-last_updated: 2026-08-24
+last_updated: 2026-08-25
 status: active
 ---
 
@@ -18,7 +18,7 @@ This file is the single source of truth for the active configuration, mapping, a
 * **Desktop:** niri (Wayland, sole WM, default session) + Noctalia v5 (C++ shell)
 * **Display:** Wayland native; XWayland via `xwayland-satellite` (`:0`, for xcb-only AppImages and Flatpak Qt5 apps; permanent startup pending).
 * **GPU:** Hybrid AMD HawkPoint2 iGPU + NVIDIA RTX 4050 Mobile dGPU.
-* **Audio (2026-06-16):** NVIDIA HDMI (card 0), AMD HDMI (card 1), Realtek ALC256 (card 2, `66:00.6`). Default sink: Realtek ALC256 (wpctl #58), profile `output:analog-stereo+input:analog-stereo`, 70% unmuted, analog speakers. HDMI cards on `pro-audio` (switch to "Digital Stereo" if HDMI audio needed).
+* **Audio (2026-08-25 — AUDIO MODULE BUILT, AWAITING SWITCH):** PipeWire 1.6.8 + WirePlumber 0.5.15 + ALSA/Pulse compat declared in `nixos/modules/audio.nix` (option-typed module following vol.* pattern). Module enables rtkit, configures Bluetooth codecs (LDAC, aptX-HD, aptX, AAC, SBC-XQ, SBC via libfdk-aac, libldacBT, libfreeaptx), and parks NVIDIA HDMI (`pci-0000_01_00.1`) and AMD HDMI (`pci-0000_66_00.1`) cards to `off` profile (keeps them off the main profile selection and out of default sink/source list). Auto-switch-to-headset-profile disabled (prevents browser tabs grabbing mic). Module verified in built closure: wireplumber-extra-config emits three drop-ins (50-bluez-codecs.conf, 51-bluez-policy.conf, 52-park-cards.conf) with correct properties. **Not yet live** — requires `make switch` + post-switch `systemctl --user restart wireplumber` to apply parked-card rules (removes stored pro-audio pins via `sed -i '/pci-0000_01_00.1/d; /pci-0000_66_00.1/d' ~/.local/state/wireplumber/default-profile`). Hardware fallbacks remain: Realtek ALC256 (card 2, `66:00.6`, analog stereo) as default sink; HDMI cards route via `pro-audio` for manual selection if needed.
 * **Input Devices (2026-07-13):** Vial keyboard configured for unprivileged hidraw access via udev rule in `nixos/configuration.nix:services.udev.extraRules`. Rule matches serial `*vial:f64c2b3c*` with MODE=0660, GROUP=users, TAG+="uaccess". Pending rebuild application; activate via replug or `sudo udevadm control --reload && sudo udevadm trigger`.
 
 ---
@@ -51,7 +51,7 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 
 **Spotify config (2026-08-24 — LIVE, verified gen 247):** `~/.config/spotify` persistence via impermanence bind-mount (bounded 32 KB config, lives in `/persist`). Verified active via findmnt.
 
-**Thunderbird profile (2026-08-24 — LIVE, verified gen 247):** Symlink target `~/Storage/thunderbird` live; `home.file` mkOutOfStoreSymlink active. Symlink chain verified: `~/.thunderbird → home-manager-files/.thunderbird → hm_thunderbird → /home/lowcache/Storage/thunderbird`. Email/profile data persisted across tmpfs-root wipe.
+**Thunderbird profile (2026-08-25 — WIRED & VERIFIED, AWAITING FIRST LAUNCH):** Symlink target `~/Storage/thunderbird` wired via home-manager `home.file` mkOutOfStoreSymlink. Symlink chain verified: `~/.thunderbird → home-manager-files/.thunderbird → hm_thunderbird → /home/lowcache/Storage/thunderbird`. Target directory exists (4.0K, created 2026-08-24) but is empty — Thunderbird has not run since persistence was configured. First launch will populate `profiles.ini`, account setup, filters, and mail stores. Persistence correctly wired; email/profile data will persist across tmpfs-root wipe once initialized.
 
 **Secrets (2026-06-09 rules, 2026-08-24 state):** Encrypted sops-nix credentials in `nixos/secrets.yaml`, persisted agent/tool state in `/persist`. `nixos/host-secrets.yaml` has uncommitted modifications (2026-08-24) tracking secret rotation state — commit before major branches.
 

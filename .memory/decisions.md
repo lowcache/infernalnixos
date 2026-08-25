@@ -1,7 +1,7 @@
 ---
 type: decisions
 project: Vol NixOS
-last_updated: 2026-08-24
+last_updated: 2026-08-25
 status: active
 ---
 
@@ -260,7 +260,7 @@ This file catalogs the active, canonical design decisions and system configurati
 * **No C++ fork required:** The three nerves are fully served by Luau plugins + MCP shim + hooks. Frame-tick capability confirmed; plugin IPC is request/response (stdout reply). A future engine change (plugin `onIpc` *return* flows back as reply) would unlock queryable plugin services (nice-to-have, not v1), justified by real need.
 
 * **Downstream plugin designs** (deferred to v1.1 or as expansion):
-  - **Launcher `/cc <task>`:** `runInTerminal("claude --append-system-prompt '…' '<task>'" — real TUI with full fidelity.
+  - **Launcher `/cc <task>`:** `runInTerminal("claude --append-system-prompt '…' '<task>'"` — real TUI with full fidelity.
   - **Quick-ask panel:** One-shot `claude -p … --output-format stream-json` for read-only questions (no terminal).
   - **Status widget/bar:** Show session state, token burn, model, workspace info.
   - **Bidirectional MCP:** Teach Claude `noctalia msg` + shell controls via `--append-system-prompt`; Claude invokes shell tools mid-session (theme switch, notifications, focus windows).
@@ -466,3 +466,23 @@ This file catalogs the active, canonical design decisions and system configurati
 * **Why:** Bind-mounts are atomic, ideal for durable config. Symlinks are cheap, flexible for variable-size stores. Conflating them causes activation failures.
 
 * **Prevention rule:** Estimate growth curve. Stable config → impermanence. Growing data → symlink. Pre-seed impermanence targets from live tmpfs before switch. Pre-create symlink targets via `home.activation.ensureScratchDirs`.
+
+---
+
+## 37. Audio Stack — Option-Typed Module, vol.audio Namespace (2026-08-25 — Built, Awaiting Activation)
+
+* **Decision:** Implement the audio stack (PipeWire, ALSA, Pulse compat, WirePlumber, rtkit, Bluetooth codecs, parked-card rules) as a declarative option-typed module in `nixos/modules/audio.nix`, following the `vol.*` namespace pattern established by `ai-stack.nix`.
+
+* **Module structure:** Options namespace `vol.audio` with switches for: (1) enable the full stack, (2) enable pulse client tools (pactl/pacmd), (3) list of ALSA device names to park as "off", (4) Bluetooth codec support (enable/disable), (5) codec priority list, (6) auto-switch-to-headset-profile policy.
+
+* **Rationale:** Bluetooth codec and headset-switching policies are non-obvious and machine-specific. Declarative options allow future machines (or this one, when audio changes) to reconfigure codec priority or auto-switch behavior without code duplication or git-history churn. Parked-card rules solve the "HDMI audio buries two real outputs on the main profile" UX problem by explicitly silencing cards whose outputs are not in use.
+
+* **Host-side configuration (nixos/hosts/volnix.nix):** `vol.audio = { enable = true; parkedCards = [ "alsa_card.pci-0000_01_00.1" "alsa_card.pci-0000_66_00.1" ]; }` (parked devices are NVIDIA HDMI and AMD HDMI; default Realtek ALC256 is not parked).
+
+* **Implementation details:** Module uses `mkMerge` of four guarded blocks: the stack itself (services.pipewire, services.wireplumber, security.rtkit, hardware.pulseaudio), pulse client tools (environment.systemPackages), parked-card rules (wireplumber extraConfig), Bluetooth codec policy (wireplumber extraConfig). WirePlumber drop-ins are generated via `mapConfigToFiles` and collected into `wireplumber-extra-config` package.
+
+* **Verified in closure (2026-08-25):** Built system contains all three drop-in configs (50-bluez-codecs.conf: codec list with libfdk-aac, libldacBT, libfreeaptx verified in closure; 51-bluez-policy.conf: `"bluetooth.autoswitch-to-headset-profile": false`; 52-park-cards.conf: monitor.alsa.rules entries for both devices). pactl and rtkit-daemon.service both present. Bluetooth main.conf includes `Enable=Source,Sink,Media,Socket` and `Experimental=true`.
+
+* **Status:** Built in `/nix/store/zqlbavrgxnz93w8ahx8rxjg9rjiyw9mq-nixos-system-volnix-26.11.20260823.56c02bc`. **Not yet live** — requires `make switch` to activate, then post-switch WirePlumber restart to apply parked-card rules: `sed -i '/pci-0000_01_00.1/d; /pci-0000_66_00.1/d' ~/.local/state/wireplumber/default-profile && systemctl --user restart wireplumber`.
+
+* **Why this design:** Mirrors the pattern of `vol.ai-stack` (options describe the feature, config block activates it). Keeps audio configuration in one place (`nixos/modules/audio.nix`) rather than scattered across `services.pipewire`, `services.wireplumber`, `security.rtkit`, `hardware.pulseaudio`, and `hardware.bluetooth` (which it synthesizes). Enables future re-configuration by tweaking `nixos/hosts/` without touching the module logic.
