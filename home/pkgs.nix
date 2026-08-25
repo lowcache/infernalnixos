@@ -85,6 +85,8 @@
           gsettings-desktop-schemas
           vscodium
           gedit
+          geany
+          
           file-roller
           cava
           swappy
@@ -163,6 +165,7 @@
           inputs.volinit.packages.${pkgs.stdenv.hostPlatform.system}.default
         ];
         nixAi = with pkgs; [
+          antigravity-cli
           mcp-nixos
           mcp-gateway
           github-mcp-server
@@ -181,9 +184,9 @@
           claude-code
           pkgs.llm-agents.ccstatusline
           claude-code-router
-          gemini-cli
-          github-copilot-cli
-          codex
+          #gemini-cli
+          #github-copilot-cli
+          #codex
           pkgs.llm-agents.claude-plugins
           pkgs.llm-agents.opencode
           pkgs.llm-agents.zaly
@@ -201,7 +204,7 @@
           apktool
           apksigner
           flying-carpet
-          genymotion
+          #genymotion
           # waydroid itself comes from virtualisation.waydroid.enable
           # (nixos/configuration.nix). Do NOT add it here: waydroid-nftables
           # ships its own `waydroid` binary, and the HM profile shadows

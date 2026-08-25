@@ -46,6 +46,11 @@
         set -gx TMPDIR $HOME/Storage/tmp
 
         # --== SOPS protected API key exposure ==--
+        # the following steps are for adding a new API key that needs to be exposed as an environment variable. 
+        # 1. make sops-edit -> add api key to the list
+        # 2. micro ~/.nix-config/nixos/modules/secrets.nix -> declare the key with owner = username;
+        # 3. use template below to add the new key
+        
         # New key template:
         # test -r /run/secrets/{api_key_name}
         # and set -gx {API_KEY_NAME} (cat /run/secrets/{api_key_name})
@@ -66,6 +71,10 @@
         # apify
         test -r /run/secrets/apify_api_key
         and set -gx APIFY_API_KEY (cat /run/secrets/apify_api_key)
+
+        # openrouter
+        test -d /run/secrets/openrouter_api_key
+        and set -gx OPENROUTER_API_KEY (cat /run/secrets/openrouter_api_key)
       '';
       shellAbbrs = {
         # Anonymous mode (P5-T3): arm/disarm egress via the net-gate Tor VM.

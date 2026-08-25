@@ -73,6 +73,9 @@
       gsc_service_account = {
         owner = username;
       };
+      openrouter_api_key = {
+        owner = username;
+      };
     };
   };
 }
