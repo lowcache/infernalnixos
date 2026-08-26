@@ -73,11 +73,11 @@
         and set -gx APIFY_API_KEY (cat /run/secrets/apify_api_key)
 
         # openrouter
-        test -d /run/secrets/openrouter_api_key
+        test -r /run/secrets/openrouter_api_key
         and set -gx OPENROUTER_API_KEY (cat /run/secrets/openrouter_api_key)
 
         # twine 
-        test -d /run/secrets/twine_api_key
+        test -r /run/secrets/twine_api_key
         and set -gx TWINE_API_KEY (cat /run/secrets/twine_api_key)
       '';
       shellAbbrs = {

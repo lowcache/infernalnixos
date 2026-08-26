@@ -327,11 +327,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1784857246,
-        "narHash": "sha256-kI3a4g6Bp2T0/yLNNz67KsUunlqAuq9gVQqssPJbODg=",
+        "lastModified": 1787753328,
+        "narHash": "sha256-PD1BnZwAkRFT5zyFPM6o6hKMnke1ZRmeCmrp+0Jo22o=",
         "owner": "lowcache",
         "repo": "memd",
-        "rev": "fc46af4c9dab7fe2e7e81de37e6dfc9c44a54050",
+        "rev": "a0bcb729829ce4545d01cf2737c9a1d12922aa81",
         "type": "github"
       },
       "original": {

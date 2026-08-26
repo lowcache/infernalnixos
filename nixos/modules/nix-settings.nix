@@ -20,7 +20,11 @@
         "root"
         username
       ];
+      # Own cache first: every miss elsewhere costs a round-trip, so query
+      # volnixos before falling through to upstreams. Populated by CI
+      # (.github/workflows/build.yml); key is public by design.
       substituters = [
+        "https://volnixos.cachix.org"
         "https://nix-community.cachix.org"
         "https://cache.lix.systems"
         "https://cuda-maintainers.cachix.org"
@@ -28,6 +32,7 @@
         "https://attic.xuyh0120.win/lantian"
       ];
       trusted-public-keys = [
+        "volnixos.cachix.org-1:GUKpgN2Tzh67uYZtUaEsFr1U7UVLrFG1iCoF860CY5Y="
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
         "cache.lix.systems:aBnZU3F19808R5N0sczBmsWwI5YI+433R9M2iS2Hcy4="
         "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
