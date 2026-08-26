@@ -4,6 +4,7 @@
   imports = [
     ./anonymous-mode.nix
     ./ai-stack.nix
+    ./audio.nix
     ./boot.nix
     ./containers.nix
     ./desktop.nix

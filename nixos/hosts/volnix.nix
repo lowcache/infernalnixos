@@ -17,12 +17,25 @@
   time.timeZone = "America/Chicago";
   system.stateVersion = "24.11"; # do not bump
 
-  vol.anon-mode.enable = true;
+  vol = {
+    anon-mode.enable = true;
 
-  vol.ai-stack = {
-    ollama.enable = true;
-    ollama.exposeToTailscaleVm = true;
-    open-webui.enable = true;
+    # NVIDIA (01:00.1) and AMD (66:00.1) HDMI audio sit on `pro-audio`, which
+    # publishes one sink per PCM and buries the two outputs actually in use.
+    # Realtek ALC256 (66:00.6) is the analog card and stays live.
+    audio = {
+      enable = true;
+      parkedCards = [
+        "alsa_card.pci-0000_01_00.1"
+        "alsa_card.pci-0000_66_00.1"
+      ];
+    };
+
+    ai-stack = {
+      ollama.enable = true;
+      ollama.exposeToTailscaleVm = true;
+      open-webui.enable = true;
+    };
   };
 
   # Phone agent (S26 Ultra MCP integration, Phase 8). Bearer token is the

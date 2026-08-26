@@ -50,7 +50,7 @@
         # 1. make sops-edit -> add api key to the list
         # 2. micro ~/.nix-config/nixos/modules/secrets.nix -> declare the key with owner = username;
         # 3. use template below to add the new key
-        
+
         # New key template:
         # test -r /run/secrets/{api_key_name}
         # and set -gx {API_KEY_NAME} (cat /run/secrets/{api_key_name})
