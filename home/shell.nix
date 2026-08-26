@@ -75,6 +75,10 @@
         # openrouter
         test -d /run/secrets/openrouter_api_key
         and set -gx OPENROUTER_API_KEY (cat /run/secrets/openrouter_api_key)
+
+        # twine 
+        test -d /run/secrets/twine_api_key
+        and set -gx TWINE_API_KEY (cat /run/secrets/twine_api_key)
       '';
       shellAbbrs = {
         # Anonymous mode (P5-T3): arm/disarm egress via the net-gate Tor VM.

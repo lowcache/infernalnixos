@@ -76,6 +76,9 @@
       openrouter_api_key = {
         owner = username;
       };
+      twine_api_key = {
+        owner = username;
+      };
     };
   };
 }
