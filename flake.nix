@@ -120,7 +120,14 @@
               inputs.llm-agents.overlays.shared-nixpkgs
               (import ./nixos/overlays/brave.nix)
               (import ./nixos/overlays/pandas-stubs.nix)
-              (import ./nixos/overlays/ollama.nix)
+              # ollama.nix pin REMOVED 2026-08-27 on trial. It pinned ollama-cuda
+              # to nixpkgs d407951 because 0.32.3 died in setup-cuda-hook. The
+              # locked nixpkgs now ships 0.32.14, eleven patch releases later, and
+              # the overlay's own comment set this as the revert test. Nothing
+              # caches it (404 on nixos/volnixos/nix-community/cuda-maintainers),
+              # so CI is the place to find out -- a runner's 90 minutes instead of
+              # the laptop's. The overlay file stays until a green build says the
+              # pin is genuinely dead.
             ];
           }
           ./nixos
