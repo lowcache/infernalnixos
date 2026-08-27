@@ -74,8 +74,13 @@ jobs:
           echo "effective substituters:"
           nix config show substituters
           nix build --dry-run .#nixosConfigurations.volnix.config.system.build.toplevel 2>&1 | tee /tmp/dry.txt
-          if grep -qE "linux-cachyos.*\.drv" /tmp/dry.txt; then
-            echo "::error::kernel would be built from source, not substituted -- the lantian attic is not in the effective substituter list above"
+          # Match the KERNEL derivation only. linux-cachyos-latest-<ver>-modules.drv
+          # and -modules-shrunk.drv are the per-configuration aggregations: they
+          # are built here exactly as they are on every host, they are cheap, and
+          # they are not in anyone's cache. Anchoring .drv straight after the
+          # version excludes them.
+          if grep -qE "linux-cachyos-latest-[0-9.]+\.drv" /tmp/dry.txt; then
+            echo "::error::the kernel ITSELF would be built from source -- check the effective substituter list above for the lantian attic"
             exit 1
           fi
           echo "kernel resolves to a substitute; proceeding"
