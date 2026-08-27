@@ -25,6 +25,10 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # A cache miss on the kernel means a source build that cannot finish in the
+    # 6 h job limit. Fail in 90 min instead of burning six hours of minutes to
+    # reach the same answer -- if this trips, a substituter regressed.
+    timeout-minutes: 90
     steps:
       # Standard runners ship ~25 GB of preinstalled toolchains we don't need;
       # the volnix closure (kernel + desktop + noctalia source build) won't
@@ -40,8 +44,16 @@ jobs:
 
       - uses: cachix/install-nix-action@v31
         with:
+          # The runner must trust the SAME substituters the hosts do, or it
+          # builds from source what every host downloads. linux-cachyos-latest
+          # is the one that matters: xddxdd's attic serves the prebuilt kernel,
+          # and without it the toplevel build compiles the kernel driver by
+          # driver and dies on the 6 h job limit (runs 32958478220, 33010962169).
+          # Keep this list in sync with nixos/modules/nix-settings.nix.
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+            extra-substituters = https://attic.xuyh0120.win/lantian https://nix-community.cachix.org https://cache.lix.systems https://cache.numtide.com https://cuda-maintainers.cachix.org
+            extra-trusted-public-keys = lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= cache.lix.systems:aBnZU3F19808R5N0sczBmsWwI5YI+433R9M2iS2Hcy4= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g= cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E=
 
       - uses: cachix/cachix-action@v16
         with:
