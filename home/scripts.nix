@@ -65,4 +65,25 @@ in
     };
   };
 
+  # opencode is tether's second worker backend (`tether run -m free|free-big|
+  # free-fast`), driving OpenRouter's free tier so bulk work costs no Gemini
+  # quota. Declarative because ~/.config is on the tmpfs root: hand-written here
+  # it would be gone at the next boot and every free tier would fail closed.
+  #
+  # small_model matters as much as model. opencode calls a second, cheap model to
+  # title sessions, and it defaults to a PAID one -- on this account that returned
+  # "requires more credits, or fewer max_tokens" on every run. Pinning it to a
+  # free model is what makes an otherwise-free delegation actually free.
+  #
+  # The per-tier model chains live in tether itself, not here; this only sets
+  # what a bare `opencode` does interactively. The API key comes from sops via
+  # OPENROUTER_API_KEY (home/shell.nix), which tether re-reads from
+  # /run/secrets/openrouter_api_key for non-fish shells.
+  xdg.configFile."opencode/opencode.json".text = builtins.toJSON {
+    "$schema" = "https://opencode.ai/config.json";
+    model = "openrouter/poolside/laguna-s-2.1:free";
+    small_model = "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free";
+    autoupdate = false; # the store owns the binary; self-update would fight it
+    share = "disabled";
+  };
 }

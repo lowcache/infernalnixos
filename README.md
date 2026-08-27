@@ -11,6 +11,8 @@
 <p>
   <a href="https://volnixos-wiki.pgs.sh/"><img alt="Documentation" src="https://img.shields.io/badge/📖_full_docs-volnixos--wiki.pgs.sh-3e9e40?style=flat-square"></a>
   <a href="https://github.com/lowcache/volnixos/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/lowcache/volnixos?style=flat-square&logo=git&logoColor=white&label=last%20commit&color=5277C3"></a>
+  <a href="https://github.com/lowcache/volnixos/actions/workflows/build.yml"><img alt="Build" src="https://github.com/lowcache/volnixos/actions/workflows/build.yml/badge.svg?branch=main"></a>
+  <a href="https://app.cachix.org/cache/volnixos"><img alt="Binary cache" src="https://img.shields.io/badge/cachix-volnixos-8c62d6?style=flat-square&logo=nixos&logoColor=white"></a>
 </p>
 
 ### Volatile NixOS — a stateless, flake-driven NixOS workstation
@@ -36,6 +38,7 @@ adds a CachyOS low-latency kernel, UEFI Secure Boot (Lanzaboote), `sops-nix` sec
 | [Desktop](https://wiki.infernalcode.com/desktop/) | niri, Noctalia, theming engine |
 | [Reference](https://wiki.infernalcode.com/reference/flake/) | Flake, Home Manager modules, dotfiles |
 | [Tooling](https://wiki.infernalcode.com/tooling/makefile/) | Makefile, Fish, agent toolchain |
+| [Binary cache & CI](https://wiki.infernalcode.com/tooling/ci-cache/) | The `volnixos` cachix cache and the build that fills it |
 | [nix-on-droid](https://wiki.infernalcode.com/nix-on-droid/) | Phone Tier and the nix-on-droid derivation |
 
 ## Quick start
@@ -53,12 +56,41 @@ sudo make switch    # rebuild + switch (HOST=volnix)
 > laptop), published as a **portfolio and reference** — meant to be read and borrowed from, not
 > installed wholesale. Treat it as proof-of-work, not a distro.
 
+## Binary cache
+
+Every push to `main` that can change the closure builds the whole system on CI and pushes the
+result to [`volnixos.cachix.org`](https://app.cachix.org/cache/volnixos). Hosts pull from it before
+any upstream, so `make switch` is a download rather than a rebuild.
+
+The cache earns its keep on the paths nobody else can serve: **NVIDIA built against the CachyOS
+kernel**. `nvidia-x11`/`nvidia-open` are `unfreeRedistributable`, so Hydra never builds them for
+anyone, and they are additionally bound to the exact kernel version. That store path exists only
+where someone publishes it.
+
+```nix
+nix.settings = {
+  substituters       = [ "https://volnixos.cachix.org" ];
+  trusted-public-keys = [ "volnixos.cachix.org-1:GUKpgN2Tzh67uYZtUaEsFr1U7UVLrFG1iCoF860CY5Y=" ];
+};
+```
+
+The kernel itself comes from the [lantian attic](https://attic.xuyh0120.win/lantian), not from this
+cache; CI asserts it is a cache hit before building, because a source build of it does not fit in a
+GitHub Actions job. Details, including the `NIX_CONFIG` ordering trap that made the substituters
+silently disappear, are in
+[Binary Cache & CI](https://wiki.infernalcode.com/tooling/ci-cache/).
+
+> [!TIP]
+> Push before you switch. `make comm && make push` → `gh run watch` → `make switch`. Switching first
+> just means building locally and then having CI rebuild the same paths.
+
 ## Layout
 
 ```text
 .nix-config/
 ├── flake.nix          # inputs, overlays, host (volnix), VM runners
 ├── Makefile           # canonical operations interface (make help)
+├── .github/workflows/ # CI: builds the closure, pushes to cachix:volnixos
 ├── nixos/             # system & Hardware Modules
 ├── home/              # Home Manager modules
 ├── droid/             # Phone-Agent and nix-on-droid modules

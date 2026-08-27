@@ -157,6 +157,11 @@
             # on reboot and a refill of the crash we hit 2026-08-21.
             ".local/share/waydroid"
             ".local/share/applications"
+            # opencode's session store, backing `tether continue` on the free
+            # tiers. Unpersisted, every reboot orphans in-flight delegations:
+            # the session id in ~/CodeRepo/tether/sessions survives the tmpfs
+            # wipe but the conversation it points at does not.
+            ".local/share/opencode"
             ".local/share/Antigravity-x64"
             ".local/share/Antigravity IDE"
             ".local/bin"
