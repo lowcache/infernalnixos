@@ -12,9 +12,21 @@ name: build
 on:
   push:
     branches: [main]
+    # Documentation cannot change the closure, and this build takes the better
+    # part of an hour. Without this, a README push starts a pointless run AND --
+    # via cancel-in-progress below -- kills the real build already in flight.
+    # That is not hypothetical: runs 33042848288 and 33043174328 were both
+    # cancelled mid-build by doc-only pushes. A workflow that never starts
+    # cannot cancel anything.
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'assets/**'
+      - 'LICENSE'
   workflow_dispatch:
 
-# Cancel superseded runs on the same branch; saves minutes and disk churn.
+# Cancel superseded runs on the same branch; saves minutes and disk churn. Kept
+# deliberately: for a real config change, superseding IS what you want.
 concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: true
