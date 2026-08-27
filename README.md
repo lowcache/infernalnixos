@@ -13,7 +13,7 @@
   <a href="https://github.com/lowcache/volnixos/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/lowcache/volnixos?style=flat-square&logo=git&logoColor=white&label=last%20commit&color=5277C3"></a>
 </p>
 
-### Vol(atile) NixOS — a stateless, flake-driven NixOS workstation
+### Volatile NixOS — a stateless, flake-driven NixOS workstation
 
 </div>
 
@@ -25,17 +25,18 @@ adds a CachyOS low-latency kernel, UEFI Secure Boot (Lanzaboote), `sops-nix` sec
 
 ## 📖 Documentation
 
-**Full documentation lives at → [volnixos-wiki.pgs.sh](https://volnixos-wiki.pgs.sh/)**
+**Full documentation lives at → [volnixos WIKI](https://wiki.infernalcode.com/)**
+**Field Notes, Failures, and the [Volatile Testimony](https://infernalcode.com) in its entirety**
+
 
 | Topic | |
 | :--- | :--- |
-| [Architecture](https://volnixos-wiki.pgs.sh/architecture/) | Boot, impermanence, kernel, secrets |
-| [Networking](https://volnixos-wiki.pgs.sh/networking/) | Tor `net-gate` & Tailscale MicroVMs |
-| [Desktop](https://volnixos-wiki.pgs.sh/desktop/) | niri, Noctalia, theming engine |
-| [Reference](https://volnixos-wiki.pgs.sh/reference/flake/) | Flake, Home Manager modules, dotfiles |
-| [Tooling](https://volnixos-wiki.pgs.sh/tooling/makefile/) | Makefile, Fish, agent toolchain |
-
-The docs source is in [`docs/`](docs/) (MkDocs Material). Preview locally with `make docs-serve`.
+| [Architecture](https://wiki.infernalcode.com/architecture/) | Boot, impermanence, kernel, secrets |
+| [Networking](https://wiki.infernalcode.com/networking/) | Tor `net-gate` & Tailscale MicroVMs |
+| [Desktop](https://wiki.infernalcode.com/desktop/) | niri, Noctalia, theming engine |
+| [Reference](https://wiki.infernalcode.com/reference/flake/) | Flake, Home Manager modules, dotfiles |
+| [Tooling](https://wiki.infernalcode.com/tooling/makefile/) | Makefile, Fish, agent toolchain |
+| [nix-on-droid](https://wiki.infernalcode.com/nix-on-droid/) | Phone Tier and the nix-on-droid derivation |
 
 ## Quick start
 
@@ -58,10 +59,11 @@ sudo make switch    # rebuild + switch (HOST=volnix)
 .nix-config/
 ├── flake.nix          # inputs, overlays, host (volnix), VM runners
 ├── Makefile           # canonical operations interface (make help)
-├── nixos/             # system modules
+├── nixos/             # system & Hardware Modules
 ├── home/              # Home Manager modules
+├── droid/             # Phone-Agent and nix-on-droid modules
+├── overrides/         # Overrides & Patches
 ├── dots/              # dotfiles (out-of-store symlinked to ~/.config)
 ├── scripts/           # agent toolchain (agent-scaffold, helpers)
-├── docs/              # MkDocs Material documentation source
 └── assets/            # banner / branding
 ```
