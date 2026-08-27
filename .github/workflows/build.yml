@@ -74,12 +74,15 @@ jobs:
           echo "effective substituters:"
           nix config show substituters
           nix build --dry-run .#nixosConfigurations.volnix.config.system.build.toplevel 2>&1 | tee /tmp/dry.txt
-          # Match the KERNEL derivation only. linux-cachyos-latest-<ver>-modules.drv
-          # and -modules-shrunk.drv are the per-configuration aggregations: they
-          # are built here exactly as they are on every host, they are cheap, and
-          # they are not in anyone's cache. Anchoring .drv straight after the
-          # version excludes them.
-          if grep -qE "linux-cachyos-latest-[0-9.]+\.drv" /tmp/dry.txt; then
+          # Match the KERNEL derivation ONLY -- anchored to the store path so the
+          # name must begin immediately after the hash. Three other cachyos
+          # derivations are built here legitimately and must not trip this:
+          #   ...-linux-cachyos-latest-<ver>-modules.drv         per-config aggregation
+          #   ...-linux-cachyos-latest-<ver>-modules-shrunk.drv  ditto
+          #   ...-initrd-linux-cachyos-latest-<ver>.drv          host-specific initrd
+          # All three are cheap, are in nobody's cache, and are built on every
+          # host too. The unanchored pattern matched the initrd as a substring.
+          if grep -qE "/nix/store/[a-z0-9]+-linux-cachyos-latest-[0-9.]+\.drv" /tmp/dry.txt; then
             echo "::error::the kernel ITSELF would be built from source -- check the effective substituter list above for the lantian attic"
             exit 1
           fi
