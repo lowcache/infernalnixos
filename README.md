@@ -102,7 +102,7 @@ silently disappear, are in
 
 ## Use of Ai
 
-> [!INFO]
+> [!TIP]
 > Ai did not generate this config, but Ai has been instructed to generate and push commits. Ai
 > is a tool that is used in debugging, quality control, and maintenance tasks within this nix configuration. 
 > I can explain, defend, and rationalize the use of every option within it. 
