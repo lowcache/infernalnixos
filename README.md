@@ -99,3 +99,13 @@ silently disappear, are in
 ├── scripts/           # agent toolchain (agent-scaffold, helpers)
 └── assets/            # banner / branding
 ```
+
+## Use of Ai
+
+> [!INFO]
+> Ai did not generate this config, but Ai has been instructed to generate and push commits. Ai
+> is a tool that is used in debugging, quality control, and maintenance tasks within this nix configuration. 
+> I can explain, defend, and rationalize the use of every option within it. 
+> A soapbox, especially when one feels justified, can be an intoxicating and thus attractive thing to possess. I have
+> been in possession of many in my lifetime. They are amazing at influencing individuals, their
+> inherent fault is within their ability to exert influence over anything else. 

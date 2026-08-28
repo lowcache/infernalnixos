@@ -75,14 +75,17 @@ in
   # "requires more credits, or fewer max_tokens" on every run. Pinning it to a
   # free model is what makes an otherwise-free delegation actually free.
   #
+  # Both point at OpenCode Zen (opencode/*) rather than OpenRouter: Zen needs no
+  # API key and no account, so a bare `opencode` works even where the sops secret
+  # is not readable, and it proved the more reliable gateway. The same NVIDIA
+  # model returns an empty body through OpenRouter and answers through Zen.
+  #
   # The per-tier model chains live in tether itself, not here; this only sets
-  # what a bare `opencode` does interactively. The API key comes from sops via
-  # OPENROUTER_API_KEY (home/shell.nix), which tether re-reads from
-  # /run/secrets/openrouter_api_key for non-fish shells.
+  # what a bare `opencode` does interactively.
   xdg.configFile."opencode/opencode.json".text = builtins.toJSON {
     "$schema" = "https://opencode.ai/config.json";
-    model = "openrouter/poolside/laguna-s-2.1:free";
-    small_model = "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free";
+    model = "opencode/mimo-v2.5-free";
+    small_model = "opencode/muse-spark-1.2-contributor-free";
     autoupdate = false; # the store owns the binary; self-update would fight it
     share = "disabled";
   };
