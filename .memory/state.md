@@ -1,7 +1,7 @@
 ---
 type: state
 project: Vol NixOS
-last_updated: 2026-08-25
+last_updated: 2026-09-05
 status: active
 ---
 
@@ -131,13 +131,13 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 
 **Bar — dual wrap-around L-frame (2026-06-22, live, NOT yet committed to git — user-deferred):** Top bar (full width) + left bar (full height) join at top-left corner via `reserve_space = true` on both, squared seam corners, rounded outer corners. Ayu Green palette (`#AAD94C` lime primary, `#E6B450` gold secondary) unified across bar/kitty/starship via `dots/color-engine/apply_theme.py`. Backup: `~/.local/state/noctalia/settings.toml.bak.20260622-112626`. Next: capture to `dots/noctalia/config.toml` and commit (deferred, see todo.md). Full technical-constraints narrative archived (see archive_entries).
 
+**Color Scheme — Ayu Green (2026-09-05, Noctalia M3 Template Architecture Live):** Noctalia is the single source of truth for theming. Starship prompt is driven by Noctalia's M3 roles via a community template (`starship-m3`, live at `~/.local/state/noctalia/community-templates/starship-m3/`). Template shape: `template.toml` renders full role set to `$XDG_CACHE_HOME/noctalia/`, `post_hook` (`apply.sh`) splices output into `dots/starship/starship.toml` between markers. `~/.config/starship.toml` is symlinked to the repo copy via `mkOutOfStoreSymlink` (survives reboots). Starship config now uses `palette = "m3"` + role names only (`primary`, `on_primary`, `tertiary`, `on_tertiary`, `surface_container`, `on_surface`, `error`); zero terminal-ramp names remain. Custom palette layer (`dots/noctalia/palettes/volnix.json`) deleted. Round-trip verified: Rosewater → Sapphire → Rosewater, `primary` tracked `#f4dbd6` → `#7dc4e4` → `#f4dbd6`, rendered prompt emits matching RGB each time. Prompt accent now equals niri `active-color` exactly. **Hazard:** `dots/color-engine/apply_theme.py` is dormant (nothing invokes it; only the persist symlink at `home/persist.nix:11`) but destructive if run: line 145 `re.sub(r'\[palettes\..*\](\n.*)*', ...)` is greedy to EOF, would eat the first `[palettes.` header through file end and recreate `volnix.json` — decision pending on deletion (see todo.md).
+
 **Claude Code Companion Plugin (2026-06-26, V1 live):** `~/.local/share/noctalia/plugins/claude` → `~/CodeRepo/claude-companion/noctalia-claude-plugin/` (own repo, `github.com/lowcache/noctalia-claude-plugin`). Pulse widget (`bell-ringing` glyph, top bar center) driven by Claude session hooks (SessionStart/UserPromptSubmit/PreToolUse/PostToolUse/Notification/Stop, merged into `~/.claude/settings.json`). MCP shim registered at `~/.nix-config/.mcp.json` (stdio): `get_window`, `get_workspace`, `get_media`, `get_shell_state`, `notify`, `set_theme_mode`, `set_color_scheme`, `remember`. Launcher `/cc` runs one-shot `claude` invocations via `runInTerminal`. Design philosophy (shell as senses/actuators, not a chat-UI port): decisions.md #24. Full verification narrative archived (see archive_entries).
 
 **Plugin token optimization (2026-06-25):** 14 of 18 installed Claude Code plugins disabled to cut per-turn system-prompt overhead; 4 enabled (`nix-dev`, `devenv`, `feature-dev`, `impeccable`). Reversible via `claude plugin enable <name>@<marketplace>`.
 
 **Scratchpad plugin (2026-06-24, active):** Note-taking widget + launcher provider at `~/.local/share/noctalia/plugins/scratchpad/`, shares state via `noctalia.state` + `notes.json`.
-
----
 
 ## 8. Documentation Platform — Hugo + E25DX (2026-08-15, Live; SEO fix 2026-08-23)
 

@@ -1,7 +1,7 @@
 ---
 type: decisions
 project: Vol NixOS
-last_updated: 2026-08-25
+last_updated: 2026-09-05
 status: active
 ---
 
@@ -486,3 +486,16 @@ This file catalogs the active, canonical design decisions and system configurati
 * **Status:** Built in `/nix/store/zqlbavrgxnz93w8ahx8rxjg9rjiyw9mq-nixos-system-volnix-26.11.20260823.56c02bc`. **Not yet live** — requires `make switch` to activate, then post-switch WirePlumber restart to apply parked-card rules: `sed -i '/pci-0000_01_00.1/d; /pci-0000_66_00.1/d' ~/.local/state/wireplumber/default-profile && systemctl --user restart wireplumber`.
 
 * **Why this design:** Mirrors the pattern of `vol.ai-stack` (options describe the feature, config block activates it). Keeps audio configuration in one place (`nixos/modules/audio.nix`) rather than scattered across `services.pipewire`, `services.wireplumber`, `security.rtkit`, `hardware.pulseaudio`, and `hardware.bluetooth` (which it synthesizes). Enables future re-configuration by tweaking `nixos/hosts/` without touching the module logic.
+## 38. Noctalia as Single Source of Truth for Theming — Starship/Shell/UI Driven from M3 Roles (2026-09-05)
+
+* **Decision:** Noctalia is the sole, authoritative source of theming. Shell (starship) and UI (niri, kitty, fuzzel) all consume Noctalia's published M3 roles and palette; no hand-authored color config outside Noctalia exists.
+
+* **Implementation:** Starship uses a community M3 template (`starship-m3`, live at `~/.local/state/noctalia/community-templates/starship-m3/`). Template `post_hook` (`apply.sh`) splices Noctalia's rendered role set into `dots/starship/starship.toml` between markers. `~/.config/starship.toml` is symlinked to the repo via `mkOutOfStoreSymlink`; survives reboots.
+
+* **What this kills:** Dormant `dots/color-engine/apply_theme.py` and custom palette layer (`dots/noctalia/palettes/volnix.json`). Both are superseded; Noctalia owns palette selection and emission. apply_theme.py contains a hazardous greedy regex (line 145) that would destroy the file if invoked.
+
+* **Consequence:** Single control surface (Noctalia's theme command `color-scheme-set <source> <name>`) drives the entire desktop. Changes propagate to niri, kitty, starship, fuzzel in one operation. Starship now uses M3 role names only (`primary`, `on_primary`, `tertiary`, `surface_container`, etc.), no terminal ANSI ramp fallback.
+
+* **Verified:** Round-trip scheme Rosewater → Sapphire → Rosewater. Prompt accent now equals niri `active-color` exactly (`#f4dbd6`, `#7dc4e4`, `#f4dbd6` confirmed).
+
+* **Why this design:** Prevents config drift and color misalignment. Terminal ramp (8 colors + shades) is a lossy subset; M3 roles are the full semantic set. Hand-authored layers invite inconsistency. Noctalia's community template system makes this possible without forking upstream.

@@ -1,7 +1,7 @@
 ---
 type: todo
 project: Vol NixOS
-last_updated: 2026-08-25
+last_updated: 2026-09-05
 status: active
 ---
 
@@ -236,3 +236,18 @@ status: active
 - [ ] Write full body (user authoring)
 - [ ] Cross-check cited numbers against decisions.md #21, mistakes.md 2026-08-24, state.md §9 (Krita section)
 - [ ] Publish (remove `draft: true`, then `cd volnixos-blog && make build && make deploy`)
+### Decide: Delete Dormant apply_theme.py Subsystem (2026-09-05 — USER DECISION PENDING)
+
+**Status:** `dots/color-engine/apply_theme.py` is now unused (Noctalia owns theming as of 2026-09-05, decisions.md #38). The subsystem is dormant: nothing invokes it — no service, alias, or hook — but contains a destructive bug.
+
+**Hazard:** Line 145 uses a greedy regex `re.sub(r'\[palettes\..*\](\n.*)*', ...)` intended to replace one `[palettes.*]` section. The regex is greedy-to-EOF, so the first match swallows the rest of the file. If invoked (e.g., by accident via shell history or a stale alias), it would truncate `dots/starship/starship.toml` and recreate the deleted `dots/noctalia/palettes/volnix.json`.
+
+**Options:**
+1. **Delete:** Remove `dots/color-engine/` entirely (two files: `apply_theme.py`, `themes/ayu_green.json`). No other code depends on it; it's dead code.
+2. **Keep for reference:** Archive into a `docs/historic/` folder with a README explaining why it was superseded (value: teaching example of what NOT to do with regex).
+3. **Keep and fix:** Rewrite line 145 to be non-greedy; document the subsystem as deprecated but safe. (Lowest priority — if kept, it should at least be safe.)
+
+- [ ] User decides: delete, archive, or fix-and-keep
+- [ ] If delete: remove `dots/color-engine/` directory and commit
+- [ ] If archive: move to `docs/historic/color-engine/` with README
+- [ ] If fix: rewrite regex to `re.sub(r'\[palettes\.\w+\].*?(?=\[|\Z)', ..., flags=re.DOTALL)` (non-greedy, stops at next `[` or EOF) and add a deprecation comment
