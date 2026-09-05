@@ -1,7 +1,7 @@
 ---
 type: mistakes
 project: Vol NixOS
-last_updated: 2026-08-24
+last_updated: 2026-09-05
 status: append-only
 ---
 
@@ -114,12 +114,6 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 * **Prevention Rule:** If GTK/Electron file pickers or portal Settings fail with `AccessDenied` / `Unable to open /proc/<pid>/root`, do NOT chase portal backends, icons, or `GTK_USE_PORTAL`. Reproduce with `gdbus call --session --dest org.freedesktop.portal.Desktop --object-path /org/freedesktop/portal/desktop --method org.freedesktop.portal.Settings.ReadAll '[]'`; if it errors, the app-id step is broken. Compare against `dbus-run-session -- <same call>`. If the daemon works and the live broker bus does not, set `services.dbus.implementation = "dbus"`.
 * **Rebuild caution:** Switching the dbus implementation restarts the message bus on `switch` and will tear down the running Wayland session (see Mistake #1). Apply via reboot, or run the rebuild detached (tmux / `systemd-run`).
 
-### 2026-08-21 — Variant Package Shadowing in PATH (waydroid-nftables over system waydroid)
-
-* **Symptom:** User's `waydroid` CLI and system service (`waydroid-container`) running different builds of the same package (1.6.3). `which waydroid` resolved to `jp7gx2f…-waydroid-nftables` (HM profile), systemd service used `f33fs2i…-waydroid` (plain). Both produced identical behavior on this host (iptables rules route through nftables anyway, host not firewall-specific), but the split created divergence risk if variants ever differ in features or bugs.
-* **Root cause:** `home/pkgs.nix` included `waydroid-nftables` while `nixos/configuration.nix` enabled `virtualisation.waydroid` (plain package in system service). Home manager's `/etc/profiles/per-user/lowcache/bin` is searched before `/run/current-system/sw/bin` on PATH due to HM's `--profiles` ordering, causing the variant to shadow the system package. This is a *packaging mistake*, not a user-configuration problem — installing a package variant into a user profile when the system service has the base package is an anti-pattern that silently diverges CLI and service behavior.
-* **Prevention rule:** When a package has variant builds (`*-nftables`, `*-minimal`, `*-full`, etc.) and a NixOS service module provides that base package, do NOT install the variant into a user profile — it will shadow the system package on PATH and cause divergence. If the variant is actually needed, use the NixOS module's configuration option instead (e.g., `virtualisation.waydroid.package = pkgs.waydroid-nftables;`). Diagnostic: `readlink -f $(which X)` vs `readlink -f /run/current-system/sw/bin/X` — if they differ, you have shadowing. For closures: `nix-store -q --requisites` on both paths to detect feature divergence.
-
 ### 2026-08-23 — E25DX Theme robots.txt Blocks Non-Google Crawlers by Default
 
 **Symptom:** wiki.infernalcode.com was fully invisible to Bing and DuckDuckGo (bingbot/DuckDuckBot); only Google, Yandex, Baidu, and Apple could crawl it.
@@ -133,3 +127,15 @@ This file catalogs past bugs, configuration issues, and operational pitfalls enc
 * **Symptom:** Krita crashed unexpectedly (SIGBUS, signal 7) on 2026-07-18 (PID 575314) and 2026-07-20 (PID 75335). Core dumps retained, but backtraces discarded (`Storage: none`). No obvious application bug.
 * **Root cause:** `kritarc:291` configured `swaplocation=/tmp` with `maxSwapSize=10240` (10 GB). The machine has an impermanence root: `fsType="tmpfs", size=4G` (nixos/hardware-configuration.nix:35-43). Krita mmaps tile-swap pages into this 4 GB tmpfs. When the swap file fills beyond 4 GB, a page fault on the mmap'd region cannot be satisfied → kernel signal `SIGBUS` (bus error). This is a **structural hazard** of impermanence + mmap-based caching on tmpfs, not a Krita bug.
 * **Prevention rule:** (1) On impermanence hosts, identify any application that uses mmap-based temporary storage and configure it to use persistent backing storage (`~/Storage/tmp` or similar), NOT tmpfs `/tmp`. Krita does not honor `$TMPDIR` — it uses its own `swaplocation` config. (2) The system itself (`home/default.nix:67`) sets `TMPDIR = ~/Storage/tmp` correctly; this mitigation does NOT apply to apps with custom temp paths. (3) `df -h /` is the first diagnostic (check tmpfs % full); `du -xh -d2 /` identifies consumers without following bind-mounts. (4) Swift fix: Edit `kritarc` directly (out-of-store symlink to `~/Storage/krita-master/kritarc`, user-mutable) → Settings → Configure Krita → Performance → Swap File Location → `~/Storage/tmp/krita-swap` or similar, with 250+ GB free. Verify with `grep swaplocation ~/Storage/krita-master/kritarc`.
+
+### 2026-09-05 — Rogue AP-Mode NM Profile Silently Blocks WiFi Scanning
+
+* **Symptom:** WiFi scanning returned zero results (no hotel APs, phone hotspot visible). Suspected 5 GHz hardware fault. Generation rollback ineffective.
+
+* **Root cause:** Two accidental NetworkManager AP-mode profiles (`Wi-Fi connection 1/2`) in `/etc/NetworkManager/system-connections/` (persisted from `/persist`, not flake-declared), both open on hotel-like SSIDs. First profile auto-activated at boot. Hardware: RTL8852BE radio (rtw89_8852be) is single-radio, cannot beacon as AP and scan client-mode simultaneously. Active AP → all `nmcli device wifi list` scans return `CTRL-EVENT-SCAN-FAILED ret=-95` (EOPNOTSUPP). Client-mode profiles require successful scans to be "available"; device remained AP-only across reboots.
+
+* **Why rollback failed:** `/etc/NetworkManager/system-connections/` is bind-mounted from `/persist/` (hardware-configuration.nix:89). NM profiles are runtime STATE, not Nix declarations. Generation rollback cannot reach persisted directories. **Broader truth:** Any NM misconfiguration on this host survives rollback; same applies to all impermanence persist paths.
+
+* **Security exposure:** ~15 min on 2026-09-05 ~15:33 UTC: laptop broadcast open AP with hotel SSID, NATing USB tether. One station (randomised MAC `06:83:0d:cd:21:2d`) associated three times. No client IP or payload logging available; attribution impossible.
+
+* **Prevention rule:** (1) **nmtui trap:** *Add a connection* screen auto-names profiles `Wi-Fi connection N` + defaults Mode to *access-point* + flips IPv4 to Shared. Footgun. Use *Activate a connection* for discovered networks instead. Same trap in `nm-connection-editor`. (2) **Diagnostic:** `nmcli device wifi list` returning one entry with BSSID = device MAC + signal 0 = radio is AP. (3) **Audit one-liner:** `for u in $(nmcli -g UUID connection show); do [ "$(nmcli -g 802-11-wireless.mode connection show $u)" = ap ] && nmcli -g connection.id connection show $u; done`. (4) **Persisted NM state:** Periodically audit `/etc/NetworkManager/system-connections/` outside flake; NM is state not config. Document intentional AP profiles (if any) in comments or persist.nix. (5) **Fixed:** Deleted both profiles; scanning recovered immediately.
