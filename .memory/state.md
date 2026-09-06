@@ -1,7 +1,7 @@
 ---
 type: state
 project: Vol NixOS
-last_updated: 2026-09-05
+last_updated: 2026-09-06
 status: active
 ---
 
@@ -192,3 +192,6 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 * **Hot-reload behavior:** Gateway does not hot-reload backend configs (SIGHUP has no effect; confirmed via prior Sentry dashboard offline during config test). Restart required: `systemctl --user restart mcp-gateway`.
 
 * **Outstanding security item:** GitHub PAT in `~/.config/systemd/user/mcp-gateway.service` is plaintext (should move to sops secrets once gateway supports `sops-nix` credential injection — currently not implemented).
+## 11. Flake Templates — Language Scaffolds
+
+Five language templates available via `nix flake init -t ~/.nix-config#<lang>`: **ruby**, **hugo**, **python**, **go**, **lua**. Each ships `flake.nix`, `.envrc`, `.gitignore`, `README.md`. Language must be named explicitly (no `templates.default`). Verified consumers: lua (drive-health harness), python (memd 255 tests), hugo (wiki build), go (binaries), ruby (bundlerEnv). Lua gap: no `.luau` template for community-plugins (337 files use luau, not lua); user does not use nvim/wezterm, so gap is not urgent (decisions.md #39).
