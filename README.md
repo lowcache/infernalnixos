@@ -100,17 +100,8 @@ silently disappear, are in
 └── assets/            # banner / branding
 ```
 
-## Use of Ai
-
 <div align="center">
 <img alt="ai note" src="./assets/ai_note.png" width="100%"">
 <p></p>
 </div>
 
-> [!NOTE] 
-> About Anti-Ai Sentiment 
-> A soapbox, especially when one feels justified, can be an intoxicating and thus attractive thing to possess. I have
-> been in possession of many in my lifetime. They are amazing at attracting like-minded individuals.
-> Its inherent fault lies within its inability to exert influence *anywhere* else while serving to annoy the piss out of everyone else.  
-> It's too late to right the ship, stem the tide, stop the progression, or effect any kind of change from outside. For a couple **YEARS** now.
-> I would rather play a part in how its implemented than sit around bitching about how shitty it is...
