@@ -1,7 +1,7 @@
 ---
 type: todo
 project: Vol NixOS
-last_updated: 2026-09-05
+last_updated: 2026-09-06
 status: active
 ---
 
@@ -90,6 +90,56 @@ status: active
 ---
 
 ## IN PROGRESS / AWAITING ACTION
+
+### Backport Discovery Mechanism to claude-companion Plugin (2026-09-06 — Load-Bearing)
+
+**Context:** The luau template now uses runtime discovery of `*.luau` files via `builtins.readDir`. Controlled testing showed this prevents undeclared-reference bugs that hardcoded file lists miss (false negatives). The source plugin flake.nix still uses the old nine-file hardcoded list and is thus vulnerable.
+
+**Implication:** Any new plugin functions added to claude-companion could silently have missing declarations (gate passes, plugin breaks at runtime). This is the exact failure mode the plugin flake's own comments acknowledge.
+
+- [ ] Open `~/CodeRepo/claude-companion/noctalia-claude-plugin/flake.nix`
+- [ ] Replace hardcoded `luauFiles` string with discovery logic from `templates/luau/flake.nix`
+- [ ] Test: run `nix flake check` on the plugin repo; verify all gates pass
+- [ ] Commit to claude-companion repo
+
+### Audio Module Activation (2026-08-25 — USER DECISION PENDING)
+
+**Status:** Audio module is built and ready. Requires activation via `make switch` (will also apply unrelated theme formatting from dots/). Post-switch needs WirePlumber restart to apply parked-card rules.
+
+- [ ] User runs `make switch` to activate audio module
+- [ ] Post-switch: run WirePlumber restart + sed removal of stored pins
+- [ ] Verify: `wpctl status` shows two sinks (Realtek + headset), not seven; `pactl list short sinks` works
+
+### Plugin Attribution — Email Drafted, PR Staged (2026-08-25)
+
+**Status:** Two community-plugins PRs staged locally in `/home/lowcache/CodeRepo/claude-companion/community-plugins` on branches `attribution/opencode-companion` (commit db9fe8d) and `attribution/9router-control` (commit 10648ea). Email draft written to `scratchpad/weinguyen-email.txt`. Nothing pushed.
+
+**Sequence:** Email first at `weinguyen1224@gmail.com`, then PR if no response within ~1 week.
+
+- [ ] Review email draft at `scratchpad/weinguyen-email.txt`
+- [ ] Send email to weinguyen1224@gmail.com
+- [ ] If no response in ~1 week, push branches and open PRs against upstream/main
+  - PR 1: `attribution/opencode-companion` (4 lines: notice + Credits section + version bump)
+  - PR 2: `attribution/9router-control` (4 lines: notice + Credits section + version bump)
+- [ ] Note: repo policy is "One plugin per PR" (enforced by `enforce-pr-template` workflow)
+- [ ] Note: PR author can request changes before merge unless fix is broken or mechanical repo-wide change
+
+### Wire android-integration — Choose Strategy (2026-08-03 — USER DECISION PENDING)
+
+**Status:** termux-am builds successfully. Two approaches:
+
+1. **disabledModules approach** (~60 lines): Full feature set (termux-open-url, termux-wake-lock), but track upstream drift.
+2. **xdg-open shim** (~5 lines): Gets OAuth's browser opening; skips wake-lock and setup-storage.
+
+**User decision needed:** Which approach (1 or 2)? Or defer entirely?
+
+### Verify tether × gemini-cli 0.25.2 (AWAITING USER DECISION)
+
+**Question:** Does tether require antigravity-cli specifically, or will gemini-cli 0.25.2 (nixos-25.11) suffice?
+
+- [ ] User clarifies antigravity vs 0.25.2
+- [ ] If 0.25.2 works: add to `droid/agents.nix` (no backport)
+- [ ] If antigravity required: backport (lower priority than rtk/mcp-gateway)
 
 ### Audio Module Activation (2026-08-25 — USER DECISION PENDING)
 
