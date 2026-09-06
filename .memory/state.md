@@ -194,8 +194,9 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 * **Outstanding security item:** GitHub PAT in `~/.config/systemd/user/mcp-gateway.service` is plaintext (should move to sops secrets once gateway supports `sops-nix` credential injection — currently not implemented).
 ## 11. Flake Templates — Five Language Scaffolds
 
-* **Location:** `.nix-config/templates/{ruby,hugo,python,go,lua}`. Each is a complete project mold.
+* **Location:** `.nix-config/templates/{ruby,hugo,python,go,lua,luau}`. Each is a complete project mold.
 * **Contents per template:** flake.nix (with `checks` attrset for named gates), .envrc (direnv flake integration), .gitignore (project-scoped, not copied), README.md (template-specific guidance).
 * **Usage:** `nix flake init -t ~/.nix-config#<language>` (must specify language; no `templates.default` by design, prevents silent mismatches).
-* **Verification status (all live-tested on real consumers):** lua → drive-health `make unit` rc=0 (lua5.4 + LuaJIT tested); python → memd 255 pytest tests pass; hugo → wiki builds rc=0; go → produces working binary; ruby → bundlerEnv build succeeds.
-* **Known gap:** lua template is for drive-health (33 `.lua` harnesses); community-plugins ecosystem has 337 `.luau` files. A luau template would be better fit, but that's the only current Lua consumer and user does not use nvim/wezterm. Deferred (low priority).
+* **New in 2026-09-06:** Luau template (#luau) added, promoted from noctalia-claude-plugin flake. Specialization: dynamic file discovery of `*.luau` targets via `builtins.readDir` (avoids hardcoded list maintenance). Luau and Lua are separate templates and toolchains; Lua remains for drive-health (17 harnesses, lua5.4/luajit), Luau for community-plugins ecosystem (337 Luau files).
+* **Verification status (all live-tested on real consumers):** lua → drive-health `make unit` rc=0 (lua5.4 + LuaJIT tested); luau → noctalia-claude-plugin static analysis gate rc=0 (no undeclared-function errors); python → memd 255 pytest tests pass; hugo → wiki builds rc=0; go → produces working binary; ruby → bundlerEnv build succeeds.
+* **Known gap (inherited from lua template, low priority):** lua template is for drive-health (17 `.lua` harnesses); Luau dominates community use (337 files). Lua template is correct for its single consumer. Future nvim/wezterm adoption would justify Luau-only focus, but user does not use those. Deferred.
