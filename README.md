@@ -101,11 +101,11 @@ silently disappear, are in
 ```
 
 ## Use of Ai
-
-> [!NOTE]
-> Ai did not generate this config, but Ai has been instructed to generate and push commits. Ai
-> is a tool that is used in debugging, quality control, and maintenance tasks within this nix configuration. 
-> I can explain, defend, and rationalize the use of every option within it. 
+<img alt="ai note" src="./assets/ai_note.png" width="100%"">
+<p></p>
+> [!NOTE] About Anti-Ai Sentiment 
 > A soapbox, especially when one feels justified, can be an intoxicating and thus attractive thing to possess. I have
-> been in possession of many in my lifetime. They are amazing at influencing individuals, their
-> inherent fault is within their ability to exert influence over anything else. 
+> been in possession of many in my lifetime. They are amazing at attracting like-minded individuals.
+> Its inherent fault lies within its inability to exert influence *anywhere* else while serving to annoy the piss out of everyone else.  
+> It's too late to right the ship, stem the tide, stop the progression, or effect any kind of change from outside. For a couple **YEARS** now.
+> I would rather play a part in how its implemented than sit around bitching about how shitty it is...
