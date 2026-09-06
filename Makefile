@@ -221,6 +221,34 @@ git:
 		ssh-add ~/.ssh/id_ed25519 || exit 1; \
 		run; \
 	fi && echo "++ Git Repo Updated."
+	@$(MAKE) --no-print-directory ci
+
+## :ci: ..........: Watch the CI run for HEAD (cachix upload is the final post step)
+ci:
+	@command -v gh >/dev/null 2>&1 || { echo "++ gh not on PATH; skipping CI watch."; exit 0; }; \
+	sha=$$(git rev-parse HEAD); short=$$(git rev-parse --short HEAD); \
+	printf "++ Locating CI run for %s" "$$short"; \
+	id=""; \
+	for i in $$(seq 1 20); do \
+		id=$$(gh run list --commit "$$sha" --limit 1 --json databaseId --jq '.[0].databaseId' 2>/dev/null); \
+		[ -n "$$id" ] && break; \
+		printf "."; sleep 3; \
+	done; \
+	echo ""; \
+	if [ -z "$$id" ]; then \
+		echo "++ No run for $$short - docs-only pushes match paths-ignore (**.md, docs/, assets/, LICENSE)."; \
+		exit 0; \
+	fi; \
+	gh run view "$$id" --json url --jq '"++ " + .url'; \
+	st=$$(gh run view "$$id" --json status --jq '.status'); \
+	if [ "$$st" = "completed" ]; then \
+		gh run view "$$id" --json conclusion --jq '"++ already finished: " + .conclusion'; \
+		[ "$$(gh run view "$$id" --json conclusion --jq '.conclusion')" = "success" ] || exit 1; \
+		exit 0; \
+	fi; \
+	echo "++ Ctrl-C detaches; the build keeps running on the runner."; \
+	echo "++ cachix:volnixos upload is cachix-action's post step, so it finishes last."; \
+	gh run watch "$$id" --compact --exit-status
 
 ## :comm: ..........: Scan repo, stage changes, and prompt for commit message
 comm:

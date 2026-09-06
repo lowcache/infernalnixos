@@ -84,9 +84,9 @@
           papirus-icon-theme
           gsettings-desktop-schemas
           vscodium
+          pulsar
           gedit
           geany
-          pulsar
           file-roller
           cava
           swappy

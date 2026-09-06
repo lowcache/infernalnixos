@@ -54,6 +54,9 @@
     config = {
       allowUnfree = true;
       android_sdk.accept_license = true;
+      permittedInsecurePackages = [
+        "pulsar-1.132.1"
+      ];
     };
   };
 }
