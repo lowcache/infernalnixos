@@ -3,7 +3,7 @@
   pkgs,
   ...
 }:
- {
+{
   environment = {
     systemPackages =
       let
