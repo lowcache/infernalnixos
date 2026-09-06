@@ -102,6 +102,5 @@ silently disappear, are in
 
 <div align="center">
 <img alt="ai note" src="./assets/ai_note.png" width="100%"">
-<p></p>
 </div>
 
