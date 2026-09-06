@@ -192,6 +192,10 @@ Ephemeral root (`tmpfs`, ~4 GB, wiped on boot). Permanent data on `/persist`.
 * **Hot-reload behavior:** Gateway does not hot-reload backend configs (SIGHUP has no effect; confirmed via prior Sentry dashboard offline during config test). Restart required: `systemctl --user restart mcp-gateway`.
 
 * **Outstanding security item:** GitHub PAT in `~/.config/systemd/user/mcp-gateway.service` is plaintext (should move to sops secrets once gateway supports `sops-nix` credential injection — currently not implemented).
-## 11. Flake Templates — Language Scaffolds
+## 11. Flake Templates — Five Language Scaffolds
 
-Five language templates available via `nix flake init -t ~/.nix-config#<lang>`: **ruby**, **hugo**, **python**, **go**, **lua**. Each ships `flake.nix`, `.envrc`, `.gitignore`, `README.md`. Language must be named explicitly (no `templates.default`). Verified consumers: lua (drive-health harness), python (memd 255 tests), hugo (wiki build), go (binaries), ruby (bundlerEnv). Lua gap: no `.luau` template for community-plugins (337 files use luau, not lua); user does not use nvim/wezterm, so gap is not urgent (decisions.md #39).
+* **Location:** `.nix-config/templates/{ruby,hugo,python,go,lua}`. Each is a complete project mold.
+* **Contents per template:** flake.nix (with `checks` attrset for named gates), .envrc (direnv flake integration), .gitignore (project-scoped, not copied), README.md (template-specific guidance).
+* **Usage:** `nix flake init -t ~/.nix-config#<language>` (must specify language; no `templates.default` by design, prevents silent mismatches).
+* **Verification status (all live-tested on real consumers):** lua → drive-health `make unit` rc=0 (lua5.4 + LuaJIT tested); python → memd 255 pytest tests pass; hugo → wiki builds rc=0; go → produces working binary; ruby → bundlerEnv build succeeds.
+* **Known gap:** lua template is for drive-health (33 `.lua` harnesses); community-plugins ecosystem has 337 `.luau` files. A luau template would be better fit, but that's the only current Lua consumer and user does not use nvim/wezterm. Deferred (low priority).

@@ -499,23 +499,20 @@ This file catalogs the active, canonical design decisions and system configurati
 * **Verified:** Round-trip scheme Rosewater → Sapphire → Rosewater. Prompt accent now equals niri `active-color` exactly (`#f4dbd6`, `#7dc4e4`, `#f4dbd6` confirmed).
 
 * **Why this design:** Prevents config drift and color misalignment. Terminal ramp (8 colors + shades) is a lossy subset; M3 roles are the full semantic set. Hand-authored layers invite inconsistency. Noctalia's community template system makes this possible without forking upstream.
-## 39. Flake Templates — Five Languages, Explicit Naming, Modular Architecture (2026-09-05)
+## 39. Flake Templates — Five Languages, No Default Enforced (2026-09-05)
 
-* **Decision:** Provide five language templates (`ruby`, `hugo`, `python`, `go`, `lua`) as flake outputs, with explicit naming requirement and modular design principles.
+* **Decision:** Provide five language templates (`templates/{ruby,hugo,python,go,lua}`) for rapid project scaffolding. Each template is a complete mold with flake.nix, .envrc, .gitignore, and README.md. Intentionally no `templates.default`.
 
-* **Templates:** Each scaffold contains `flake.nix`, `.envrc`, `.gitignore`, `README.md`. A template is a mold; nobody works inside the template directory.
+* **Why no default:** With five templates, a bare `nix flake init -t ~/.nix-config` would scaffold into a random language, often wrong. Requiring the language name (`nix flake init -t ~/.nix-config#python`) forces explicit choice and prevents silent mismatches.
 
-* **Explicit naming (no `templates.default`):** Users must invoke `nix flake init -t ~/.nix-config#python` (naming the language), not bare `nix flake init -t ~/.nix-config`. Reason: with five templates, a coin-toss default would scaffold the wrong language into a real project. This is a safety guard, not convenience cost (the command is still short).
+* **Gitignore placement:** `.gitignore` sits at `templates/.gitignore` (one level above individual templates), so `nix flake init` never copies it into stamped projects. This prevents each new project from inheriting a stale `flake.lock` (templates must not commit locks; projects must). Testing pattern: stamp templates into scratch directories, not `direnv allow` in-place (which leaves artifacts in the config repo).
 
-* **`templates/.gitignore` placement:** Sits one level above all templates (`templates/.gitignore`, not `templates/<lang>/.gitignore`). This location ensures `nix flake init` never copies it into projects. Each project commits its own `flake.lock`; templates must not carry stale pins into new scaffolds.
+* **Checks pattern (all five templates):** Each template includes a `checks` attrset mapping gate names to `runCommand` derivations (e.g., `check-unit`, `check-fmt`). Enables granular failure reporting in `nix flake check` (failures name the gate, not an opaque script). Each gate runs against a writable `$TMPDIR` copy to allow temp file writes without spurious failures. Empty by default.
 
-* **Checks pattern:** `checkCommands` maps gate names to commands; each becomes its own sandboxed `runCommand` with a writable `$TMPDIR` copy (not in-place edit). Failures name the gate (e.g., `check-unit`), not a mystery script. All template `.nix` files must pass this flake's own `nixfmt --check` / `statix` / `deadnix --fail` gates. Empty gates are OK (not every template needs unit tests).
+* **Lua template specificity:** Single live consumer: drive-health (33 `.lua` harnesses). Lua 5.4 and LuaJIT pass the test suite; Lua 5.1 fails. Gotcha: `pkgs.luarocks` is built against lua5.2 by default; use `pkgs.${luaAttr}.pkgs.luarocks` to match your Lua version. Known gap: lua template should be `luau` (community-plugins has 337 `.luau` files against 33 `.lua`), but user does not use nvim/wezterm. Deferred, low priority.
 
-* **Lua template design notes:**
-  - Real consumer: `drive-health` (33 `.lua` files). Works with lua5_4 + luajit; lua5_1 is incompatible (verified via harness).
-  - Luarocks caveat: `pkgs.luarocks` is built against lua5.2 by default. Use `pkgs.${luaAttr}.pkgs.luarocks` or vendor packages land in an unread tree.
-  - Gap: community-plugins uses `.luau` (337 files); no `luau` template exists. User does not use nvim/wezterm; this gap is noted but not urgent.
+* **Implementation constraint:** All template `.nix` files sit inside `${self}` and must pass this flake's nixfmt/statix/deadnix gates. Rules out lambda-based option lists (deadnix flags unused arguments); use attrset of strings instead.
 
-* **Verified consumers:** lua (drive-health), python (memd, 255 pytest tests), hugo (volnixos-wiki), go (working binaries), ruby (bundlerEnv).
+* **Verification (measurement-based, real consumers):** lua → drive-health `make unit` rc=0 (lua5.4, luajit); python → memd 255 pytest tests; hugo → site builds rc=0; go → produces running binary; ruby → bundlerEnv build succeeds.
 
-* **Why this shape:** Templates are persistent infrastructure, not throwaway scaffolding. Explicit language naming and clear gitignore rules prevent footguns. Checks pattern ensures templates themselves are high-quality (pass the same gates as the flake). Kept to five languages because each has a demonstrated real consumer; more would dilute maintenance cost for hypothetical use cases.
+* **Usage:** `nix flake init -t ~/.nix-config#<language>` to scaffold new project. Do not work inside template directory itself (stamp into a new directory for each project).
