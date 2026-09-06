@@ -101,8 +101,12 @@ silently disappear, are in
 ```
 
 ## Use of Ai
+
+<div align="center">
 <img alt="ai note" src="./assets/ai_note.png" width="100%"">
 <p></p>
+</div>
+
 > [!NOTE] About Anti-Ai Sentiment 
 > A soapbox, especially when one feels justified, can be an intoxicating and thus attractive thing to possess. I have
 > been in possession of many in my lifetime. They are amazing at attracting like-minded individuals.
