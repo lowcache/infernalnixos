@@ -107,7 +107,8 @@ silently disappear, are in
 <p></p>
 </div>
 
-> [!NOTE] About Anti-Ai Sentiment 
+> [!NOTE] 
+> About Anti-Ai Sentiment 
 > A soapbox, especially when one feels justified, can be an intoxicating and thus attractive thing to possess. I have
 > been in possession of many in my lifetime. They are amazing at attracting like-minded individuals.
 > Its inherent fault lies within its inability to exert influence *anywhere* else while serving to annoy the piss out of everyone else.  
