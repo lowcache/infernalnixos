@@ -18,6 +18,22 @@ in
   # (P5-T1). Each checks VM reachability first. Referenced packages (brave,
   # curl, sudo) are already in the system/home closure — nothing new installed.
   home.packages = [
+    # playwright-mcp's nixpkgs wrapper bakes a read-only PLAYWRIGHT_BROWSERS_PATH,
+    # then tries to install chrome-for-testing inside it, so no browser launches.
+    # Point --executable-path at the driver's own chrome instead: it is already in
+    # playwright-mcp's runtime closure (no added size), it sets SSL_CERT_FILE and
+    # FONTCONFIG_FILE, and it execs the exact chromium playwright-mcp was built
+    # against. The previous loose script globbed all of /nix/store and picked a
+    # stale playwright-chromium by sort order.
+    (pkgs.writeShellScriptBin "playwright-mcp-nix" ''
+      out="''${PLAYWRIGHT_MCP_OUTPUT:-$HOME/Storage/playwright-mcp}"
+      ${pkgs.coreutils}/bin/mkdir -p "$out"
+      exec ${pkgs.playwright-mcp}/bin/playwright-mcp \
+        --headless --no-sandbox --isolated \
+        --output-dir "$out" \
+        --executable-path ${pkgs.playwright-driver.browsers}/chromium-*/chrome-linux64/chrome \
+        "$@"
+    '')
     (pkgs.writeShellScriptBin "tor-brave" ''
       ${checkTor}
       exec ${pkgs.brave}/bin/brave \
@@ -157,9 +173,9 @@ in
 
   # Global agent tooling on PATH for every project, not just this repo.
   # Out-of-store symlinks (same rationale as dots/: live-editable without a
-  # rebuild). memd and tether each graduated to their own repos under
-  # ~/CodeRepo (decision #18 for memd): a single live copy runs everywhere, so
-  # there is no store/live drift to reconcile. python3 for the shebang comes from
+  # rebuild). memd, tether and agent-scaffold each graduated to their own repos
+  # under ~/CodeRepo (decision #18 for memd): a single live copy runs
+  # everywhere, so there is no store/live drift to reconcile. python3 for the shebang comes from
   # the user profile already on the service PATH below.
   home.file = {
     ".local/bin/tether" = {
@@ -167,7 +183,7 @@ in
       force = true;
     };
     ".local/bin/agent-scaffold" = {
-      source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/.nix-config/scripts/agent-scaffold/agent-scaffold";
+      source = config.lib.file.mkOutOfStoreSymlink "/persist${config.home.homeDirectory}/CodeRepo/agent-scaffold/agent-scaffold";
       force = true;
     };
   };

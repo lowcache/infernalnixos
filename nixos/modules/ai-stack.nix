@@ -12,7 +12,7 @@ let
 in
 {
   options.vol.ai-stack = {
-    ollama.enable = lib.mkEnableOption "Ollama (CUDA-pinned via nixos/overlays/ollama.nix)";
+    ollama.enable = lib.mkEnableOption "Ollama (CUDA)";
 
     ollama.exposeToTailscaleVm = lib.mkOption {
       type = lib.types.bool;

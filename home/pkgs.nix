@@ -86,7 +86,7 @@
           vscodium
           gedit
           geany
-
+          pulsar
           file-roller
           cava
           swappy
