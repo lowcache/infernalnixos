@@ -23,7 +23,7 @@
       gemini_api_key = {
         owner = username;
       };
-      github_token = {
+      gh_token = {
         owner = username;
       };
       # Buttondown API tokens, one per newsletter account — the two lists are

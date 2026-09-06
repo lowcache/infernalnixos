@@ -1,0 +1,15 @@
+# Starship, themed from Noctalia's Material 3 roles instead of the terminal ANSI
+# ramp. The builtin "starship" template only emits the 8 terminal hues plus
+# Catppuccin shades, which excludes mPrimary/mSecondary — the accent every other
+# surface (niri active-color, kitty active_border_color, fuzzel border) mirrors.
+# Disable the builtin when enabling this one: remove "starship" from
+# theme.templates.builtin_ids in ~/.local/state/noctalia/settings.toml.
+
+[catalog.starship-m3]
+name = "Starship (M3 roles)"
+category = "terminal"
+
+[templates.starship-m3]
+input_path = "starship-m3.toml"
+output_path = "$XDG_CACHE_HOME/noctalia/starship-m3-palette.toml"
+post_hook = "bash '{{ config_dir }}/apply.sh'"

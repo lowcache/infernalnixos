@@ -8,9 +8,8 @@
 font_family = "JetBrainsMono Nerd Font"
 settings_show_advanced = true
 
-# Color engine: drive the M3 palette from apply_theme.py.
-# theme.source = "custom" loads ~/.config/noctalia/palettes/<custom_palette>.json (hot-reloaded).
+# Noctalia owns colour selection. Scheme source/palette are picked in the shell UI
+# and live in the state dir (~/.local/state/noctalia/settings.toml) — deliberately NOT
+# pinned here, so this file does not fight the runtime override.
 [theme]
 mode = "dark"
-source = "custom"
-custom_palette = "volnix"

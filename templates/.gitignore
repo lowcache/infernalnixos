@@ -1,0 +1,13 @@
+# Applies to the template SOURCES only -- this file sits above each template
+# directory, so `nix flake init -t` never copies it into a project.
+#
+# A real project must commit its flake.lock. A template must not: the lock
+# would be copied into every project initialised from it, pinning them all to
+# whatever nixpkgs happened to be current the day the template was tested.
+*/flake.lock
+
+# Testing a template in place (direnv allow inside templates/<lang>/) leaves
+# these behind. Each template's own .gitignore covers them for consumers; this
+# covers them here.
+*/.direnv/
+*/result

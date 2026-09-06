@@ -1,0 +1,4 @@
+/vendor/
+/.gem/
+/.direnv/
+/result

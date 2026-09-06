@@ -59,9 +59,9 @@
         test -r /run/secrets/gemini_api_key
         and set -gx GEMINI_API_KEY (cat /run/secrets/gemini_api_key)
 
-        # Github token - sops-nix to /run/secrets/github_token
-        test -r /run/secrets/github_token
-        and set -gx GITHUB_TOKEN (cat /run/secrets/github_token)
+        # Github token - sops-nix to /run/secrets/gh_token
+        test -r /run/secrets/gh_token
+        and set -gx GH_TOKEN (cat /run/secrets/gh_token)
 
         # Phone-agent bearer token - sops-nix to /run/secrets/phone_agent_token;
         # consumed by the phone-agent MCP server in .model/.claude/.mcp.json
@@ -134,9 +134,9 @@
             set -l mon $argv[2]
             # Convention symlink (referenced elsewhere); harmless on either session.
             ln -sf "$img" ~/Pictures/wallpaper.png
-            # niri + Noctalia: WALLPAPER ONLY. No color logic — apply_theme.py is the
-            # single source of truth for the colorscheme, and nothing here clobbers it
-            # (no matugen on this path). noctalia msg wallpaper-set is persisted.
+            # niri + Noctalia: WALLPAPER ONLY. No color logic — Noctalia owns the
+            # colorscheme (its own templates write kitty/niri/fuzzel/cava/starship),
+            # and nothing here clobbers it. noctalia msg wallpaper-set is persisted.
             if test -n "$mon"
               noctalia msg wallpaper-set "$mon" "$img"
             else

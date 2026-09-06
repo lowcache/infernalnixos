@@ -195,6 +195,38 @@
           self.nixosConfigurations.volnix.config.microvm.vms.tailscale.config.config.microvm.declaredRunner;
       };
 
+      # Reusable project scaffolds: `nix flake init -t ~/.nix-config#ruby`.
+      # Not per-system — a template is just a directory of files to copy.
+      templates = {
+        go = {
+          path = ./templates/go;
+          description = "Go devShell + guarded buildGoModule";
+        };
+        hugo = {
+          path = ./templates/hugo;
+          description = "Hugo site: hugo/go/wrangler + reproducible site build";
+        };
+        lua = {
+          path = ./templates/lua;
+          description = "Lua plugin devShell (lua5_4, shellcheck, stylua)";
+        };
+        luau = {
+          path = ./templates/luau;
+          description = "Luau plugin devShell + luau-analyze gate";
+        };
+        python = {
+          path = ./templates/python;
+          description = "Python devShell (withPackages: pytest, ruff)";
+        };
+        ruby = {
+          path = ./templates/ruby;
+          description = "Ruby devShell (bundler) + reproducible bundlerEnv build";
+        };
+        # No `default` on purpose. With five templates, a bare
+        # `nix flake init -t ~/.nix-config` would silently scaffold whichever
+        # one won the coin toss into the wrong project. Name the language.
+      };
+
       # `nix fmt` — nixfmt (RFC 166, the official formatter), treefmt-wrapped so
       # it formats the whole tree and respects the git index (untracked files
       # like dots/gemini worktrees are skipped).
